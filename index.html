@@ -968,7 +968,6 @@ function execStatement(sIn,base){
   /* strip trailing "=> directive"; apply to the final value only (store raw) */
   const [s,fmt]=stripFormat(sIn);
   let m;
-  if((m=/^(\d[A-Za-z0-9_]*)\s*(?:\([^)]*\))?\s*[+\-*\/^]?=(?!=)/.exec(s))) throw E("Names can't start with a digit: '"+m[1]+"'",0);
   if((m=FUNDEF.exec(s))){
     const name=m[1];POSOFF=base;
     const w=validateName(name,'func',0);
@@ -1067,12 +1066,15 @@ function execLine(line){
   if(runCommand(t,items,ui)) return {items,ui,text:t};
   let last=null;
   try{
-    let off=0;
+    let off=0;const eqs=[];
     for(const part of t.split(';')){
       const lead=part.length-part.trimStart().length,s=part.trim();
-      if(s) last=execStatement(s,off+lead);
+      /* an '=' that isn't an assignment or function definition (2x = 4, x+y = 5) is an equation: collect it for the solver */
+      if(s&&s.replace(/=>/g,'').includes('=')&&!FUNDEF.test(s)&&!ASSIGN.test(s)){eqs.push(s);}
+      else if(s) last=execStatement(s,off+lead);
       off+=part.length+1;
     }
+    if(eqs.length){const r=solveEquations(eqs,null,true);last={kind:'solve',rows:r.rows,warns:r.warns};}
     if(last) items.push(last);
   }catch(e){
     items.push({kind:'err',msg:(e&&e.message)||String(e),pos:e&&e.pos});
@@ -1338,6 +1340,7 @@ function helpHtml(){
 <table><tr><td><code>x = 1</code></td><td>define. <code>x=1; y=2; x+y</code> runs left to right, prints the last result. <code>x += 1</code> works.</td></tr>
 <tr><td><code>2x</code> <code>3(4+1)</code></td><td>implicit multiplication. <code>2pi</code> = 2·π</td></tr>
 <tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code></td></tr>
+<tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2x = 4</code> gives <code>x = 2</code>, <code>2x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
 <h3>COMPLEX</h3>
