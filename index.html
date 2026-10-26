@@ -98,6 +98,13 @@ button{font-family:inherit;cursor:pointer}
 .pp{color:var(--violet);font-weight:800;font-size:16px}
 #inp{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font-family:inherit;font-size:16px;caret-color:var(--cyan)}
 #ghost{color:var(--dim);font-size:13px;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#enter{background:rgba(34,211,238,.14);border:1px solid var(--cyan);color:var(--cyan);border-radius:9px;font-size:18px;font-weight:700;line-height:1;padding:6px 14px;min-height:36px}
+#enter:active{background:rgba(34,211,238,.35)}
+#keybar{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 8px}
+#keybar button{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:15px;min-width:40px;min-height:36px;padding:4px 10px;touch-action:manipulation}
+#keybar button:hover{border-color:var(--violet)}
+#keybar button:active{background:rgba(167,139,250,.25)}
+#keybar .kg{flex:1}
 #chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
 .chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:3px 9px;font-size:12px}
 .chip:hover{color:#fff;border-color:var(--violet)}
@@ -225,7 +232,18 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <div id="hint"></div>
       <div id="promptbar"><span class="pp">›</span>
         <input id="inp" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="type an expression…  e.g.  10p * 2.5k   or   x = 1; y = 2; x + y" enterkeyhint="go">
-        <span id="ghost"></span></div>
+        <span id="ghost"></span>
+        <button id="enter" type="button" title="Evaluate (Enter)" aria-label="Evaluate">&#9166;</button></div>
+      <div id="keybar">
+        <button type="button" data-k="up" title="Previous input (&uarr;)" aria-label="Previous input">&uarr;</button>
+        <button type="button" data-k="down" title="Next input (&darr;)" aria-label="Next input">&darr;</button>
+        <button type="button" data-k="tab" title="Autocomplete (Tab)">Tab</button>
+        <button type="button" data-k="(">(</button><button type="button" data-k=")">)</button>
+        <button type="button" data-k="^">^</button><button type="button" data-k=",">,</button>
+        <button type="button" data-k="=">=</button><button type="button" data-k=";">;</button>
+        <span class="kg"></span>
+        <button type="button" data-k="erase" title="Clear the input line (Esc)">&#9003;</button>
+      </div>
       <div id="chips"></div>
       </div>
       <div id="view-solver" class="view"><div class="vpad">
@@ -1430,10 +1448,22 @@ function updateGhost(){
 }
 inp.addEventListener('input',()=>{updateHint();updateGhost();});
 inp.addEventListener('click',updateHint);
+function histUp(){if(histPos===hist.length)draft=inp.value;if(histPos>0){histPos--;setInput(hist[histPos]);}}
+function histDown(){if(histPos<hist.length){histPos++;setInput(histPos===hist.length?draft:hist[histPos]);}}
+/* on-screen keys: pointerdown is cancelled so the prompt keeps focus (and the phone keyboard stays open) */
+const keyActs={up:histUp,down:histDown,tab:()=>{inp.focus();complete();},erase:()=>setInput('')};
+$('enter').addEventListener('pointerdown',e=>e.preventDefault());
+$('enter').addEventListener('click',()=>{runInput();inp.focus();});
+$('keybar').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault();});
+$('keybar').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const k=b.dataset.k;
+  if(keyActs[k])keyActs[k]();else insertAtCaret(k);
+});
 inp.addEventListener('keydown',e=>{
   if(e.key==='Enter'){e.preventDefault();runInput();}
-  else if(e.key==='ArrowUp'){e.preventDefault();if(histPos===hist.length)draft=inp.value;if(histPos>0){histPos--;setInput(hist[histPos]);}}
-  else if(e.key==='ArrowDown'){e.preventDefault();if(histPos<hist.length){histPos++;setInput(histPos===hist.length?draft:hist[histPos]);}}
+  else if(e.key==='ArrowUp'){e.preventDefault();histUp();}
+  else if(e.key==='ArrowDown'){e.preventDefault();histDown();}
   else if(e.key==='Tab'){e.preventDefault();complete();}
   else if(e.key==='Escape'){if($('consts').classList.contains('open'))toggleConsts(false);else{inp.value='';updateHint();updateGhost();}}
   else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='l'){e.preventDefault();logEl.innerHTML='';sessionText.length=0;}
