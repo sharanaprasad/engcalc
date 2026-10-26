@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EngCalc Console</title>
+<style>
+:root{
+  --bg:#070a14; --panel:rgba(13,18,38,.80); --line:rgba(130,150,255,.17);
+  --txt:#d9e2ff; --dim:#7f8bb5; --cyan:#22d3ee; --amber:#fbbf24; --coral:#fb7185;
+  --mag:#e879f9; --green:#4ade80; --violet:#a78bfa; --blue:#60a5fa; --orange:#fb923c;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:14px;overflow:hidden;
+  background-image:
+    radial-gradient(900px 520px at 6% -12%,rgba(124,58,237,.30),transparent 60%),
+    radial-gradient(800px 520px at 102% 0%,rgba(34,211,238,.20),transparent 55%),
+    radial-gradient(900px 600px at 50% 125%,rgba(244,114,182,.18),transparent 60%);
+  background-attachment:fixed;
+}
+button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:rgba(130,150,255,.25);border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+#top{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);background:rgba(7,10,22,.72);backdrop-filter:blur(8px)}
+.logo{font-weight:800;font-size:17px;letter-spacing:.5px;
+  background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#fbbf24,#22d3ee);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 9s linear infinite}
+@keyframes flow{to{background-position:300% 0}}
+.sub{color:var(--dim);font-size:12px}
+.grow{flex:1}
+.seg{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:rgba(255,255,255,.03)}
+.seg button,.seg span{background:transparent;border:0;color:var(--dim);padding:5px 10px;font-size:12px}
+.seg span{color:var(--cyan);min-width:26px;text-align:center;padding:5px 2px}
+.seg button.on{background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(167,139,250,.25));color:#fff;text-shadow:0 0 8px rgba(34,211,238,.8)}
+.seg button:hover{color:#fff}
+.tb{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:5px 10px;font-size:12px}
+.tb:hover{border-color:var(--cyan);box-shadow:0 0 12px rgba(34,211,238,.25)}
+.tb.on{border-color:var(--coral);color:var(--coral)}
+.mob{display:none}
+.lbl{font-size:11px;color:var(--dim)}
+
+#main{flex:1;min-height:0;display:grid;grid-template-columns:205px minmax(0,1fr) 315px;gap:10px;padding:10px;position:relative}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;min-height:0;display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(10px)}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+.ph input{flex:1;min-width:0;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:7px;color:var(--txt);padding:4px 8px;font-family:inherit;font-size:12px;text-transform:none;letter-spacing:0;outline:none}
+.ph input:focus{border-color:var(--cyan)}
+.x{background:transparent;border:0;color:var(--dim);font-size:15px;padding:0 4px}
+.x:hover{color:var(--coral)}
+
+/* variables */
+#varlist{overflow:auto;padding:8px;flex:1}
+.vrow{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px}
+.vrow:hover{background:rgba(255,255,255,.05)}
+.vname{background:transparent;border:0;color:var(--green);font-weight:700;font-size:13px;padding:0;text-align:left}
+.vname.fn{color:var(--mag)}
+.vname.an{color:var(--amber)}
+.vval{flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;cursor:pointer}
+.vdel{background:transparent;border:0;color:var(--dim);padding:0 3px;font-size:12px;visibility:hidden}
+.vrow:hover .vdel{visibility:visible}
+.vdel:hover{color:var(--coral)}
+.empty{color:var(--dim);font-size:12px;padding:10px;line-height:1.6}
+
+/* console */
+#log{flex:1;overflow:auto;padding:12px 14px;min-height:0}
+.entry{margin-bottom:10px}
+.inl{cursor:pointer;display:flex;gap:0;white-space:pre-wrap;word-break:break-all}
+.inl:hover .src{filter:brightness(1.25)}
+.prm{display:inline-block;width:2ch;color:var(--violet);flex:none}
+.out{padding-left:2ch;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.out .eq{color:var(--dim)}
+.res{cursor:copy;font-size:17px;font-weight:600;border-radius:6px;padding:0 4px;margin-left:-4px;transition:background .15s}
+.res:hover{background:rgba(34,211,238,.12)}
+.alt{padding-left:2ch;color:var(--dim);font-size:12px;margin-top:1px}
+.n{color:var(--cyan);text-shadow:0 0 10px rgba(34,211,238,.35)}
+.u{color:var(--amber);text-shadow:0 0 10px rgba(251,191,36,.35)}
+.disp{color:var(--violet);text-shadow:0 0 10px rgba(167,139,250,.4)}
+.vn{color:var(--green);font-weight:700}
+.fnn{color:var(--mag);font-weight:700}
+.err{color:var(--coral)}
+.warn{color:var(--orange);padding-left:2ch;font-size:12px}
+.info{padding-left:2ch;color:var(--txt);line-height:1.6}
+.caret{white-space:pre;color:var(--coral);padding-left:0;margin:0;font:inherit;line-height:1}
+.hn{color:var(--cyan)} .hs{color:var(--amber)} .hf{color:var(--mag)} .hv{color:var(--green)} .ho{color:#94a3b8}
+.src{color:var(--txt)}
+
+#hint{min-height:20px;padding:2px 16px;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint b{color:var(--mag)} #hint i{color:var(--amber);font-style:normal}
+#promptbar{display:flex;align-items:center;gap:8px;margin:0 12px 8px;padding:9px 12px;border-radius:12px;
+  background:rgba(4,7,18,.75);border:1px solid var(--line);transition:box-shadow .2s,border-color .2s}
+#promptbar:focus-within{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(34,211,238,.35),0 0 24px rgba(34,211,238,.28),inset 0 0 18px rgba(167,139,250,.10)}
+.pp{color:var(--violet);font-weight:800;font-size:16px}
+#inp{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font-family:inherit;font-size:16px;caret-color:var(--cyan)}
+#ghost{color:var(--dim);font-size:13px;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
+.chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:3px 9px;font-size:12px}
+.chip:hover{color:#fff;border-color:var(--violet)}
+.banner{padding:4px 0 10px}
+.banner h1{margin:0 0 4px;font-size:22px;background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.banner p{margin:4px 0;color:var(--dim);line-height:1.6}
+.ex{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ex button{background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.3);border-radius:8px;color:var(--cyan);padding:4px 9px;font-size:12px}
+.ex button:hover{background:rgba(34,211,238,.18);box-shadow:0 0 12px rgba(34,211,238,.3)}
+.helpbox{padding:6px 0 4px 2ch;line-height:1.65}
+.helpbox h3{margin:10px 0 4px;color:var(--amber);font-size:13px;letter-spacing:.5px}
+.helpbox code,.info code{color:var(--cyan);background:rgba(34,211,238,.08);padding:0 4px;border-radius:4px}
+.helpbox table{border-collapse:collapse;font-size:12px}
+.helpbox td{padding:1px 14px 1px 0;vertical-align:top}
+.helpbox td:first-child{color:var(--amber)}
+
+/* function panel */
+#fgroups{overflow:auto;flex:1;padding:6px 8px}
+details.grp{margin-bottom:6px}
+details.grp>summary{list-style:none;cursor:pointer;padding:6px 6px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:rgb(var(--cr));display:flex;align-items:center;gap:6px;user-select:none}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary::before{content:"▸";transition:transform .15s;display:inline-block}
+details.grp[open]>summary::before{transform:rotate(90deg)}
+details.grp>summary .cnt{margin-left:auto;color:var(--dim);font-size:11px}
+.fwrap{display:flex;flex-wrap:wrap;gap:5px;padding:2px 2px 6px}
+.fb{--cr:34,211,238;background:rgba(var(--cr),.10);border:1px solid rgba(var(--cr),.42);color:rgb(var(--cr));
+  border-radius:8px;padding:4px 8px;font-size:12px;transition:transform .08s,box-shadow .15s,background .15s}
+.fb:hover{background:rgba(var(--cr),.22);box-shadow:0 0 14px rgba(var(--cr),.45);transform:translateY(-1px)}
+.fb:active{transform:translateY(0) scale(.97)}
+#finfo{border-top:1px solid var(--line);padding:9px 12px;font-size:12px;min-height:86px;line-height:1.5;color:var(--dim)}
+#finfo .sg{color:var(--mag);font-weight:700;font-size:13px}
+#finfo .tr{margin-top:4px}
+#finfo button{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);color:var(--cyan);border-radius:6px;padding:1px 7px;font-size:12px}
+#finfo button:hover{background:rgba(34,211,238,.2)}
+
+/* constants drawer */
+.drawer{position:absolute;top:10px;right:10px;bottom:10px;width:min(430px,calc(100% - 20px));z-index:30;
+  transform:translateX(112%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  box-shadow:-10px 0 40px rgba(0,0,0,.55),0 0 30px rgba(251,113,133,.18);border-color:rgba(251,113,133,.35);background:rgba(10,13,30,.94)}
+.drawer.open{transform:none}
+.drawer .ph{color:var(--coral)}
+#tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--line);flex:none}
+#tabs button{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--dim);padding:7px 14px;font-size:12px;letter-spacing:.8px;text-transform:uppercase}
+#tabs button:hover{color:#fff}
+#tabs button.on{color:#fff;border-bottom-color:var(--cyan);text-shadow:0 0 10px rgba(34,211,238,.6)}
+.view{display:none;flex:1;min-height:0;flex-direction:column}
+.view.on{display:flex}
+.vpad{padding:14px 16px;overflow:auto;flex:1;min-height:0}
+.vtitle{font-size:15px;color:var(--amber);margin-bottom:10px;font-weight:700}
+.vsub{font-size:11px;color:var(--dim);margin-left:10px;font-weight:400}
+#eqs{width:100%;min-height:130px;background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:10px;color:#fff;font-family:inherit;font-size:15px;line-height:1.6;padding:10px 12px;outline:0;resize:vertical;caret-color:var(--cyan)}
+#eqs:focus,.cf input:focus,.vrowf input[type=text]:focus,.vrowf select:focus,.cf select:focus{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(34,211,238,.3),0 0 18px rgba(34,211,238,.22)}
+.vrowf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--dim)}
+.vrowf input[type=text],.vrowf select,.cf input,.cf select{background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:8px;color:#fff;font-family:inherit;font-size:14px;padding:6px 9px;outline:0}
+.pri{border-color:var(--cyan)!important;color:var(--cyan)!important;font-weight:700}
+.soltbl{margin:6px 0 2px}
+.solrow{display:flex;gap:10px;align-items:baseline;padding:3px 2px;flex-wrap:wrap}
+.solrow .res{font-size:18px}
+pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow:auto;font-family:inherit;font-size:12px;color:var(--dim)}
+.cgrid{display:grid;gap:8px}
+.cf{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:center}
+.cf label{color:var(--dim);font-size:12px}
+.cf input{width:100%;font-size:16px;letter-spacing:.5px}
+.cf input.bad{border-color:var(--coral);box-shadow:0 0 12px rgba(251,113,133,.35)}
+.cp{background:transparent;border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:4px 8px}
+.cp:hover{color:var(--cyan);border-color:var(--cyan)}
+#cinfo{margin:14px 0 8px;font-size:13px;line-height:1.8}
+#bitgrid{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.bcell{display:inline-flex;flex-direction:column;align-items:center}
+.bcell small{font-size:9px;color:var(--dim);height:11px}
+.bit{width:22px;height:26px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--dim);font-size:12px;padding:0}
+.bit:hover{border-color:var(--violet)}
+.bit.on{background:rgba(34,211,238,.22);border-color:var(--cyan);color:var(--cyan);text-shadow:0 0 8px rgba(34,211,238,.7)}
+.bgap{width:7px}
+#clist{overflow:auto;flex:1;padding:6px 8px 12px}
+.cg{margin:10px 0 4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--coral)}
+.crow{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:4px 6px;border-radius:8px}
+.crow:hover{background:rgba(255,255,255,.05)}
+.cn{background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.4);color:var(--coral);border-radius:7px;padding:2px 8px;font-size:12px;font-weight:700}
+.cn:hover{box-shadow:0 0 12px rgba(251,113,133,.45)}
+.cl{font-size:12px;color:var(--txt);line-height:1.3}
+.cl small{display:block;color:var(--dim)}
+.cv{text-align:right;font-size:12px;color:var(--cyan)}
+.cv button{display:block;margin-left:auto;background:transparent;border:0;color:var(--dim);font-size:11px;padding:0}
+.cv button:hover{color:var(--amber)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:rgba(20,26,52,.96);border:1px solid var(--cyan);color:var(--cyan);padding:6px 14px;border-radius:10px;font-size:12px;transition:all .2s;pointer-events:none;z-index:99}
+#toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:900px){
+  #main{grid-template-columns:1fr}
+  #vars,#funcs{position:absolute;z-index:25;top:10px;bottom:10px;width:min(340px,calc(100% - 20px));transition:transform .25s;background:rgba(10,13,30,.96)}
+  #vars{left:10px;transform:translateX(-112%)}
+  #funcs{right:10px;transform:translateX(112%)}
+  #vars.open,#funcs.open{transform:none}
+  .mob{display:inline-block}
+  #ghost{display:none}
+}
+</style>
+</head>
+<body>
+<noscript>This calculator needs JavaScript.</noscript>
+<div id="app">
+  <header id="top">
+    <span class="logo">⚡ EngCalc</span><span class="sub">engineering console</span>
+    <div class="grow"></div>
+    <button class="tb mob" id="btnVars">x= Vars</button>
+    <button class="tb mob" id="btnFuncs">ƒ Funcs</button>
+    <div class="seg" id="segAngle" title="Angle unit for trig and @"><button data-a="rad">RAD</button><button data-a="deg">DEG</button></div>
+    <div class="seg" id="segMode" title="Result display mode"><button data-m="eng">ENG</button><button data-m="sci">SCI</button><button data-m="fix">FIX</button></div>
+    <div class="seg" title="Significant digits"><button id="dMinus">−</button><span id="dVal">6</span><button id="dPlus">+</button></div>
+    <button class="tb" id="btnConsts" title="Physical constants (Esc closes)">⚛ Constants</button>
+    <button class="tb" id="btnHelp">? Help</button>
+    <button class="tb" id="btnExport" title="Download this session as text">⭳ Export</button>
+    <button class="tb" id="btnClear" title="Ctrl+L">⌫ Clear</button>
+  </header>
+  <main id="main">
+    <aside id="vars" class="panel">
+      <div class="ph"><span>Variables</span><button class="x mob" data-close="vars">✕</button></div>
+      <div id="varlist"></div>
+    </aside>
+    <section id="console" class="panel">
+      <nav id="tabs"><button data-tab="console" class="on">Console</button><button data-tab="solver">Solver</button><button data-tab="conv">Base converter</button></nav>
+      <div id="view-console" class="view on">
+      <div id="log" aria-live="polite"></div>
+      <div id="hint"></div>
+      <div id="promptbar"><span class="pp">›</span>
+        <input id="inp" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="type an expression…  e.g.  10p * 2.5k   or   x = 1; y = 2; x + y" enterkeyhint="go">
+        <span id="ghost"></span></div>
+      <div id="chips"></div>
+      </div>
+      <div id="view-solver" class="view"><div class="vpad">
+        <div class="vtitle">Solve linear equations<span class="vsub">3, 4 or more unknowns &middot; engineering notation &amp; complex numbers work</span></div>
+        <textarea id="eqs" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2x + y - z = 8&#10;-3x - y + 2z = -11&#10;-2x + y + 2z = -3"></textarea>
+        <div class="vrowf">
+          <label>Unknowns <input type="text" id="unk" size="16" placeholder="auto (x, y, z)"></label>
+          <label><input type="checkbox" id="storeSol" checked> store as variables</label>
+        </div>
+        <div class="vrowf">
+          <button class="tb pri" id="btnSolve">&#9654; Solve</button><span>Ctrl+Enter</span>
+          <span>examples:</span>
+          <button class="chip" data-ex="3">3&times;3</button><button class="chip" data-ex="4">4&times;4</button><button class="chip" data-ex="mesh">mesh circuit</button><button class="chip" id="btnEqClear">clear</button>
+        </div>
+        <div id="solout"></div>
+      </div></div>
+      <div id="view-conv" class="view"><div class="vpad">
+        <div class="vtitle">Base converter<span class="vsub">type in any field &middot; exact big integers &middot; click the bits</span></div>
+        <div class="vrowf"><label>Bit width <select id="cw"><option value="8">8</option><option value="16">16</option><option value="32" selected>32</option><option value="64">64</option><option value="0">auto</option></select></label>
+          <span>negative numbers show as two's complement for the chosen width</span></div>
+        <div class="cgrid">
+          <div class="cf"><label>Decimal</label><input id="c10" spellcheck="false" autocomplete="off" value="255"><button class="cp" data-for="c10" title="Copy">&#10697;</button></div>
+          <div class="cf"><label>Hex &nbsp;0x</label><input id="c16" spellcheck="false" autocomplete="off"><button class="cp" data-for="c16" title="Copy">&#10697;</button></div>
+          <div class="cf"><label>Binary &nbsp;0b</label><input id="c2" spellcheck="false" autocomplete="off"><button class="cp" data-for="c2" title="Copy">&#10697;</button></div>
+          <div class="cf"><label>Octal &nbsp;0o</label><input id="c8" spellcheck="false" autocomplete="off"><button class="cp" data-for="c8" title="Copy">&#10697;</button></div>
+          <div class="cf"><label>Base <select id="cbn"></select></label><input id="cn" spellcheck="false" autocomplete="off"><button class="cp" data-for="cn" title="Copy">&#10697;</button></div>
+        </div>
+        <div id="cinfo"></div>
+        <div id="bitgrid"></div>
+      </div></div>
+    </section>
+    <aside id="funcs" class="panel">
+      <div class="ph"><input id="fsearch" placeholder="search functions…  (Ctrl+K)"><button class="x mob" data-close="funcs">✕</button></div>
+      <div id="fgroups"></div>
+      <div id="finfo">Hover or tap a button for details. <b>Click</b> inserts it, <b>select text first</b> to wrap it, <b>Shift+click</b> wraps the whole line.</div>
+    </aside>
+    <aside id="consts" class="panel drawer">
+      <div class="ph"><span>⚛ Constants</span><input id="csearch" placeholder="search… (boltzmann, planck…)"><button class="x" id="cclose" title="Close (Esc)">✕</button></div>
+      <div id="clist"></div>
+    </aside>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ============================ ENGINE ============================ */
+const has=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+
+/* ---- engineering suffixes (case-sensitive) ---- */
+const SUFEXP={a:-18,f:-15,p:-12,n:-9,u:-6,'\u00b5':-6,'\u03bc':-6,m:-3,k:3,M:6,G:9,T:12,P:15};
+const SUFNAME={a:'atto (1e-18)',f:'femto (1e-15)',p:'pico (1e-12)',n:'nano (1e-9)',u:'micro (1e-6)','\u00b5':'micro (1e-6)','\u03bc':'micro (1e-6)',m:'milli (1e-3)',k:'kilo (1e3)',M:'mega (1e6)',G:'giga (1e9)',T:'tera (1e12)',P:'peta (1e15)',meg:'mega (1e6, SPICE style)'};
+const UNITS=new Set(['F','H','Hz','V','A','W','s','S','ohm','ohms','dB','dBm','\u03a9','\u2126']);
+const ENGSUF={'-18':'a','-15':'f','-12':'p','-9':'n','-6':'\u00b5','-3':'m','0':'','3':'k','6':'M','9':'G','12':'T','15':'P'};
+const ID_START=/[A-Za-z_\u00b5\u03bc\u03a9\u2126]/, ID_CHAR=/[A-Za-z0-9_\u00b5\u03bc\u03a9\u2126]/;
+
+class CalcError extends Error{constructor(m,pos){super(m);this.pos=pos;}}
+let POSOFF=0;
+const E=(msg,pos)=>new CalcError(msg,pos===undefined?undefined:pos+POSOFF);
+
+/* ---- values: number | Cx | Disp(text,num) ---- */
+class Cx{constructor(re,im){this.re=re;this.im=im;}}
+class Disp{constructor(text,num,alt){this.text=text;this.num=num;this.alt=alt;}}
+const isC=v=>v instanceof Cx;
+const U=v=>v instanceof Disp?v.num:v;
+const mk=(re,im)=>im===0?re:new Cx(re,im);
+const Re=v=>isC(v)?v.re:v, Im=v=>isC(v)?v.im:0;
+const real=(v,nm)=>{if(isC(v))throw new CalcError(nm+' needs a real number');return v;};
+
+const CFG={deg:false,mode:'eng',digits:6};
+const STATE={vars:new Map(),funcs:new Map(),solved:new Set(),ans:undefined,ans2:undefined};
+
+/* ---- suffix / unit decomposition: "pF","MHz","meg","mm","2.2kj" tails ---- */
+function decompose(s){
+  let imag=false;
+  if(s.length>0&&s[s.length-1]==='j'){imag=true;s=s.slice(0,-1);}
+  if(s==='') return imag?{exp:0,imag:true}:null;
+  let exp=0,rest=s,pref=false;
+  if(s.startsWith('meg')){exp=6;rest=s.slice(3);pref=true;}
+  else if(has(SUFEXP,s[0])){exp=SUFEXP[s[0]];rest=s.slice(1);pref=true;}
+  if(rest==='') return pref?{exp,imag}:null;
+  if(UNITS.has(rest)||(pref&&rest==='m')) return {exp,imag};
+  return null;
+}
+const isDeclared=n=>STATE.vars.has(n)||STATE.funcs.has(n);
+function scaleNum(str,exp){
+  if(exp===0) return Number(str);
+  if(/[eE]/.test(str)) return Number(str)*Number('1e'+exp);
+  return Number(str+'e'+exp);
+}
+function ambiguous(num,ident,pos){
+  return E(`'${num}${ident}' is ambiguous: '${ident}' is a unit/suffix but you also defined '${ident}'. Write ${num}*${ident}, or remove it with: del ${ident}`,pos);
+}
+
+/* ---- tokenizer ---- */
+function tokenize(src){
+  const toks=[],n=src.length;let i=0,sp=false;
+  const push=(t,v,pos)=>{toks.push({t,v,pos,sp});sp=false;};
+  while(i<n){
+    const ch=src[i];
+    if(/\s/.test(ch)){i++;sp=true;continue;}
+    const start=i,rest=src.slice(i);let m;
+    if(/[0-9]/.test(ch)||(ch==='.'&&/[0-9]/.test(src[i+1]||''))){
+      if((m=/^0([xXbBoO])([0-9a-fA-F_]+)/.exec(rest))){
+        const kind=m[1].toLowerCase(),digs=m[2].replace(/_/g,'');
+        const okRe=kind==='x'?/^[0-9a-fA-F]+$/:kind==='b'?/^[01]+$/:/^[0-7]+$/;
+        if(!okRe.test(digs)) throw E('Invalid '+(kind==='x'?'hex':kind==='b'?'binary':'octal')+' literal',start);
+        i+=m[0].length;
+        if(i<n&&ID_CHAR.test(src[i])) throw E('Unexpected text after number literal',i);
+        push('num',Number(BigInt('0'+kind+digs)),start);continue;
+      }
+      /* resistor style 4k7 -> 4.7k */
+      m=/^(\d+)(meg|[afpnu\u00b5\u03bcmkMGTP])(\d+)/.exec(rest);
+      /* 2a1 / 4k1 / 3m2: if a variable with that exact name exists it wins (2*a1); otherwise it is resistor notation */
+      if(m&&!isDeclared(m[2]+m[3])){
+        const exp=m[2]==='meg'?6:SUFEXP[m[2]];
+        let val=scaleNum(m[1]+'.'+m[3],exp);
+        i+=m[0].length;
+        const um=/^[A-Za-z\u03a9\u2126]+/.exec(src.slice(i));
+        if(um&&UNITS.has(um[0])) i+=um[0].length;
+        push('num',val,start);continue;
+      }
+      m=/^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/.exec(rest);
+      const numStr=m[0];i+=numStr.length;
+      let j=i;while(j<n&&ID_CHAR.test(src[j]))j++;
+      const ident=src.slice(i,j);
+      let val=Number(numStr);
+      if(ident){
+        const d=decompose(ident);
+        if(d){
+          if(isDeclared(ident)) throw ambiguous(numStr,ident,start);
+          i=j;val=scaleNum(numStr,d.exp);
+          if(d.imag) val=new Cx(0,val);
+        }
+      }
+      push('num',val,start);continue;
+    }
+    if(ID_START.test(ch)){let j=i+1;while(j<n&&ID_CHAR.test(src[j]))j++;push('id',src.slice(i,j),start);i=j;continue;}
+    if(ch==='\u03c0'){push('id','pi',start);i++;continue;}
+    if(rest.startsWith('**')){push('op','^',start);i+=2;continue;}
+    if(rest.startsWith('<<')||rest.startsWith('>>')){push('op',rest.slice(0,2),start);i+=2;continue;}
+    const OPS={'+':'+','-':'-','\u2212':'-','*':'*','\u00d7':'*','\u00b7':'*','/':'/','\u00f7':'/','%':'%','^':'^','!':'!','&':'&','|':'|','~':'~','@':'@'};
+    if(has(OPS,ch)){push('op',OPS[ch],start);i++;continue;}
+    if(ch==='('){push('lp','(',start);i++;continue;}
+    if(ch===')'){push('rp',')',start);i++;continue;}
+    if(ch===','){push('comma',',',start);i++;continue;}
+    if(ch==='=') throw E("Unexpected '=' (assignments must be a whole statement, e.g.  x = 1)",start);
+    throw E("Unexpected character '"+ch+"'",start);
+  }
+  return toks;
+}
+
+/* ---- parser (recursive descent) -> AST ---- */
+function parseExpr(src){
+  const toks=tokenize(src);
+  if(!toks.length) throw E('Empty expression',0);
+  let p=0;
+  const isOp=v=>p<toks.length&&toks[p].t==='op'&&toks[p].v===v;
+  const endPos=()=>toks[p]?toks[p].pos:src.length;
+  function bitor(){let a=bitand();while(isOp('|')){const pos=toks[p].pos;p++;a={t:'bin',op:'|',a,b:bitand(),pos};}return a;}
+  function bitand(){let a=shift();while(isOp('&')){const pos=toks[p].pos;p++;a={t:'bin',op:'&',a,b:shift(),pos};}return a;}
+  function shift(){let a=add();while(isOp('<<')||isOp('>>')){const o=toks[p].v,pos=toks[p].pos;p++;a={t:'bin',op:o,a,b:add(),pos};}return a;}
+  function add(){let a=mul();while(isOp('+')||isOp('-')){const o=toks[p].v,pos=toks[p].pos;p++;a={t:'bin',op:o,a,b:mul(),pos};}return a;}
+  function mul(){
+    let a=atx();
+    for(;;){
+      const t=toks[p];if(!t)break;
+      if(t.t==='op'&&(t.v==='*'||t.v==='/'||t.v==='%')){p++;a={t:'bin',op:t.v,a,b:atx(),pos:t.pos};}
+      else if(t.t==='id'||t.t==='lp'){a={t:'bin',op:'*',a,b:atx(),pos:t.pos};}
+      else break;
+    }
+    return a;
+  }
+  function atx(){const a=unary();if(isOp('@')){const pos=toks[p].pos;p++;return {t:'polar',a,b:unary(),pos};}return a;}
+  function unary(){
+    if(isOp('-')){const pos=toks[p].pos;p++;return {t:'un',op:'-',a:unary(),pos};}
+    if(isOp('+')){p++;return unary();}
+    if(isOp('~')){const pos=toks[p].pos;p++;return {t:'un',op:'~',a:unary(),pos};}
+    return power();
+  }
+  function power(){
+    const a=postfix();
+    if(isOp('^')){const pos=toks[p].pos;p++;return {t:'bin',op:'^',a,b:unary(),pos};}
+    return a;
+  }
+  function postfix(){let a=primary();while(isOp('!')){const pos=toks[p].pos;p++;a={t:'fact',a,pos};}return a;}
+  function primary(){
+    const t=toks[p];
+    if(!t) throw E('Unexpected end of expression',src.length);
+    if(t.t==='num'){p++;return {t:'num',v:t.v,pos:t.pos};}
+    if(t.t==='id'){
+      p++;
+      if(toks[p]&&toks[p].t==='lp'){
+        p++;const args=[];
+        if(toks[p]&&toks[p].t==='rp'){p++;}
+        else{for(;;){args.push(bitor());
+          if(toks[p]&&toks[p].t==='comma'){p++;continue;}
+          if(toks[p]&&toks[p].t==='rp'){p++;break;}
+          throw E("Expected ',' or ')'",endPos());}}
+        return {t:'call',name:t.v,args,pos:t.pos};
+      }
+      return {t:'id',name:t.v,pos:t.pos};
+    }
+    if(t.t==='lp'){p++;const e=bitor();if(!toks[p]||toks[p].t!=='rp') throw E("Missing ')'",endPos());p++;return e;}
+    throw E("Unexpected '"+src.slice(t.pos,t.pos+1)+"'",t.pos);
+  }
+  const ast=bitor();
+  if(p<toks.length) throw E("Unexpected '"+src.slice(toks[p].pos,toks[p].pos+1)+"'",toks[p].pos);
+  return ast;
+}
+
+/* ---- arithmetic with complex support ---- */
+const neg=a=>isC(a)?mk(-a.re,-a.im):-a;
+const add=(a,b)=>{a=U(a);b=U(b);return(isC(a)||isC(b))?mk(Re(a)+Re(b),Im(a)+Im(b)):a+b;};
+const sub=(a,b)=>{a=U(a);b=U(b);return(isC(a)||isC(b))?mk(Re(a)-Re(b),Im(a)-Im(b)):a-b;};
+const mul=(a,b)=>{a=U(a);b=U(b);if(!isC(a)&&!isC(b))return a*b;return mk(Re(a)*Re(b)-Im(a)*Im(b),Re(a)*Im(b)+Im(a)*Re(b));};
+const div=(a,b)=>{a=U(a);b=U(b);if(!isC(a)&&!isC(b))return a/b;
+  const d=Re(b)*Re(b)+Im(b)*Im(b);if(d===0)return NaN;
+  return mk((Re(a)*Re(b)+Im(a)*Im(b))/d,(Im(a)*Re(b)-Re(a)*Im(b))/d);};
+const cabs=a=>isC(a)?Math.hypot(a.re,a.im):Math.abs(a);
+function cexp(z){return isC(z)?mk(Math.exp(z.re)*Math.cos(z.im),Math.exp(z.re)*Math.sin(z.im)):Math.exp(z);}
+function cln(z){
+  if(!isC(z)){if(z>0)return Math.log(z);if(z===0)return -Infinity;if(z<0)return mk(Math.log(-z),Math.PI);return NaN;}
+  return mk(Math.log(Math.hypot(z.re,z.im)),Math.atan2(z.im,z.re));
+}
+function pow(a,b){
+  a=U(a);b=U(b);
+  if(!isC(a)&&!isC(b)){
+    if(a>=0||Number.isInteger(b)) return Math.pow(a,b);
+    if(a<0) return cexp(mul(b,cln(a)));
+    return NaN;
+  }
+  if(!isC(b)&&Number.isInteger(b)&&Math.abs(b)<=1024){
+    let n=Math.abs(b),base=a,res=1;
+    while(n>0){if(n&1)res=mul(res,base);base=mul(base,base);n=Math.floor(n/2);}
+    return b<0?div(1,res):res;
+  }
+  if(Re(a)===0&&Im(a)===0) return Re(b)>0?0:NaN;
+  return cexp(mul(b,cln(a)));
+}
+function csqrt(z){
+  if(!isC(z))return z>=0?Math.sqrt(z):mk(0,Math.sqrt(-z));
+  const m=Math.hypot(z.re,z.im);const re=Math.sqrt((m+z.re)/2);let im=Math.sqrt((m-z.re)/2);if(z.im<0)im=-im;return mk(re,im);
+}
+const J=new Cx(0,1);
+function csin(z){return isC(z)?mk(Math.sin(z.re)*Math.cosh(z.im),Math.cos(z.re)*Math.sinh(z.im)):Math.sin(z);}
+function ccos(z){return isC(z)?mk(Math.cos(z.re)*Math.cosh(z.im),-Math.sin(z.re)*Math.sinh(z.im)):Math.cos(z);}
+function ctan(z){return isC(z)?div(csin(z),ccos(z)):Math.tan(z);}
+function csinh(z){return isC(z)?mk(Math.sinh(z.re)*Math.cos(z.im),Math.cosh(z.re)*Math.sin(z.im)):Math.sinh(z);}
+function ccosh(z){return isC(z)?mk(Math.cosh(z.re)*Math.cos(z.im),Math.sinh(z.re)*Math.sin(z.im)):Math.cosh(z);}
+function ctanh(z){return isC(z)?div(csinh(z),ccosh(z)):Math.tanh(z);}
+function casin(z){if(!isC(z)&&z>=-1&&z<=1)return Math.asin(z);return mul(new Cx(0,-1),cln(add(mul(J,z),csqrt(sub(1,mul(z,z))))));}
+function cacos(z){if(!isC(z)&&z>=-1&&z<=1)return Math.acos(z);return sub(Math.PI/2,casin(z));}
+function catan(z){if(!isC(z))return Math.atan(z);const iz=mul(J,z);return mul(new Cx(0,.5),sub(cln(sub(1,iz)),cln(add(1,iz))));}
+function casinh(z){return isC(z)?cln(add(z,csqrt(add(mul(z,z),1)))):Math.asinh(z);}
+function cacosh(z){if(!isC(z)&&z>=1)return Math.acosh(z);return cln(add(z,mul(csqrt(add(z,1)),csqrt(sub(z,1)))));}
+function catanh(z){if(!isC(z)&&Math.abs(z)<1)return Math.atanh(z);return mul(.5,cln(div(add(1,z),sub(1,z))));}
+
+/* ---- angle handling (DEG/RAD toggle) with exact multiples of 90 ---- */
+function sinA(x){
+  if(CFG.deg){if(x%90===0){return [0,1,0,-1][((x/90)%4+4)%4];}x=x*Math.PI/180;}
+  const r=Math.sin(x);return(Math.abs(r)<1e-15&&Math.abs(x)>1e-3)?0:r;
+}
+function cosA(x){
+  if(CFG.deg){if(x%90===0){return [1,0,-1,0][((x/90)%4+4)%4];}x=x*Math.PI/180;}
+  const r=Math.cos(x);return(Math.abs(r)<1e-15&&Math.abs(x)>1e-3)?0:r;
+}
+function tanA(x){
+  if(CFG.deg){if(x%90===0){const q=((x/90)%4+4)%4;return q%2===0?0:NaN;}x=x*Math.PI/180;}
+  const r=Math.tan(x);return(Math.abs(r)<1e-15&&Math.abs(x)>1e-3)?0:r;
+}
+const toRad=v=>CFG.deg?mul(v,Math.PI/180):v;
+const fromRad=v=>CFG.deg?mul(v,180/Math.PI):v;
+
+/* ---- special functions ---- */
+function gammaFn(x){
+  if(x<0.5) return Math.PI/(Math.sin(Math.PI*x)*gammaFn(1-x));
+  x-=1;const g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  let a=c[0];const t=x+g+0.5;for(let i=1;i<g+2;i++)a+=c[i]/(x+i);
+  return Math.sqrt(2*Math.PI)*Math.pow(t,x+0.5)*Math.exp(-t)*a;
+}
+function factorial(x){
+  if(Number.isInteger(x)){if(x<0)throw new CalcError('factorial of a negative integer is undefined');if(x>170)return Infinity;let r=1;for(let i=2;i<=x;i++)r*=i;return r;}
+  return gammaFn(x+1);
+}
+function erfReal(x){
+  const ax=Math.abs(x);
+  if(ax<2.5){let term=ax,sum=ax;for(let n=0;n<200;n++){term*=2*ax*ax/(2*n+3);sum+=term;if(term<1e-17*sum)break;}
+    const r=2/Math.sqrt(Math.PI)*Math.exp(-ax*ax)*sum;return x<0?-r:r;}
+  return x<0?erfcReal(ax)-1:1-erfcReal(ax);
+}
+function erfcReal(x){
+  if(x<0) return 2-erfcReal(-x);
+  if(x<2.5) return 1-erfReal(x);
+  let f=x;for(let k=120;k>=1;k--)f=x+(k/2)/f;
+  return Math.exp(-x*x)/(Math.sqrt(Math.PI)*f);
+}
+const qfuncReal=x=>0.5*erfcReal(x/Math.SQRT2);
+function qfactorReal(ber){
+  if(!(ber>0&&ber<0.5)) throw new CalcError('qfactor needs 0 < BER < 0.5');
+  let lo=0,hi=40;for(let i=0;i<200;i++){const mid=(lo+hi)/2;if(qfuncReal(mid)>ber)lo=mid;else hi=mid;}return (lo+hi)/2;
+}
+
+/* ---- bits ---- */
+function toBig(x,name){x=U(x);if(isC(x)||!Number.isFinite(x)||!Number.isInteger(x))throw new CalcError(name+' needs integers');return BigInt(x);}
+function bigOp(a,b,op){
+  const A=toBig(a,op),B=toBig(b,op);let r;
+  if((op==='<<'||op==='>>')&&B<0n) throw new CalcError('negative shift count');
+  switch(op){case '&':r=A&B;break;case '|':r=A|B;break;case '<<':r=A<<B;break;case '>>':r=A>>B;break;default:r=A^B;}
+  return Number(r);
+}
+function toBase(x,base,prefix){
+  x=real(x,'hex/bin/oct');if(!Number.isInteger(x)||!Number.isFinite(x))throw new CalcError('hex/bin/oct need an integer');
+  let s=BigInt(Math.abs(x)).toString(base).toUpperCase();
+  /* group every 4 digits from the right, but DON'T zero-pad the leading group (0b1_0000, not 0b0001_0000) */
+  if((base===2||base===16)&&s.length>4) s=s.replace(/\B(?=(.{4})+$)/g,'_');
+  return new Disp((x<0?'-':'')+prefix+s,x);
+}
+
+/* ---- constants ---- */
+const CONSTS=Object.create(null);
+function defConst(name,v,label,unit,grp){CONSTS[name]={v,label,unit,grp};}
+const _h=6.62607015e-34,_q=1.602176634e-19,_kB=1.380649e-23,_NA=6.02214076e23;
+defConst('pi',Math.PI,'Pi','','Math');
+defConst('e',Math.E,"Euler's number",'','Math');
+defConst('phi',(1+Math.sqrt(5))/2,'Golden ratio','','Math');
+defConst('sqrt2',Math.SQRT2,'Square root of 2','','Math');
+defConst('ln2',Math.LN2,'Natural log of 2','','Math');
+defConst('j',J,'Imaginary unit (j\u00b2 = -1)','','Math');
+defConst('c',299792458,'Speed of light in vacuum','m/s','Electromagnetic');
+defConst('mu0',1.25663706212e-6,'Vacuum permeability','H/m','Electromagnetic');
+defConst('eps0',8.8541878128e-12,'Vacuum permittivity','F/m','Electromagnetic');
+defConst('Z0',376.730313668,'Impedance of free space','\u03a9','Electromagnetic');
+defConst('phi0',_h/(2*_q),'Magnetic flux quantum h/2q','Wb','Electromagnetic');
+defConst('G0',2*_q*_q/_h,'Conductance quantum 2q\u00b2/h','S','Electromagnetic');
+defConst('R_K',_h/(_q*_q),'von Klitzing constant h/q\u00b2','\u03a9','Electromagnetic');
+defConst('k_B',_kB,'Boltzmann constant','J/K','Thermal');
+defConst('T0',273.15,'0 \u00b0C in kelvin','K','Thermal');
+defConst('T_room',300,'Room temperature used by Vt, ktc, vn','K','Thermal');
+defConst('R_gas',_kB*_NA,'Molar gas constant','J/(mol\u00b7K)','Thermal');
+defConst('sigma_SB',5.670374419e-8,'Stefan\u2013Boltzmann constant','W/(m\u00b2\u00b7K\u2074)','Thermal');
+defConst('h',_h,'Planck constant','J\u00b7s','Quantum / atomic');
+defConst('hbar',_h/(2*Math.PI),'Reduced Planck constant','J\u00b7s','Quantum / atomic');
+defConst('q',_q,'Elementary charge','C','Quantum / atomic');
+defConst('m_e',9.1093837015e-31,'Electron mass','kg','Quantum / atomic');
+defConst('m_p',1.67262192369e-27,'Proton mass','kg','Quantum / atomic');
+defConst('m_n',1.67492749804e-27,'Neutron mass','kg','Quantum / atomic');
+defConst('m_u',1.66053906660e-27,'Atomic mass unit','kg','Quantum / atomic');
+defConst('N_A',_NA,'Avogadro constant','1/mol','Quantum / atomic');
+defConst('F_const',_q*_NA,'Faraday constant','C/mol','Quantum / atomic');
+defConst('alpha',7.2973525693e-3,'Fine-structure constant','','Quantum / atomic');
+defConst('a0',5.29177210903e-11,'Bohr radius','m','Quantum / atomic');
+defConst('R_inf',10973731.568160,'Rydberg constant','1/m','Quantum / atomic');
+defConst('mu_B',9.2740100783e-24,'Bohr magneton','J/T','Quantum / atomic');
+defConst('g0',9.80665,'Standard gravity','m/s\u00b2','Mechanics');
+defConst('G_grav',6.67430e-11,'Gravitational constant','m\u00b3/(kg\u00b7s\u00b2)','Mechanics');
+
+/* ---- function library ---- */
+const FUNCS=Object.create(null);
+function def(cat,name,sig,desc,ex,min,max,fn){FUNCS[name]={cat,name,sig,desc,ex,min,max,fn};}
+const V=Infinity;
+const A1=(f)=>(x)=>f(x);
+
+/* Trig */
+def('Trig','sin','sin(x)','Sine. Angle in the current RAD/DEG unit','sin(pi/6)',1,1,x=>isC(x)?csin(toRad(x)):sinA(x));
+def('Trig','cos','cos(x)','Cosine. Angle in the current RAD/DEG unit','cos(pi/3)',1,1,x=>isC(x)?ccos(toRad(x)):cosA(x));
+def('Trig','tan','tan(x)','Tangent. Angle in the current RAD/DEG unit','tan(pi/4)',1,1,x=>isC(x)?ctan(toRad(x)):tanA(x));
+/* angle results are shown with their unit (deg or rad), never as "785.398m" */
+function angOut(r,unit){
+  const deg=unit==='deg'||(unit==='cur'&&CFG.deg);
+  const val=deg?r*180/Math.PI:r;
+  if(!Number.isFinite(val)) return val;
+  const fx=x=>numParts(x,'fix',CFG.digits).m;
+  const other=deg?fx(r)+' rad':fx(r*180/Math.PI)+'°';
+  return new Disp(fx(val)+(deg?'°':' rad'),val,'= '+other);
+}
+const angFn=f=>x=>{const r=f(x);return isC(r)?fromRad(r):angOut(r,'cur');};
+def('Trig','asin','asin(x)','Inverse sine. Result in current angle unit','asin(0.5)',1,1,angFn(casin));
+def('Trig','acos','acos(x)','Inverse cosine. Result in current angle unit','acos(0.5)',1,1,angFn(cacos));
+def('Trig','atan','atan(x)','Inverse tangent. Result in current angle unit','atan(1)',1,1,angFn(catan));
+def('Trig','atan2','atan2(y, x)','Four-quadrant arctangent. Result in current angle unit','atan2(1, -1)',2,2,(y,x)=>angOut(Math.atan2(real(y,'atan2'),real(x,'atan2')),'cur'));
+def('Trig','sec','sec(x)','Secant = 1/cos','sec(pi/3)',1,1,x=>div(1,isC(x)?ccos(toRad(x)):cosA(x)));
+def('Trig','csc','csc(x)','Cosecant = 1/sin','csc(pi/6)',1,1,x=>div(1,isC(x)?csin(toRad(x)):sinA(x)));
+def('Trig','cot','cot(x)','Cotangent = 1/tan','cot(pi/4)',1,1,x=>div(1,isC(x)?ctan(toRad(x)):tanA(x)));
+def('Trig','d2r','d2r(deg)','Degrees to radians','d2r(180)',1,1,x=>mul(x,Math.PI/180));
+def('Trig','r2d','r2d(rad)','Radians to degrees','r2d(pi)',1,1,x=>mul(x,180/Math.PI));
+
+/* Hyperbolic */
+def('Hyperbolic','sinh','sinh(x)','Hyperbolic sine','sinh(1)',1,1,csinh);
+def('Hyperbolic','cosh','cosh(x)','Hyperbolic cosine','cosh(1)',1,1,ccosh);
+def('Hyperbolic','tanh','tanh(x)','Hyperbolic tangent','tanh(1)',1,1,ctanh);
+def('Hyperbolic','asinh','asinh(x)','Inverse hyperbolic sine','asinh(1)',1,1,casinh);
+def('Hyperbolic','acosh','acosh(x)','Inverse hyperbolic cosine','acosh(2)',1,1,cacosh);
+def('Hyperbolic','atanh','atanh(x)','Inverse hyperbolic tangent','atanh(0.5)',1,1,catanh);
+
+/* Log / Exp / Roots */
+def('Log / Exp / Roots','ln','ln(x)','Natural logarithm (complex for x<0)','ln(e^2)',1,1,cln);
+def('Log / Exp / Roots','log','log(x)','Base-10 logarithm','log(1k)',1,1,x=>(!isC(x)&&x>0)?Math.log10(x):div(cln(x),Math.LN10));
+def('Log / Exp / Roots','log2','log2(x)','Base-2 logarithm','log2(1024)',1,1,x=>(!isC(x)&&x>0)?Math.log2(x):div(cln(x),Math.LN2));
+def('Log / Exp / Roots','logb','logb(x, b)','Logarithm of x in base b','logb(81, 3)',2,2,(x,b)=>div(cln(x),cln(b)));
+def('Log / Exp / Roots','exp','exp(x)','e raised to x (complex ok)','exp(1)',1,1,cexp);
+def('Log / Exp / Roots','sqrt','sqrt(x)','Square root (sqrt(-4) = 2j)','sqrt(-4)',1,1,csqrt);
+def('Log / Exp / Roots','cbrt','cbrt(x)','Cube root (real cube root for real x)','cbrt(-8)',1,1,x=>isC(x)?pow(x,1/3):Math.cbrt(x));
+def('Log / Exp / Roots','pow','pow(a, b)','a raised to b (same as a^b)','pow(2, 10)',2,2,pow);
+def('Log / Exp / Roots','abs','abs(x)','Absolute value / complex magnitude','abs(-3)',1,1,cabs);
+def('Log / Exp / Roots','sq','sq(x)','Square of x','sq(12)',1,1,x=>mul(x,x));
+def('Log / Exp / Roots','hypot','hypot(a, b, ...)','Root of sum of squares','hypot(3, 4)',2,V,(...a)=>Math.hypot(...a.map(x=>cabs(x))));
+
+/* Rounding */
+def('Rounding','floor','floor(x)','Round down','floor(-2.5)',1,1,x=>Math.floor(real(x,'floor')));
+def('Rounding','ceil','ceil(x)','Round up','ceil(2.1)',1,1,x=>Math.ceil(real(x,'ceil')));
+def('Rounding','round','round(x, n)','Round to n decimals (n optional)','round(3.14159, 2)',1,2,(x,n)=>{x=real(x,'round');n=n===undefined?0:real(n,'round');const k=Math.pow(10,n);return Math.round(x*k)/k;});
+def('Rounding','trunc','trunc(x)','Drop the fractional part','trunc(-2.7)',1,1,x=>Math.trunc(real(x,'trunc')));
+def('Rounding','sign','sign(x)','-1, 0 or +1','sign(-5)',1,1,x=>Math.sign(real(x,'sign')));
+def('Rounding','frac','frac(x)','Fractional part','frac(2.75)',1,1,x=>{x=real(x,'frac');return x-Math.trunc(x);});
+
+/* Complex */
+def('Complex','mag','mag(z)','Magnitude |z|','mag(3+4j)',1,1,cabs);
+def('Complex','phase','phase(z)','Phase angle of z in the current RAD/DEG unit (follows the toggle)','phase(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
+def('Complex','phase_deg','phase_deg(z)','Phase angle in DEGREES, whatever the toggle says','phase_deg(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'deg'));
+def('Complex','phase_rad','phase_rad(z)','Phase angle in RADIANS, whatever the toggle says','phase_rad(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'rad'));
+def('Complex','re','re(z)','Real part','re(3+4j)',1,1,z=>Re(z));
+def('Complex','im','im(z)','Imaginary part','im(3+4j)',1,1,z=>Im(z));
+def('Complex','conj','conj(z)','Complex conjugate','conj(3+4j)',1,1,z=>mk(Re(z),-Im(z)));
+def('Complex','rect','rect(re, im)','Build a complex number from parts','rect(3, 4)',2,2,(a,b)=>mk(real(a,'rect'),real(b,'rect')));
+def('Complex','polar','polar(mag, ang)','Build from magnitude and angle (angle uses RAD/DEG toggle, same as @)','polar(5, 90)',2,2,(m,a)=>polarMake(real(m,'polar'),real(a,'polar')));
+function polarMake(m,a){m=real(m,'@');a=real(a,'@');return mk(m*cosA(a),m*sinA(a));}
+
+/* Engineering / RF */
+def('Engineering / RF','par','par(a, b, ...)','Parallel combination 1/(1/a+1/b+...)','par(1k, 2.2k)',1,V,(...a)=>{if(a.some(x=>Re(x)===0&&Im(x)===0))return 0;let s=0;for(const x of a)s=add(s,div(1,x));return div(1,s);});
+def('Engineering / RF','ser','ser(a, b, ...)','Series combination (sum)','ser(1k, 2.2k)',1,V,(...a)=>a.reduce((s,x)=>add(s,x),0));
+def('Engineering / RF','dB10','dB10(p)','Power ratio to dB: 10*log10','dB10(2)',1,1,x=>10*Math.log10(cabs(x)));
+def('Engineering / RF','dB20','dB20(v)','Voltage/amplitude ratio to dB: 20*log10|v|','dB20(2)',1,1,x=>20*Math.log10(cabs(x)));
+def('Engineering / RF','undB10','undB10(dB)','dB to power ratio','undB10(3)',1,1,x=>Math.pow(10,real(x,'undB10')/10));
+def('Engineering / RF','undB20','undB20(dB)','dB to voltage ratio','undB20(6)',1,1,x=>Math.pow(10,real(x,'undB20')/20));
+def('Engineering / RF','undB','undB(dB)','Same as undB20','undB(-3)',1,1,x=>Math.pow(10,real(x,'undB')/20));
+def('Engineering / RF','dBm','dBm(watts)','Power in watts to dBm','dBm(1m)',1,1,x=>10*Math.log10(real(x,'dBm')/1e-3));
+def('Engineering / RF','undBm','undBm(dBm)','dBm to watts','undBm(30)',1,1,x=>1e-3*Math.pow(10,real(x,'undBm')/10));
+def('Engineering / RF','omega','omega(f)','Angular frequency 2*pi*f','omega(1M)',1,1,f=>mul(f,2*Math.PI));
+def('Engineering / RF','Xc','Xc(C, f)','Capacitive reactance magnitude 1/(2*pi*f*C)','Xc(10p, 1G)',2,2,(C,f)=>div(1,mul(mul(C,f),2*Math.PI)));
+def('Engineering / RF','Xl','Xl(L, f)','Inductive reactance magnitude 2*pi*f*L','Xl(1n, 1G)',2,2,(L,f)=>mul(mul(L,f),2*Math.PI));
+def('Engineering / RF','Zc','Zc(C, f)','Capacitor impedance 1/(j*2*pi*f*C)','Zc(10p, 1G)',2,2,(C,f)=>div(1,mul(J,mul(mul(C,f),2*Math.PI))));
+def('Engineering / RF','Zl','Zl(L, f)','Inductor impedance j*2*pi*f*L','Zl(1n, 1G)',2,2,(L,f)=>mul(J,mul(mul(L,f),2*Math.PI)));
+def('Engineering / RF','f0','f0(L, C)','LC resonant frequency 1/(2*pi*sqrt(LC))','f0(10n, 1p)',2,2,(L,C)=>div(1,mul(csqrt(mul(L,C)),2*Math.PI)));
+def('Engineering / RF','fc_rc','fc_rc(R, C)','RC corner frequency 1/(2*pi*R*C)','fc_rc(1k, 1n)',2,2,(R,C)=>div(1,mul(mul(R,C),2*Math.PI)));
+def('Engineering / RF','fc_rl','fc_rl(R, L)','RL corner frequency R/(2*pi*L)','fc_rl(50, 10n)',2,2,(R,L)=>div(R,mul(L,2*Math.PI)));
+def('Engineering / RF','tau','tau(R, C)','Time constant R*C','tau(1k, 1n)',2,2,(R,C)=>mul(R,C));
+def('Engineering / RF','Qs','Qs(R, L, C)','Series RLC quality factor sqrt(L/C)/R','Qs(5, 10n, 1p)',3,3,(R,L,C)=>div(csqrt(div(L,C)),R));
+def('Engineering / RF','gamma','gamma(ZL, Z0)','Reflection coefficient (ZL-Z0)/(ZL+Z0). Z0 default 50','gamma(75)',1,2,(ZL,Z0)=>{Z0=Z0===undefined?50:Z0;return div(sub(ZL,Z0),add(ZL,Z0));});
+def('Engineering / RF','zfromgamma','zfromgamma(G, Z0)','Load impedance from reflection coefficient. Z0 default 50','zfromgamma(0.2)',1,2,(G,Z0)=>{Z0=Z0===undefined?50:Z0;return mul(Z0,div(add(1,G),sub(1,G)));});
+def('Engineering / RF','vswr','vswr(G)','VSWR from reflection coefficient (1+|G|)/(1-|G|)','vswr(gamma(75))',1,1,G=>{const m=cabs(G);return m>=1?Infinity:(1+m)/(1-m);});
+def('Engineering / RF','rl','rl(G)','Return loss in dB = -20*log10|G|','rl(gamma(75))',1,1,G=>-20*Math.log10(cabs(G)));
+def('Engineering / RF','ml','ml(G)','Mismatch loss in dB = -10*log10(1-|G|^2)','ml(0.2)',1,1,G=>-10*Math.log10(1-cabs(G)*cabs(G)));
+def('Engineering / RF','wavelength','wavelength(f, er)','Wavelength c/(f*sqrt(er)) in metres. er default 1','wavelength(2.4G)',1,2,(f,er)=>{er=er===undefined?1:er;return div(299792458,mul(f,csqrt(er)));});
+def('Engineering / RF','vrms','vrms(vpk)','Peak amplitude to RMS (sine wave)','vrms(1)',1,1,x=>div(x,Math.SQRT2));
+def('Engineering / RF','vpk','vpk(vrms)','RMS to peak amplitude (sine wave)','vpk(1)',1,1,x=>mul(x,Math.SQRT2));
+def('Engineering / RF','vpp','vpp(vrms)','RMS to peak-to-peak (sine wave)','vpp(1)',1,1,x=>mul(x,2*Math.SQRT2));
+def('Engineering / RF','skin','skin(f, rho, mur)','Skin depth in m. Defaults: copper 1.68e-8 ohm.m, mur=1','skin(1G)',1,3,(f,rho,mur)=>{rho=rho===undefined?1.68e-8:rho;mur=mur===undefined?1:mur;return Math.sqrt(2*real(rho,'skin')/(2*Math.PI*real(f,'skin')*CONSTS.mu0.v*real(mur,'skin')));});
+
+/* Noise / ADC / SerDes */
+def('Noise / ADC / SerDes','ktc','ktc(C, T)','kT/C noise in Vrms. T default 300 K','ktc(1p)',1,2,(C,T)=>{T=T===undefined?300:T;return Math.sqrt(_kB*real(T,'ktc')/real(C,'ktc'));});
+def('Noise / ADC / SerDes','Vt','Vt(T)','Thermal voltage kT/q. T default 300 K','Vt()',0,1,T=>{T=T===undefined?300:T;return _kB*real(T,'Vt')/_q;});
+def('Noise / ADC / SerDes','vn','vn(R, B, T)','Thermal noise voltage sqrt(4kTRB). T default 300 K','vn(50, 1G)',2,3,(R,B,T)=>{T=T===undefined?300:T;return Math.sqrt(4*_kB*real(T,'vn')*real(R,'vn')*real(B,'vn'));});
+def('Noise / ADC / SerDes','enob','enob(sndr_dB)','Effective bits from SNDR: (SNDR-1.76)/6.02','enob(62)',1,1,x=>(real(x,'enob')-1.76)/6.02);
+def('Noise / ADC / SerDes','sndr','sndr(bits)','Ideal SNDR in dB: 6.02*N+1.76','sndr(10)',1,1,n=>6.02*real(n,'sndr')+1.76);
+def('Noise / ADC / SerDes','lsb','lsb(vfs, bits)','LSB size = vfs / 2^bits','lsb(1.2, 10)',2,2,(v,n)=>div(v,Math.pow(2,real(n,'lsb'))));
+def('Noise / ADC / SerDes','snr_jitter','snr_jitter(f, tj)','Jitter-limited SNR in dB: -20*log10(2*pi*f*tj_rms)','snr_jitter(100M, 1p)',2,2,(f,tj)=>-20*Math.log10(2*Math.PI*real(f,'snr_jitter')*real(tj,'snr_jitter')));
+def('Noise / ADC / SerDes','ui','ui(baud)','Unit interval 1/baud rate','ui(56G)',1,1,x=>div(1,x));
+def('Noise / ADC / SerDes','nyq','nyq(baud)','Nyquist frequency = baud/2','nyq(56G)',1,1,x=>div(x,2));
+def('Noise / ADC / SerDes','erf','erf(x)','Error function','erf(1)',1,1,x=>erfReal(real(x,'erf')));
+def('Noise / ADC / SerDes','erfc','erfc(x)','Complementary error function','erfc(3)',1,1,x=>erfcReal(real(x,'erfc')));
+def('Noise / ADC / SerDes','qfunc','qfunc(x)','Gaussian tail probability Q(x)','qfunc(7)',1,1,x=>qfuncReal(real(x,'qfunc')));
+def('Noise / ADC / SerDes','qfactor','qfactor(ber)','Q such that Q(x) = BER','qfactor(1e-12)',1,1,x=>qfactorReal(real(x,'qfactor')));
+def('Noise / ADC / SerDes','rj2pp','rj2pp(rj, ber)','Peak-to-peak from RMS random jitter: 2*Q*rj. BER default 1e-12','rj2pp(1p)',1,2,(rj,b)=>{b=b===undefined?1e-12:b;return 2*qfactorReal(real(b,'rj2pp'))*real(rj,'rj2pp');});
+
+/* Stats */
+const nums=(a,nm)=>a.map(x=>real(x,nm));
+def('Stats','sum','sum(a, b, ...)','Sum','sum(1, 2, 3)',1,V,(...a)=>a.reduce((s,x)=>add(s,x),0));
+def('Stats','prod','prod(a, b, ...)','Product','prod(2, 3, 4)',1,V,(...a)=>a.reduce((s,x)=>mul(s,x),1));
+def('Stats','avg','avg(a, b, ...)','Arithmetic mean','avg(1, 2, 6)',1,V,(...a)=>div(a.reduce((s,x)=>add(s,x),0),a.length));
+def('Stats','median','median(a, b, ...)','Median','median(1, 9, 3)',1,V,(...a)=>{const s=nums(a,'median').sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;});
+def('Stats','min','min(a, b, ...)','Smallest value','min(4, 2, 8)',1,V,(...a)=>Math.min(...nums(a,'min')));
+def('Stats','max','max(a, b, ...)','Largest value','max(4, 2, 8)',1,V,(...a)=>Math.max(...nums(a,'max')));
+def('Stats','std','std(a, b, ...)','Sample standard deviation (n-1)','std(2, 4, 4, 4, 5, 5, 7, 9)',2,V,(...a)=>{const x=nums(a,'std'),m=x.reduce((s,v)=>s+v,0)/x.length;return Math.sqrt(x.reduce((s,v)=>s+(v-m)*(v-m),0)/(x.length-1));});
+def('Stats','count','count(a, b, ...)','Number of arguments','count(5, 6, 7)',1,V,(...a)=>a.length);
+
+/* Number / Bits */
+def('Number / Bits','hex','hex(n)','Show integer in hexadecimal','hex(255)',1,1,x=>toBase(x,16,'0x'));
+def('Number / Bits','bin','bin(n)','Show integer in binary','bin(10)',1,1,x=>toBase(x,2,'0b'));
+def('Number / Bits','oct','oct(n)','Show integer in octal','oct(64)',1,1,x=>toBase(x,8,'0o'));
+def('Number / Bits','xor','xor(a, b)','Bitwise XOR of integers','xor(0b1100, 0b1010)',2,2,(a,b)=>bigOp(a,b,'^'));
+def('Number / Bits','gcd','gcd(a, b)','Greatest common divisor','gcd(48, 18)',2,2,(a,b)=>{a=Math.abs(real(a,'gcd'));b=Math.abs(real(b,'gcd'));while(b){[a,b]=[b,a%b];}return a;});
+def('Number / Bits','lcm','lcm(a, b)','Least common multiple','lcm(4, 6)',2,2,(a,b)=>{a=Math.abs(real(a,'lcm'));b=Math.abs(real(b,'lcm'));if(!a||!b)return 0;let x=a,y=b;while(y){[x,y]=[y,x%y];}return a/x*b;});
+def('Number / Bits','nCr','nCr(n, k)','Combinations','nCr(5, 2)',2,2,(n,k)=>{n=real(n,'nCr');k=real(k,'nCr');if(!Number.isInteger(n)||!Number.isInteger(k)||n<0||k<0||k>n)throw new CalcError('nCr needs integers with 0 <= k <= n');k=Math.min(k,n-k);let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r);});
+def('Number / Bits','nPr','nPr(n, k)','Permutations','nPr(5, 2)',2,2,(n,k)=>{n=real(n,'nPr');k=real(k,'nPr');if(!Number.isInteger(n)||!Number.isInteger(k)||n<0||k<0||k>n)throw new CalcError('nPr needs integers with 0 <= k <= n');let r=1;for(let i=0;i<k;i++)r*=(n-i);return r;});
+def('Number / Bits','fact','fact(n)','Factorial (same as n!)','fact(6)',1,1,x=>factorial(real(x,'fact')));
+const needInt=(x,nm)=>{x=real(x,nm);if(!Number.isFinite(x)||!Number.isInteger(x))throw new CalcError(nm+' needs an integer');return x;};
+const grp4=s=>s.length<=4?s:s.replace(/\B(?=(.{4})+$)/g,'_');
+def('Number / Bits','dec','dec(n)','Show an integer as exact decimal digits (e.g. dec(0xFFFF) = 65535)','dec(0xFFFF)',1,1,x=>{x=needInt(x,'dec');return new Disp(BigInt(x).toString(),x,'');});
+def('Number / Bits','tobase','tobase(n, b)','Integer n written in base b (2 to 36)','tobase(255, 36)',2,2,(x,b)=>{
+  x=needInt(x,'tobase');b=needInt(b,'tobase');if(b<2||b>36)throw new CalcError('base must be 2 to 36');
+  const s=BigInt(Math.abs(x)).toString(b).toUpperCase();const pre=b===16?'0x':b===2?'0b':b===8?'0o':'';
+  return new Disp((x<0?'-':'')+(pre?pre+(b===2||b===16?grp4(s):s):s+' (base '+b+')'),x);});
+def('Number / Bits','twos','twos(n, w)',"Two's-complement bit pattern of integer n in w bits (1 to 64)",'twos(-5, 8)',2,2,(x,w)=>{
+  x=needInt(x,'twos');w=needInt(w,'twos');if(w<1||w>64)throw new CalcError('width must be 1 to 64');
+  const full=1n<<BigInt(w),X=BigInt(x);
+  if(X<-(full>>1n)||X>=full) throw new CalcError(`${x} does not fit in ${w} bits`);
+  const u=X<0n?X+full:X;
+  const bs=u.toString(2).padStart(w,'0');
+  const hexd=Math.ceil(w/4),hx=u.toString(16).toUpperCase().padStart(hexd,'0');
+  return new Disp('0b'+(w>4?bs.replace(/\B(?=(.{4})+$)/g,'_'):bs)+' = 0x'+(hx.length>4?hx.replace(/\B(?=(.{4})+$)/g,'_'):hx),Number(u),'unsigned '+u+' | signed '+(X));});
+def('Number / Bits','signed','signed(x, w)',"Read a w-bit pattern as a signed (two's-complement) number",'signed(0xFF, 8)',2,2,(x,w)=>{
+  x=needInt(x,'signed');w=needInt(w,'signed');if(w<1||w>64)throw new CalcError('width must be 1 to 64');
+  const full=1n<<BigInt(w),X=BigInt(x);if(X<0n||X>=full)throw new CalcError(`${x} is not a ${w}-bit unsigned pattern`);
+  return Number(X>=(full>>1n)?X-full:X);});
+
+/* examples that depend on the RAD/DEG toggle */
+(function(){
+  const me=(n,rad,deg)=>{FUNCS[n].ex=()=>CFG.deg?deg:rad;};
+  me('sin','sin(pi/6)','sin(30)');me('cos','cos(pi/3)','cos(60)');me('tan','tan(pi/4)','tan(45)');
+  me('sec','sec(pi/3)','sec(60)');me('csc','csc(pi/6)','csc(30)');me('cot','cot(pi/4)','cot(45)');
+  me('polar','polar(5, pi/2)','polar(5, 90)');
+})();
+const exOf=f=>typeof f.ex==='function'?f.ex():f.ex;
+
+/* ---- name validation ---- */
+const COMMANDS=new Set(['help','?','clear','cls','vars','funcs','consts','constants','mode','digits','deg','rad','del','delall','reset','solve']);
+const isReserved=n=>has(FUNCS,n)||COMMANDS.has(n)||n==='ans'||n==='ans2'||n==='pi'||n==='e'||n==='j';
+function validateName(name,kind,pos){
+  const what=kind==='func'?'Function':'Variable';
+  if(has(SUFEXP,name)||name==='meg')
+    throw E(`'${name}' is the engineering suffix ${SUFNAME[name]}, so "2${name}" must always mean exactly that. ${what} names can't be suffix letters \u2014 try ${name}_x instead.`,pos);
+  const reservedNonFn=COMMANDS.has(name)||name==='ans'||name==='ans2'||name==='pi'||name==='e'||name==='j';
+  if(reservedNonFn||(kind==='func'&&has(FUNCS,name))) throw E(`'${name}' is reserved (built-in ${has(FUNCS,name)?'function':COMMANDS.has(name)?'command':'name'}) and can't be redefined.`,pos);
+  if(kind==='var'&&STATE.funcs.has(name)) throw E(`'${name}' is already a function \u2014 remove it first with: del ${name}`,pos);
+  if(kind==='func'&&STATE.vars.has(name)) throw E(`'${name}' is already a variable \u2014 remove it first with: del ${name}`,pos);
+  const w=[];
+  if(kind==='var'&&has(FUNCS,name)) w.push(`'${name}' is also a built-in function. As a variable, ${name} alone gives your value, but ${name}(...) still calls the function.`);
+  if(has(CONSTS,name)) w.push(`'${name}' now shadows the built-in constant (${CONSTS[name].label}). 'del ${name}' restores it.`);
+  if(decompose(name)) w.push(`'${name}' also reads as a unit/suffix after a number, so inputs like 5${name} will be rejected as ambiguous while it exists \u2014 write 5*${name}.`);
+  return w;
+}
+function validateParam(p,pos){
+  if(has(SUFEXP,p)||p==='meg') throw E(`Parameter '${p}' is an engineering suffix \u2014 use a different name (e.g. ${p}_x).`,pos);
+  if(isReserved(p)) throw E(`Parameter name '${p}' is reserved.`,pos);
+}
+
+/* ---- evaluation ---- */
+let DEPTH=0;
+function lookup(n,sc){
+  const name=n.name;
+  if(sc&&sc.has(name)) return sc.get(name);
+  if(STATE.vars.has(name)) return STATE.vars.get(name);
+  if(name==='ans'){if(STATE.ans===undefined)throw E('No previous result yet',n.pos);return STATE.ans;}
+  if(name==='ans2'){if(STATE.ans2===undefined)throw E('No second-previous result yet',n.pos);return STATE.ans2;}
+  if(has(CONSTS,name)) return CONSTS[name].v;
+  if(has(FUNCS,name)||STATE.funcs.has(name)) throw E(`'${name}' is a function \u2014 call it like ${name}(...)`,n.pos);
+  if(decompose(name)) throw E(`'${name}' is an engineering suffix/unit; it only works glued to a number, e.g. 10${name}`,n.pos);
+  throw E(`Unknown name '${name}'. Define it with:  ${name} = value`,n.pos);
+}
+function ev(n,sc){
+  switch(n.t){
+    case 'num':return n.v;
+    case 'id':return lookup(n,sc);
+    case 'un':{const a=U(ev(n.a,sc));if(n.op==='-')return neg(a);return Number(-toBig(a,'~')-1n);}
+    case 'fact':return factorial(real(U(ev(n.a,sc)),'!'));
+    case 'polar':return polarMake(U(ev(n.a,sc)),U(ev(n.b,sc)));
+    case 'bin':{
+      const a=U(ev(n.a,sc)),b=U(ev(n.b,sc));
+      switch(n.op){
+        case '+':return add(a,b);case '-':return sub(a,b);case '*':return mul(a,b);case '/':return div(a,b);
+        case '^':return pow(a,b);
+        case '%':return real(a,'%')%real(b,'%');
+        default:return bigOp(a,b,n.op);
+      }
+    }
+    case 'call':{
+      const f=has(FUNCS,n.name)?FUNCS[n.name]:null;
+      if(f){
+        const args=n.args.map(x=>U(ev(x,sc)));
+        if(args.length<f.min||args.length>f.max){
+          const rng=f.min===f.max?f.min:(f.max===Infinity?`at least ${f.min}`:`${f.min}\u2013${f.max}`);
+          throw E(`${n.name}() takes ${rng} argument(s):  ${f.sig}`,n.pos);
+        }
+        try{return f.fn(...args);}catch(err){if(err instanceof CalcError&&err.pos===undefined)throw E(err.message,n.pos);throw err;}
+      }
+      const uf=STATE.funcs.get(n.name);
+      if(uf){
+        if(n.args.length!==uf.params.length) throw E(`${n.name}() takes ${uf.params.length} argument(s):  ${n.name}(${uf.params.join(', ')})`,n.pos);
+        if(++DEPTH>150){DEPTH=0;throw E('Recursion too deep',n.pos);}
+        const scope=new Map();uf.params.forEach((p,i)=>scope.set(p,U(ev(n.args[i],sc))));
+        const savedOff=POSOFF;
+        try{return ev(uf.ast,scope);}finally{DEPTH--;POSOFF=savedOff;}
+      }
+      if(n.args.length===1&&((sc&&sc.has(n.name))||STATE.vars.has(n.name)||has(CONSTS,n.name))){
+        return mul(lookup({name:n.name,pos:n.pos},sc),U(ev(n.args[0],sc)));
+      }
+      throw E(`Unknown function '${n.name}'`,n.pos);
+    }
+  }
+  throw new CalcError('Internal: bad node');
+}
+
+/* ---- number formatting ---- */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function engParts(x,digits){
+  const ex=Math.abs(x).toExponential(digits-1);let [mm,ee]=ex.split('e');const e=parseInt(ee,10);
+  let digs=mm.replace('.','');const eg=Math.floor(e/3)*3,shift=e-eg;
+  while(digs.length<shift+1)digs+='0';
+  const ip=digs.slice(0,shift+1);let fr=digs.slice(shift+1).replace(/0+$/,'');
+  const m=(x<0?'-':'')+ip+(fr?'.'+fr:'');
+  const suf=ENGSUF[eg];
+  if(suf===undefined) return {m:m+(eg!==0?'e'+eg:''),s:''};
+  return {m,s:suf};
+}
+function sciParts(x,digits){
+  const s=Math.abs(x).toExponential(digits-1);let [mm,ee]=s.split('e');
+  if(mm.includes('.'))mm=mm.replace(/0+$/,'').replace(/\.$/,'');
+  const e=parseInt(ee,10);return {m:(x<0?'-':'')+mm+(e!==0?'e'+e:''),s:''};
+}
+function numParts(x,mode,digits){
+  if(Number.isNaN(x)) return {m:'undefined',s:''};
+  if(!Number.isFinite(x)) return {m:x<0?'-\u221e':'\u221e',s:''};
+  if(x===0) return {m:'0',s:''};
+  if(mode==='sci') return sciParts(x,digits);
+  if(mode==='fix') return {m:String(Number(x.toPrecision(digits))),s:''};
+  return engParts(x,digits);
+}
+const partsHtml=p=>'<span class="n">'+esc(p.m)+'</span>'+(p.s?'<span class="u">'+esc(p.s)+'</span>':'');
+function cleanC(z){
+  if(!isC(z))return z;
+  if(z.re===0&&z.im===0)return 0;
+  const m=Math.hypot(z.re,z.im);
+  if(Math.abs(z.im)<m*1e-15)return z.re;
+  if(Math.abs(z.re)<m*1e-15)return new Cx(0,z.im);
+  return z;
+}
+function fmtValue(v){
+  if(v instanceof Disp){
+    const p=numParts(v.num,CFG.mode,CFG.digits);
+    return {html:'<span class="disp">'+esc(v.text)+'</span>',text:v.text,alt:v.alt!==undefined?v.alt:('= '+(Number.isInteger(v.num)&&Math.abs(v.num)<1e21?BigInt(v.num).toString():p.m+p.s)+' (decimal)')};
+  }
+  if(isC(v)){
+    const z=cleanC(v);
+    if(!isC(z)) return fmtValue(z);
+    const rp=numParts(z.re,CFG.mode,CFG.digits),ip=numParts(Math.abs(z.im),CFG.mode,CFG.digits);
+    const sgn=z.im<0?'-':'+';
+    /* keep an engineering-suffix separated from the j so "80mj" never happens: show "80m*j" instead */
+    const jsp=s=>s?'*':'',jtxt=s=>s?'*j':'j';
+    let html,text;
+    if(z.re===0){
+      html=(z.im<0?'<span class="u">-</span>':'')+partsHtml(ip)+(ip.s?'<span class="eq">*</span>':'')+'<span class="fnn">j</span>';
+      text=(z.im<0?'-':'')+ip.m+ip.s+jtxt(ip.s);
+    }
+    else{
+      html=partsHtml(rp)+' <span class="eq">'+sgn+'</span> '+partsHtml(ip)+(ip.s?'<span class="eq">*</span>':'')+'<span class="fnn">j</span>';
+      text=rp.m+rp.s+' '+sgn+' '+ip.m+ip.s+jtxt(ip.s);
+    }
+    const mg=Math.hypot(z.re,z.im),ang=Math.atan2(z.im,z.re);
+    const mp=numParts(mg,CFG.mode,CFG.digits);
+    const alt='|z| = '+mp.m+mp.s+'  \u2220 '+String(Number((ang*180/Math.PI).toPrecision(8)))+'\u00b0  ('+String(Number(ang.toPrecision(8)))+' rad)';
+    return {html,text,alt};
+  }
+  const p=numParts(v,CFG.mode,CFG.digits);
+  const others=[];
+  const alts=CFG.mode==='eng'?['fix']:CFG.mode==='sci'?['eng','fix']:['eng','sci'];
+  for(const m of alts){const q=numParts(v,m,CFG.digits),t=q.m+q.s;if(t!==p.m+p.s&&!others.includes(t))others.push(t);}
+  return {html:partsHtml(p),text:p.m+p.s,alt:others.join('   \u00b7   ')};
+}
+
+/* ---- statements, commands, persistence ---- */
+const FUNDEF=/^([A-Za-z_][A-Za-z0-9_]*)\s*\(\s*([A-Za-z0-9_,\s]*)\)\s*=(?!=)\s*([\s\S]+)$/;
+const ASSIGN=/^([A-Za-z_][A-Za-z0-9_]*)\s*([+\-*\/^]?)=(?!=)\s*([\s\S]+)$/;
+
+/* "=> directive" trailing display override: show the result in a chosen suffix / mode / base
+   without changing what's stored. The stored value and ans remain the raw number. */
+const FMTDIR=new Set(['a','f','p','n','u','µ','μ','m','k','M','G','T','P','meg','eng','sci','fix','hex','bin','oct','dec']);
+function stripFormat(s){
+  const m=/^([\s\S]+?)\s*=>\s*([A-Za-z_µμ][A-Za-z0-9_]*)\s*$/.exec(s);
+  if(!m)return [s,null];
+  const body=m[1].trim(),fmt=m[2];
+  if(!body)return [s,null];
+  if(!FMTDIR.has(fmt)) throw new CalcError(`'=> ${fmt}' isn't a known format directive. Try one of:  a f p n u m k M G T P meg | eng sci fix | hex bin oct dec`);
+  return [body,fmt];
+}
+function applyFormat(rawIn,fmt){
+  const raw=U(rawIn);
+  if(fmt==='hex')return toBase(real(raw,'=> hex'),16,'0x');
+  if(fmt==='bin')return toBase(real(raw,'=> bin'),2,'0b');
+  if(fmt==='oct')return toBase(real(raw,'=> oct'),8,'0o');
+  if(fmt==='dec'){const x=real(raw,'=> dec');if(!Number.isInteger(x)||!Number.isFinite(x))throw new CalcError('=> dec needs an integer');return new Disp(BigInt(x).toString(),x,'');}
+  if(fmt==='eng'||fmt==='sci'||fmt==='fix'){
+    const saved=CFG.mode;CFG.mode=fmt;
+    try{const r=fmtValue(raw);return new Disp(r.text,raw,r.alt);}
+    finally{CFG.mode=saved;}
+  }
+  const norm=(fmt==='µ'||fmt==='μ')?'u':fmt;
+  const exp=norm==='meg'?6:SUFEXP[norm];
+  if(exp===undefined)throw new CalcError(`'=> ${fmt}' isn't a known format directive`);
+  const sufCh=norm==='meg'?'M':(norm==='u'?'µ':norm);
+  const scalePart=x=>{
+    if(x===0)return '0';
+    if(!Number.isFinite(x))return x<0?'-∞':'∞';
+    const sc=x/Math.pow(10,exp);
+    return Number(sc.toPrecision(CFG.digits)).toString();
+  };
+  if(isC(raw)){
+    const z=cleanC(raw);
+    if(!isC(z))return applyFormat(z,fmt);
+    const re=scalePart(z.re),im=scalePart(Math.abs(z.im));
+    const sgn=z.im<0?'-':'+';
+    const text=z.re===0?((z.im<0?'-':'')+im+' '+sufCh+'*j'):(re+' '+sufCh+' '+sgn+' '+im+' '+sufCh+'*j');
+    const mg=Math.hypot(z.re,z.im),ang=Math.atan2(z.im,z.re)*180/Math.PI;
+    const mgP=numParts(mg,CFG.mode,CFG.digits);
+    return new Disp(text,raw,'|z| = '+mgP.m+mgP.s+'  ∠ '+Number(ang.toPrecision(8))+'°');
+  }
+  const s=scalePart(raw);
+  const altP=numParts(raw,CFG.mode,CFG.digits);
+  return new Disp(s+' '+sufCh,raw,'= '+altP.m+altP.s);
+}
+
+function execStatement(sIn,base){
+  /* strip trailing "=> directive"; apply to the final value only (store raw) */
+  const [s,fmt]=stripFormat(sIn);
+  let m;
+  if((m=FUNDEF.exec(s))){
+    const name=m[1];POSOFF=base;
+    const w=validateName(name,'func',0);
+    const params=m[2].trim()?m[2].split(',').map(x=>x.trim()):[];
+    const seen=new Set();
+    params.forEach(p=>{
+      if(!/^[A-Za-z_][A-Za-z0-9_]*$/.test(p))throw E("Bad parameter name '"+p+"'",0);
+      if(seen.has(p))throw E("Duplicate parameter '"+p+"'",0);seen.add(p);validateParam(p,0);
+    });
+    POSOFF=base+(s.length-m[3].length);
+    const ast=parseExpr(m[3]);
+    STATE.funcs.set(name,{params,src:name+'('+params.join(',')+')='+m[3],ast});
+    return {kind:'def',name,params,body:m[3],warns:w};
+  }
+  if((m=ASSIGN.exec(s))){
+    const name=m[1],op=m[2];POSOFF=base;
+    const w=validateName(name,'var',0);
+    POSOFF=base+(s.length-m[3].length);
+    let v=U(ev(parseExpr(m[3]),null));
+    if(op){
+      let old=STATE.vars.has(name)?STATE.vars.get(name):(has(CONSTS,name)?CONSTS[name].v:undefined);
+      if(old===undefined) throw E(`'${name}' is not defined yet, so '${op}=' can't be used`,-(s.length-m[3].length)+0);
+      v=op==='+'?add(old,v):op==='-'?sub(old,v):op==='*'?mul(old,v):op==='/'?div(old,v):pow(old,v);
+    }
+    STATE.vars.set(name,v);STATE.solved.delete(name);
+    return {kind:'assign',name,v:fmt?applyFormat(v,fmt):v,warns:w};
+  }
+  POSOFF=base;
+  const ast=parseExpr(s);
+  const raw=ev(ast,null);
+  /* bare "ans" / "ans2" is a reference, not a new result: don't push a duplicate history entry */
+  const bare=ast.t==='id'&&(ast.name==='ans'||ast.name==='ans2');
+  if(!bare){STATE.ans2=STATE.ans;STATE.ans=U(raw);}
+  return {kind:'val',v:fmt?applyFormat(raw,fmt):raw};
+}
+
+function varsItem(){
+  return {kind:'vars',list:[...STATE.vars.keys()].sort().map(k=>({name:k,v:STATE.vars.get(k)})),funcs:[...STATE.funcs.entries()].map(([k,f])=>({name:k,params:f.params,body:f.src.slice(f.src.indexOf('=')+1)}))};
+}
+function runCommand(t,items,ui){
+  const parts=t.split(/\s+/),c=parts[0].toLowerCase();
+  if(!COMMANDS.has(c)) return false;
+  const argc=parts.length-1;
+  const info=h=>items.push({kind:'info',html:h});
+  switch(c){
+    case 'help':case '?':if(argc)return false;ui.push({cmd:'help'});return true;
+    case 'clear':case 'cls':if(argc)return false;ui.push({cmd:'clear'});return true;
+    case 'vars':if(argc)return false;items.push(varsItem());return true;
+    case 'consts':case 'constants':if(argc)return false;ui.push({cmd:'consts'});return true;
+    case 'funcs':{if(argc)return false;
+      let h='<b>Built-in functions</b> (click them in the right panel):<br>';
+      const cats={};for(const k in FUNCS){(cats[FUNCS[k].cat]=cats[FUNCS[k].cat]||[]).push(k);}
+      for(const c2 in cats)h+='<span class="fnn">'+esc(c2)+'</span>: '+cats[c2].map(esc).join(', ')+'<br>';
+      if(STATE.funcs.size)h+='<b>Yours</b>: '+[...STATE.funcs.keys()].map(k=>esc(k)+'('+esc(STATE.funcs.get(k).params.join(','))+')').join(', ');
+      info(h);return true;}
+    case 'deg':if(argc)return false;CFG.deg=true;info('Angle unit: <b>DEG</b>');ui.push({cmd:'sync'});return true;
+    case 'rad':if(argc)return false;CFG.deg=false;info('Angle unit: <b>RAD</b>');ui.push({cmd:'sync'});return true;
+    case 'mode':{
+      if(argc===0){info('Display mode: <b>'+CFG.mode.toUpperCase()+'</b> (use: mode eng | sci | fix)');return true;}
+      const a=(parts[1]||'').toLowerCase();
+      if(argc!==1||!['eng','sci','fix'].includes(a)){items.push({kind:'err',msg:'Usage: mode eng | sci | fix'});return true;}
+      CFG.mode=a;info('Display mode: <b>'+a.toUpperCase()+'</b>');ui.push({cmd:'sync'});return true;}
+    case 'digits':{
+      if(argc===0){info('Significant digits: <b>'+CFG.digits+'</b> (use: digits 3..15)');return true;}
+      const d=Number(parts[1]);
+      if(argc!==1||!Number.isInteger(d)||d<3||d>15){items.push({kind:'err',msg:'Usage: digits N   (N from 3 to 15)'});return true;}
+      CFG.digits=d;info('Significant digits: <b>'+d+'</b>');ui.push({cmd:'sync'});return true;}
+    case 'solve':{
+      const rest=t.slice(5).trim();
+      if(!rest){items.push({kind:'err',msg:'Usage:  solve 2x+y=5; x-y=1   or   solve x,y: 2x+y=5; x-y=1'});return true;}
+      let unk=null,body=rest;
+      const mm=/^([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)\s*:\s*([\s\S]+)$/.exec(rest);
+      if(mm){unk=mm[1].split(',').map(s=>s.trim());body=mm[2];}
+      try{const r=solveEquations(body.split(/[;\n]/),unk,true);items.push({kind:'solve',rows:r.rows,warns:r.warns});}
+      catch(e){items.push({kind:'err',msg:e.message});}
+      return true;}
+    case 'del':{
+      if(!argc){items.push({kind:'err',msg:'Usage: del name [name ...]'});return true;}
+      const out=[];
+      for(const nme of parts.slice(1)){
+        STATE.solved.delete(nme);
+        if(STATE.vars.delete(nme)) out.push('removed variable <span class="vn">'+esc(nme)+'</span>'+(has(CONSTS,nme)?' (built-in constant is active again)':''));
+        else if(STATE.funcs.delete(nme)) out.push('removed function <span class="fnn">'+esc(nme)+'</span>');
+        else out.push('<span class="err">'+esc(nme)+' is not defined</span>');
+      }
+      info(out.join('<br>'));return true;}
+    case 'delall':case 'reset':{if(argc)return false;STATE.vars.clear();STATE.funcs.clear();STATE.solved.clear();STATE.ans=STATE.ans2=undefined;info('All variables, functions and ans cleared.');return true;}
+  }
+  return false;
+}
+
+function execLine(line){
+  const items=[],ui=[],t=line.trim();
+  if(!t) return {items,ui,text:t};
+  DEPTH=0;POSOFF=0;
+  if(runCommand(t,items,ui)) return {items,ui,text:t};
+  let last=null;
+  try{
+    let off=0;
+    for(const part of t.split(';')){
+      const lead=part.length-part.trimStart().length,s=part.trim();
+      if(s) last=execStatement(s,off+lead);
+      off+=part.length+1;
+    }
+    if(last) items.push(last);
+  }catch(e){
+    items.push({kind:'err',msg:(e&&e.message)||String(e),pos:e&&e.pos});
+  }
+  return {items,ui,text:t};
+}
+function peek(text){
+  try{
+    const t=text.trim();
+    if(!t) return null;
+    /* also preview the result of "expr => directive" */
+    let body=t,fmt=null;
+    try{[body,fmt]=stripFormat(t);}catch(e){return null;}
+    if(/[=;]/.test(body)) return null;
+    if(COMMANDS.has(body.split(/\s+/)[0].toLowerCase())) return null;
+    DEPTH=0;POSOFF=0;
+    const v=ev(parseExpr(body),null);
+    if(!(typeof U(v)==='number'||isC(U(v))))return null;
+    return fmt?applyFormat(v,fmt):v;
+  }catch(e){return null;}
+}
+
+/* ---- exact linear extraction + Gaussian elimination (real or complex) ---- */
+const numNode=v=>({t:'num',v,pos:0});
+const lfConst=f=>f.k.size===0;
+function lfScale(f,s){const k=new Map();f.k.forEach((v,n)=>k.set(n,mul(v,s)));return {c:mul(f.c,s),k};}
+function lfAdd(f,g,sg){
+  const k=new Map(f.k);
+  g.k.forEach((v,n)=>{k.set(n,k.has(n)?(sg>0?add(k.get(n),v):sub(k.get(n),v)):(sg>0?v:neg(v)));});
+  return {c:sg>0?add(f.c,g.c):sub(f.c,g.c),k};
+}
+function linForm(n,unk){
+  const bad=m=>E(m,n.pos);
+  const K=()=>new Map();
+  switch(n.t){
+    case 'num':return {c:n.v,k:K()};
+    case 'id':if(unk.has(n.name))return {c:0,k:new Map([[n.name,1]])};return {c:U(lookup(n,null)),k:K()};
+    case 'un':{const a=linForm(n.a,unk);if(n.op==='-')return lfScale(a,-1);
+      if(!lfConst(a))throw bad('~ only works on known values');return {c:ev({t:'un',op:'~',a:numNode(a.c),pos:n.pos},null),k:K()};}
+    case 'fact':{const a=linForm(n.a,unk);if(!lfConst(a))throw bad('! only works on known values');return {c:ev({t:'fact',a:numNode(a.c),pos:n.pos},null),k:K()};}
+    case 'polar':{const a=linForm(n.a,unk),b=linForm(n.b,unk);if(!lfConst(a)||!lfConst(b))throw bad('@ only works on known values');
+      return {c:ev({t:'polar',a:numNode(a.c),b:numNode(b.c),pos:n.pos},null),k:K()};}
+    case 'bin':{
+      const a=linForm(n.a,unk),b=linForm(n.b,unk);
+      if(n.op==='+')return lfAdd(a,b,1);
+      if(n.op==='-')return lfAdd(a,b,-1);
+      if(n.op==='*'){if(lfConst(a))return lfScale(b,a.c);if(lfConst(b))return lfScale(a,b.c);throw bad('Not linear: a product of two unknowns');}
+      if(n.op==='/'){if(!lfConst(b))throw bad('Not linear: division by an unknown');return lfScale(a,div(1,b.c));}
+      if(lfConst(a)&&lfConst(b))return {c:ev({t:'bin',op:n.op,a:numNode(a.c),b:numNode(b.c),pos:n.pos},null),k:K()};
+      if(n.op==='^'&&lfConst(b)&&b.c===1)return a;
+      throw bad('Not linear in the unknowns');
+    }
+    case 'call':{
+      const isFn=has(FUNCS,n.name)||STATE.funcs.has(n.name);
+      const forms=n.args.map(x=>linForm(x,unk));
+      if(isFn&&!unk.has(n.name)){
+        if(forms.some(f=>!lfConst(f)))throw bad(n.name+'() of an unknown is not linear');
+        return {c:ev({t:'call',name:n.name,args:forms.map(f=>numNode(f.c)),pos:n.pos},null),k:K()};
+      }
+      if(forms.length!==1)throw bad("Unknown function '"+n.name+"'");
+      if(unk.has(n.name)){if(!lfConst(forms[0]))throw bad('Not linear: a product of two unknowns');return {c:0,k:new Map([[n.name,forms[0].c]])};}
+      return lfScale(forms[0],U(lookup({name:n.name,pos:n.pos},null)));
+    }
+  }
+  throw bad('Unsupported expression in equation');
+}
+function gaussSolve(A,b){
+  const n=b.length,M=A.map((r,i)=>[...r,b[i]]);
+  let scale=0;M.forEach(r=>{for(let j=0;j<n;j++)scale=Math.max(scale,cabs(r[j]));});
+  if(scale===0)throw new CalcError('All coefficients are zero');
+  for(let c=0;c<n;c++){
+    let p=c,best=cabs(M[c][c]);
+    for(let r=c+1;r<n;r++){const m=cabs(M[r][c]);if(m>best){best=m;p=r;}}
+    if(best<scale*1e-13)throw new CalcError('No unique solution: the equations are dependent (or inconsistent)');
+    [M[c],M[p]]=[M[p],M[c]];
+    for(let r=c+1;r<n;r++){const f=div(M[r][c],M[c][c]);if(cabs(f)===0)continue;for(let k=c;k<=n;k++)M[r][k]=sub(M[r][k],mul(f,M[c][k]));}
+  }
+  const x=new Array(n);
+  for(let r=n-1;r>=0;r--){let s=M[r][n];for(let k=r+1;k<n;k++)s=sub(s,mul(M[r][k],x[k]));x[r]=div(s,M[r][r]);}
+  return x;
+}
+function collectIds(n,set){
+  switch(n.t){
+    case 'id':set.add(n.name);break;
+    case 'call':if(!has(FUNCS,n.name)&&!STATE.funcs.has(n.name))set.add(n.name);n.args.forEach(a=>collectIds(a,set));break;
+    case 'un':case 'fact':collectIds(n.a,set);break;
+    case 'bin':case 'polar':collectIds(n.a,set);collectIds(n.b,set);break;
+  }
+}
+/* lines: array of "lhs = rhs" strings; unkNames: optional explicit unknowns; store: save solutions as variables */
+function solveEquations(lines,unkNames,store){
+  POSOFF=0;DEPTH=0;
+  const eqs=lines.map(s=>s.trim()).filter(Boolean);
+  if(!eqs.length)throw new CalcError('Enter at least one equation, e.g.  2x + y = 5');
+  const asts=eqs.map((s,i)=>{
+    const p=s.split('=');
+    if(p.length!==2||!p[0].trim()||!p[1].trim())throw new CalcError(`Equation ${i+1} ("${s}") needs exactly one '=' with something on both sides`);
+    try{return {l:parseExpr(p[0]),r:parseExpr(p[1])};}catch(e){throw new CalcError(`Equation ${i+1}: ${e.message}`);}
+  });
+  let names,autoDetected=false;
+  if(unkNames&&unkNames.length)names=[...new Set(unkNames)];
+  else{
+    autoDetected=true;
+    const seen=new Set();asts.forEach(a=>{collectIds(a.l,seen);collectIds(a.r,seen);});
+    /* names that an earlier solve stored stay eligible as unknowns, so you can re-solve with x,y,z again */
+    const notConst=nm=>!has(CONSTS,nm)&&nm!=='ans'&&nm!=='ans2';
+    names=[...seen].filter(nm=>notConst(nm)&&(!STATE.vars.has(nm)||STATE.solved.has(nm)));
+    /* if every candidate was already a stored variable, fall back to ALL non-constant names so "solve x=10" works after "x=5" */
+    if(!names.length)names=[...seen].filter(notConst);
+  }
+  if(!names.length)throw new CalcError('No unknowns found. Use names that are not already defined (or list them:  solve x,y,z: ...)');
+  const warns=[];
+  names.forEach(nm=>{
+    if(!/^[A-Za-z_][A-Za-z0-9_]*$/.test(nm))throw new CalcError("Bad unknown name '"+nm+"'");
+    validateName(nm,'var',0).forEach(w=>warns.push(w));
+  });
+  if(eqs.length!==names.length)throw new CalcError(`${eqs.length} equation(s) but ${names.length} unknown(s) (${names.join(', ')}). You need the same number of each.`+(!(unkNames&&unkNames.length)&&names.length<eqs.length?'  If some unknowns are already variables, list them explicitly:  solve x,y,z: ...':''));
+  const unk=new Set(names),A=[],b=[];
+  asts.forEach((a,i)=>{
+    let f;
+    try{f=lfAdd(linForm(a.l,unk),linForm(a.r,unk),-1);}catch(e){throw new CalcError(`Equation ${i+1}: ${e.message}`);}
+    A.push(names.map(nm=>f.k.has(nm)?f.k.get(nm):0));
+    b.push(neg(f.c));
+  });
+  const x=gaussSolve(A,b);
+  const rows=names.map((nm,i)=>({name:nm,v:cleanC(x[i])}));
+  if(store)rows.forEach(r=>{STATE.vars.set(r.name,r.v);STATE.solved.add(r.name);});
+  return {rows,A,b,names,warns};
+}
+
+/* ---- big-integer base parsing / printing (used by the converter tab) ---- */
+function parseBig(str,base){
+  let s=String(str).trim().replace(/[_\s]/g,'');
+  if(!s)throw new CalcError('empty');
+  let neg2=false;
+  if(s[0]==='-'){neg2=true;s=s.slice(1);}else if(s[0]==='+')s=s.slice(1);
+  const pm=/^0([xXbBoO])/.exec(s);
+  if(pm){
+    const pb=pm[1].toLowerCase()==='x'?16:pm[1].toLowerCase()==='b'?2:8;
+    if(base===10||base===pb){base=pb;s=s.slice(2);}
+  }
+  if(!s)throw new CalcError('no digits');
+  const B=BigInt(base);let r=0n;
+  for(const ch of s.toLowerCase()){
+    const d=ch>='0'&&ch<='9'?ch.charCodeAt(0)-48:ch>='a'&&ch<='z'?ch.charCodeAt(0)-87:99;
+    if(d>=base)throw new CalcError("'"+ch+"' is not a valid base-"+base+" digit");
+    r=r*B+BigInt(d);
+  }
+  return neg2?-r:r;
+}
+
+const sv=v=>isC(v)?v.re+','+v.im:String(v);
+const dv=s=>{const p=String(s).split(',').map(Number);return p.length>1&&p[1]!==0?new Cx(p[0],p[1]):p[0];};
+function serializeState(){
+  const vars={};STATE.vars.forEach((v,k)=>{vars[k]=sv(v);});
+  return {vars,funcs:[...STATE.funcs.values()].map(f=>f.src),solved:[...STATE.solved],ans:STATE.ans===undefined?null:sv(STATE.ans)};
+}
+function loadState(o){
+  if(o.vars) for(const k in o.vars){try{STATE.vars.set(k,dv(o.vars[k]));}catch(e){}}
+  if(o.funcs) for(const s of o.funcs){try{execStatement(s,0);}catch(e){}}
+  if(Array.isArray(o.solved))o.solved.forEach(n=>{if(STATE.vars.has(n))STATE.solved.add(n);});
+  if(o.ans!==null&&o.ans!==undefined){try{STATE.ans=dv(o.ans);}catch(e){}}
+}
+
+/* ============================ UI ============================ */
+if(typeof document!=='undefined'&&document.getElementById('inp')){
+(function UI(){
+const $=id=>document.getElementById(id);
+const LS_KEY='engcalc.console.v1';
+const logEl=$('log'),inp=$('inp'),hintEl=$('hint'),ghost=$('ghost');
+let hist=[],histPos=0,draft='';
+const sessionText=[];
+const CAT_ORDER=['Trig','Hyperbolic','Log / Exp / Roots','Rounding','Complex','Engineering / RF','Noise / ADC / SerDes','Stats','Number / Bits'];
+const CAT_RGB={'Trig':'34,211,238','Hyperbolic':'45,212,191','Log / Exp / Roots':'74,222,128','Rounding':'250,204,21','Complex':'232,121,249','Engineering / RF':'251,191,36','Noise / ADC / SerDes':'251,146,60','Stats':'96,165,250','Number / Bits':'167,139,250','Symbols':'148,163,184'};
+const SYMS=[
+  {ins:'j',d:'Imaginary unit. 3+4j or 4j both work'},{ins:'ans',d:'Previous result (ans2 = the one before)'},{ins:'pi',d:'3.14159\u2026'},{ins:'e',d:"Euler's number (2e3 is still scientific notation)"},
+  {ins:'^',d:'Power (also **)'},{ins:'!',d:'Factorial'},{ins:'@',d:'Polar form: 5@30 (angle follows RAD/DEG)'},{ins:'%',d:'Remainder'},
+  {ins:'&',d:'Bitwise AND'},{ins:'|',d:'Bitwise OR'},{ins:'<<',d:'Shift left'},{ins:'>>',d:'Shift right'},{ins:'~',d:'Bitwise NOT'},{ins:';',d:'Separate statements: x=1; y=2; x+y'}
+];
+
+/* ---- persistence ---- */
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify({cfg:CFG,state:serializeState(),hist:hist.slice(-200)}));}catch(e){}}
+function load(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);if(!raw)return;const o=JSON.parse(raw);
+    if(o.cfg){CFG.deg=!!o.cfg.deg;if(['eng','sci','fix'].includes(o.cfg.mode))CFG.mode=o.cfg.mode;const d=Number(o.cfg.digits);if(Number.isInteger(d)&&d>=3&&d<=15)CFG.digits=d;}
+    if(o.state)loadState(o.state);
+    if(Array.isArray(o.hist))hist=o.hist.filter(x=>typeof x==='string');
+  }catch(e){}
+}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1300);}
+function copyText(s){
+  const done=()=>toast('Copied: '+(s.length>40?s.slice(0,40)+'\u2026':s));
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(done,()=>fallback());}else fallback();
+  function fallback(){try{const ta=document.createElement('textarea');ta.value=s;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}catch(e){toast('Copy not available');}}
+}
+
+/* ---- syntax-highlight echo ---- */
+function hl(s){
+  const re=/(\d[\d_]*\.?\d*(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?)([A-Za-z\u00b5\u03bc\u03a9\u2126_][A-Za-z0-9_\u00b5\u03bc\u03a9\u2126]*)?|([A-Za-z_][A-Za-z0-9_]*)(\s*\()?|([\s\S])/g;
+  let out='',m;
+  while((m=re.exec(s))){
+    if(m[1]!==undefined) out+='<span class="hn">'+esc(m[1])+'</span>'+(m[2]?'<span class="hs">'+esc(m[2])+'</span>':'');
+    else if(m[3]!==undefined) out+=m[4]?'<span class="hf">'+esc(m[3])+'</span>'+esc(m[4]):'<span class="hv">'+esc(m[3])+'</span>';
+    else out+=/[+\-*\/^%!&|~@<>=]/.test(m[5])?'<span class="ho">'+esc(m[5])+'</span>':esc(m[5]);
+  }
+  return out;
+}
+
+/* ---- rendering ---- */
+function mkEl(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e;}
+function itemText(it){
+  switch(it.kind){
+    case 'val':return '= '+fmtValue(it.v).text;
+    case 'assign':return it.name+' = '+fmtValue(it.v).text;
+    case 'def':return 'f '+it.name+'('+it.params.join(', ')+') = '+it.body;
+    case 'err':return 'ERROR: '+it.msg;
+    case 'vars':return it.list.map(x=>x.name+' = '+fmtValue(x.v).text).join('\n');
+    case 'solve':return 'solution: '+it.rows.map(x=>x.name+' = '+fmtValue(x.v).text).join(', ');
+    default:return (it.html||'').replace(/<br>/g,'\n').replace(/<[^>]+>/g,'');
+  }
+}
+function valueRow(prefixHtml,v){
+  const f=fmtValue(v),wrap=mkEl('div');
+  const row=mkEl('div','out',prefixHtml);
+  const r=mkEl('span','res',f.html);r.title='Click to copy';r.onclick=()=>copyText(f.text);row.appendChild(r);
+  wrap.appendChild(row);
+  if(f.alt)wrap.appendChild(mkEl('div','alt',esc(f.alt)));
+  return wrap;
+}
+function renderItem(it){
+  const box=mkEl('div');
+  if(it.warns)it.warns.forEach(w=>box.appendChild(mkEl('div','warn','\u26a0 '+esc(w))));
+  switch(it.kind){
+    case 'val':box.appendChild(valueRow('<span class="eq">=</span>',it.v));break;
+    case 'assign':box.appendChild(valueRow('<span class="vn">'+esc(it.name)+'</span><span class="eq">\u2190</span>',it.v));break;
+    case 'def':box.appendChild(mkEl('div','out','<span class="fnn">\u0192</span> <span class="fnn">'+esc(it.name)+'</span>('+esc(it.params.join(', '))+') <span class="eq">=</span> '+hl(it.body)));break;
+    case 'err':{
+      if(it.pos!==undefined&&it.pos>=0)box.appendChild(mkEl('pre','caret',' '.repeat(it.pos+2)+'\u2191'));
+      box.appendChild(mkEl('div','out err','\u2716 '+esc(it.msg)));break;}
+    case 'solve':{
+      box.appendChild(mkEl('div','alt','solution &mdash; stored as variables:'));
+      it.rows.forEach(x=>box.appendChild(valueRow('<span class="vn">'+esc(x.name)+'</span><span class="eq">=</span>',x.v)));
+      break;}
+    case 'vars':{
+      if(!it.list.length&&!it.funcs.length)box.appendChild(mkEl('div','info','<span class="alt">No variables defined yet. Try:  x = 1</span>'));
+      it.list.forEach(x=>box.appendChild(valueRow('<span class="vn">'+esc(x.name)+'</span><span class="eq">=</span>',x.v)));
+      it.funcs.forEach(f=>box.appendChild(mkEl('div','out','<span class="fnn">\u0192 '+esc(f.name)+'</span>('+esc(f.params.join(', '))+') <span class="eq">=</span> '+hl(f.body))));
+      break;}
+    default:box.appendChild(mkEl('div','info',it.html));
+  }
+  return box;
+}
+function helpHtml(){
+  return `<div class="helpbox">
+<h3>NUMBERS &amp; ENGINEERING SUFFIXES (case-sensitive, glued to the number)</h3>
+<table><tr><td>a f p n u/µ</td><td>atto femto pico nano micro &nbsp;<code>2.2u</code> <code>10p</code></td></tr>
+<tr><td>m &nbsp; k</td><td>milli, kilo &nbsp;<code>5m</code> = 0.005 &nbsp; <code>4k7</code> = 4700 (resistor style)</td></tr>
+<tr><td>M &nbsp; meg</td><td>mega &nbsp;<code>5M</code> = <code>5meg</code> = 5e6 &nbsp;(<b>m</b> is milli, <b>M</b> is mega)</td></tr>
+<tr><td>G T P</td><td>giga tera peta &nbsp;<code>1.2G / 3m</code></td></tr>
+<tr><td>units</td><td>trailing units are ignored: <code>10pF</code> <code>5MHz</code> <code>2.2kΩ</code> <code>3dB</code> <code>1mm</code></td></tr></table>
+<h3>VARIABLES &amp; FUNCTIONS</h3>
+<table><tr><td><code>x = 1</code></td><td>define. <code>x=1; y=2; x+y</code> runs left to right, prints the last result. <code>x += 1</code> works.</td></tr>
+<tr><td><code>2x</code> <code>3(4+1)</code></td><td>implicit multiplication. <code>2pi</code> = 2·π</td></tr>
+<tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code></td></tr>
+<tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> means 2*a1 (while <code>a1</code> exists; without it <code>2a1</code> is resistor notation = 2.1 atto). A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
+<tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
+<h3>COMPLEX</h3>
+<table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> (follows RAD/DEG) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@30</code> or <code>polar(5,30)</code> (angle follows RAD/DEG)</td></tr>
+<tr><td></td><td><code>sqrt(-4)</code>, <code>ln(-1)</code>, <code>asin(2)</code> return complex results automatically</td></tr></table>
+<h3>DISPLAY ANY RESULT IN A CHOSEN UNIT: <code>expr =&gt; directive</code></h3>
+<table><tr><td>suffixes</td><td><code>5MHz / 60us =&gt; M</code> shows the result forced into mega (<code>83.333e-3 M</code>). The stored value and <code>ans</code> stay unchanged. Any suffix letter works: <code>a f p n u m k M G T P meg</code>.</td></tr>
+<tr><td>display mode</td><td><code>...=&gt; eng</code> &nbsp; <code>...=&gt; sci</code> &nbsp; <code>...=&gt; fix</code> &mdash; override just for this result</td></tr>
+<tr><td>bases</td><td><code>255 =&gt; hex</code> &nbsp; <code>0xFF =&gt; bin</code> &nbsp; <code>0b1010 =&gt; dec</code> &nbsp; <code>...=&gt; oct</code></td></tr>
+<tr><td>with assignment</td><td><code>x = 10M =&gt; k</code> stores x = 1e7, displays <code>10000 k</code></td></tr>
+<tr><td>on complex</td><td><code>(1+2j)*1k =&gt; k</code> rescales both real and imaginary parts</td></tr></table>
+<h3>SOLVE EQUATIONS (3, 4 or more unknowns, linear)</h3>
+<table><tr><td><code>solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3</code></td><td>unknowns are auto-detected and stored as variables (x=2, y=3, z=-1). Pin them down with <code>solve x,y: ...</code>. Engineering notation and <code>j</code> work in the coefficients. The <b>Solver</b> tab has a bigger editor and the coefficient matrix.</td></tr></table>
+<h3>BASES</h3>
+<table><tr><td><code>0xFF</code> <code>0b1010</code> <code>0o17</code></td><td>literals (underscores ok: <code>0b1010_1010</code>). <code>hex(n)</code> <code>bin(n)</code> <code>oct(n)</code> <code>dec(n)</code> <code>tobase(n,b)</code> convert; <code>twos(-5,8)</code> shows two's complement, <code>signed(0xFF,8)</code> reads it back. The <b>Base converter</b> tab edits dec/hex/bin/octal/base-N live with a clickable bit grid.</td></tr>
+<tr><td>Q &amp; erfc</td><td><code>qfunc(x)</code> <code>erfc(x)</code> <code>erf(x)</code> <code>qfactor(ber)</code> <code>rj2pp(rj)</code></td></tr></table>
+<h3>OTHER</h3>
+<table><tr><td>operators</td><td><code>+ - * / % ^ **</code> &nbsp;<code>!</code> &nbsp;<code>&amp; | ~ &lt;&lt; &gt;&gt;</code> &nbsp; <code>0xFF 0b1010 0o17</code> &nbsp; <code>hex() bin() oct()</code></td></tr>
+<tr><td>commands</td><td><code>mode eng|sci|fix</code> <code>digits 8</code> <code>deg</code> <code>rad</code> <code>consts</code> <code>clear</code></td></tr>
+<tr><td>keys</td><td>↑↓ history · Tab autocomplete · Ctrl+L clear · Ctrl+K search functions · Esc closes constants · click a result to copy it · click an old input to reuse it</td></tr>
+<tr><td>panel</td><td>click a function button to insert it · select text first to wrap it · Shift+click wraps the whole line</td></tr></table></div>`;
+}
+function addEntry(text,res){
+  const e=mkEl('div','entry');
+  const line=mkEl('div','inl','<span class="prm">\u203a</span><span class="src">'+hl(text)+'</span>');
+  line.title='Click to reuse this input';line.onclick=()=>{setInput(text);};
+  e.appendChild(line);
+  res.items.forEach(it=>e.appendChild(renderItem(it)));
+  res.ui.forEach(u=>{if(u.cmd==='help')e.appendChild(mkEl('div','',helpHtml()));});
+  logEl.appendChild(e);logEl.scrollTop=logEl.scrollHeight;
+  sessionText.push('> '+text);res.items.forEach(it=>sessionText.push(itemText(it)));
+}
+function banner(){
+  const b=mkEl('div','banner');
+  b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4k7</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
+  const ex=mkEl('div','ex');
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us => M','255 => hex','twos(-5, 8)','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
+    const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
+  b.appendChild(ex);
+  b.appendChild(mkEl('p','','Type <b>help</b> for the full guide. Open <b style="color:var(--coral)">⚛ Constants</b> for Boltzmann, Planck, q, c, &hellip;'));
+  logEl.appendChild(b);
+}
+
+/* ---- input handling ---- */
+function setInput(s){inp.value=s;inp.focus();inp.setSelectionRange(s.length,s.length);updateHint();updateGhost();}
+/* function/constant/variable buttons insert into the console prompt, or into the equations box on the Solver tab */
+function tgt(){if(curTab==='solver')return $('eqs');if(curTab==='conv')showTab('console');return inp;}
+function insertAtCaret(text,caretBack){
+  const f=tgt(),s=f.selectionStart,e=f.selectionEnd,v=f.value;
+  f.value=v.slice(0,s)+text+v.slice(e);
+  const pos=s+text.length-(caretBack||0);f.focus();f.setSelectionRange(pos,pos);
+  if(f===inp){updateHint();updateGhost();}
+}
+function insertFn(name,shift){
+  const f=tgt(),s=f.selectionStart,e=f.selectionEnd,v=f.value;
+  if(shift&&f===inp&&v.trim()){f.value=name+'('+v+')';const p=f.value.length;f.focus();f.setSelectionRange(p,p);}
+  else if(s!==e){f.value=v.slice(0,s)+name+'('+v.slice(s,e)+')'+v.slice(e);const p=s+name.length+2+(e-s);f.focus();f.setSelectionRange(p,p);}
+  else{insertAtCaret(name+'(');}
+  if(f===inp){updateHint();updateGhost();}
+}
+function runInput(){
+  const text=inp.value;if(!text.trim())return;
+  const res=execLine(text);
+  if(hist[hist.length-1]!==text.trim())hist.push(text.trim());
+  histPos=hist.length;draft='';inp.value='';
+  const isClear=res.ui.some(u=>u.cmd==='clear');
+  if(!isClear)addEntry(res.text,res);
+  res.ui.forEach(u=>{
+    if(u.cmd==='clear'){logEl.innerHTML='';sessionText.length=0;}
+    if(u.cmd==='consts')toggleConsts(true);
+    if(u.cmd==='sync')syncBar();
+  });
+  refreshVars();save();updateHint();updateGhost();
+}
+function wordBeforeCaret(){const m=/[A-Za-z_][A-Za-z0-9_]*$/.exec(inp.value.slice(0,inp.selectionStart));return m?m[0]:'';}
+function candidates(w){
+  if(!w)return[];
+  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','help','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall']);
+  return [...all].filter(n=>n.startsWith(w)&&n!==w||n===w).sort((a,b)=>a.length-b.length||a.localeCompare(b));
+}
+function complete(){
+  const w=wordBeforeCaret();if(!w)return;
+  const c=candidates(w);if(!c.length)return;
+  let common=c[0];for(const n of c){while(!n.startsWith(common))common=common.slice(0,-1);}
+  const pos=inp.selectionStart;
+  if(c.length===1||common.length>w.length){
+    const add=common;let tail='';
+    if(c.length===1&&(has(FUNCS,add)||STATE.funcs.has(add)))tail='(';
+    inp.value=inp.value.slice(0,pos-w.length)+add+tail+inp.value.slice(pos);
+    const np=pos-w.length+add.length+tail.length;inp.setSelectionRange(np,np);
+  }
+  updateHint();updateGhost();
+}
+function updateHint(){
+  const w=wordBeforeCaret();
+  if(!w){hintEl.innerHTML='';return;}
+  if(has(FUNCS,w)){const f=FUNCS[w];hintEl.innerHTML='<b>'+esc(f.sig)+'</b> &mdash; '+esc(f.desc)+' &nbsp;<i>e.g. '+esc(exOf(f))+'</i>';return;}
+  if(STATE.funcs.has(w)){const f=STATE.funcs.get(w);hintEl.innerHTML='<b>'+esc(w)+'('+esc(f.params.join(', '))+')</b> &mdash; your function';return;}
+  const c=candidates(w);
+  hintEl.innerHTML=c.length?'Tab: '+c.slice(0,10).map(n=>has(FUNCS,n)?'<b>'+esc(n)+'</b>':esc(n)).join('  ')+(c.length>10?' \u2026':''):'';
+}
+function updateGhost(){
+  const v=peek(inp.value);
+  if(v===null){ghost.textContent='';return;}
+  const f=fmtValue(v);
+  if(f.text===inp.value.trim()){ghost.textContent='';return;}
+  ghost.textContent='= '+f.text;
+}
+inp.addEventListener('input',()=>{updateHint();updateGhost();});
+inp.addEventListener('click',updateHint);
+inp.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();runInput();}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(histPos===hist.length)draft=inp.value;if(histPos>0){histPos--;setInput(hist[histPos]);}}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(histPos<hist.length){histPos++;setInput(histPos===hist.length?draft:hist[histPos]);}}
+  else if(e.key==='Tab'){e.preventDefault();complete();}
+  else if(e.key==='Escape'){if($('consts').classList.contains('open'))toggleConsts(false);else{inp.value='';updateHint();updateGhost();}}
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='l'){e.preventDefault();logEl.innerHTML='';sessionText.length=0;}
+});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openFuncs(true);$('fsearch').focus();$('fsearch').select();}
+  if(e.key==='Escape'&&document.activeElement!==inp){toggleConsts(false);}
+});
+
+/* ---- variables panel ---- */
+function refreshVars(){
+  const box=$('varlist');box.innerHTML='';
+  const addRow=(nm,html,ins,cls,del)=>{
+    const r=mkEl('div','vrow');
+    const b=mkEl('button','vname '+(cls||''),esc(nm));b.title='Insert into prompt';b.onclick=()=>insertAtCaret(ins);
+    const v=mkEl('span','vval',html);v.onclick=()=>{if(v.dataset.copy)copyText(v.dataset.copy);};
+    r.appendChild(b);r.appendChild(v);
+    if(del){const d=mkEl('button','vdel','\u2715');d.title='Delete';d.onclick=()=>{execLine('del '+nm);refreshVars();save();};r.appendChild(d);}
+    box.appendChild(r);return v;
+  };
+  if(STATE.ans!==undefined){const f=fmtValue(STATE.ans);const v=addRow('ans',f.html,'ans','an',false);v.dataset.copy=f.text;}
+  [...STATE.vars.keys()].sort().forEach(k=>{const f=fmtValue(STATE.vars.get(k));const v=addRow(k,f.html,k,'',true);v.dataset.copy=f.text;});
+  [...STATE.funcs.keys()].sort().forEach(k=>{const f=STATE.funcs.get(k);addRow(k+'('+f.params.join(',')+')','','\u200b'.slice(1)+k+'(','fn',true);});
+  if(!STATE.vars.size&&!STATE.funcs.size&&STATE.ans===undefined)box.appendChild(mkEl('div','empty','No variables yet.<br>Try <b>x = 1</b><br>or <b>f_1(x) = x^2 + 1</b>'));
+}
+
+/* ---- function panel ---- */
+function buildFuncs(){
+  const g=$('fgroups');g.innerHTML='';
+  const info=$('finfo');
+  const showInfo=(sig,desc,ex,rgb)=>{
+    info.innerHTML='<div class="sg" style="color:rgb('+rgb+')">'+esc(sig)+'</div><div>'+esc(desc)+'</div>'+(ex?'<div class="tr">Try: <button type="button">'+esc(ex)+'</button></div>':'');
+    const bt=info.querySelector('button');if(bt)bt.onclick=()=>setInput(ex);
+  };
+  const cats={};Object.keys(FUNCS).forEach(k=>{(cats[FUNCS[k].cat]=cats[FUNCS[k].cat]||[]).push(FUNCS[k]);});
+  const order=[...CAT_ORDER,'Symbols'];
+  order.forEach(cat=>{
+    const items=cat==='Symbols'?SYMS:cats[cat];if(!items)return;
+    const rgb=CAT_RGB[cat];
+    const d=mkEl('details','grp');d.open=true;d.style.setProperty('--cr',rgb);
+    const sm=mkEl('summary','',esc(cat==='Symbols'?'Symbols / Operators':cat)+'<span class="cnt">'+items.length+'</span>');d.appendChild(sm);
+    const w=mkEl('div','fwrap');
+    items.forEach(f=>{
+      const name=cat==='Symbols'?f.ins:f.name;
+      const b=mkEl('button','fb',esc(name));b.type='button';b.style.setProperty('--cr',rgb);
+      b.dataset.search=(cat==='Symbols'?f.ins+' '+f.d:f.name+' '+f.desc+' '+f.cat).toLowerCase();
+      b.title=cat==='Symbols'?f.d:f.sig+' \u2014 '+f.desc;
+      const show=()=>cat==='Symbols'?showInfo(f.ins,f.d,'',rgb):showInfo(f.sig,f.desc,exOf(f),rgb);
+      b.onmouseenter=show;b.onfocus=show;
+      b.onclick=ev=>{show();if(cat==='Symbols')insertAtCaret(f.ins);else insertFn(f.name,ev.shiftKey);if(window.innerWidth<=900)openFuncs(false);};
+      w.appendChild(b);
+    });
+    d.appendChild(w);g.appendChild(d);
+  });
+}
+$('fsearch').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#fgroups details.grp').forEach(d=>{
+    let any=false;
+    d.querySelectorAll('.fb').forEach(b=>{const ok=!q||b.dataset.search.includes(q);b.style.display=ok?'':'none';if(ok)any=true;});
+    d.style.display=any?'':'none';if(q)d.open=true;
+  });
+});
+
+/* ---- constants drawer ---- */
+function buildConsts(){
+  const box=$('clist');box.innerHTML='';
+  const groups={};Object.keys(CONSTS).forEach(k=>{(groups[CONSTS[k].grp]=groups[CONSTS[k].grp]||[]).push(k);});
+  Object.keys(groups).forEach(gname=>{
+    const gh=mkEl('div','cg',esc(gname));gh.dataset.g='1';box.appendChild(gh);
+    groups[gname].forEach(k=>{
+      const c=CONSTS[k];
+      const row=mkEl('div','crow');row.dataset.search=(k+' '+c.label+' '+c.unit+' '+gname).toLowerCase();row.dataset.group=gname;
+      const nb=mkEl('button','cn',esc(k));nb.title='Insert '+k;nb.onclick=()=>{insertAtCaret(k);};
+      const lab=mkEl('div','cl',esc(c.label)+(c.unit?'<small>'+esc(c.unit)+'</small>':''));
+      const vv=isC(c.v)?'0 + 1j':sciParts(c.v,10).m;
+      const val=mkEl('div','cv',esc(vv));
+      if(!isC(c.v)){const bt=mkEl('button','', 'insert value');bt.onclick=()=>insertAtCaret(String(c.v));val.appendChild(bt);}
+      row.appendChild(nb);row.appendChild(lab);row.appendChild(val);box.appendChild(row);
+    });
+  });
+}
+$('csearch').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();const seen={};
+  document.querySelectorAll('#clist .crow').forEach(r=>{const ok=!q||r.dataset.search.includes(q);r.style.display=ok?'':'none';if(ok)seen[r.dataset.group]=true;});
+  document.querySelectorAll('#clist .cg').forEach(h=>{h.style.display=(!q||seen[h.textContent])?'':'none';});
+});
+function toggleConsts(force){
+  const d=$('consts'),on=force===undefined?!d.classList.contains('open'):force;
+  d.classList.toggle('open',on);$('btnConsts').classList.toggle('on',on);
+  if(on){setTimeout(()=>$('csearch').focus(),120);}else{inp.focus();}
+}
+function openFuncs(on){$('funcs').classList.toggle('open',on);if(on)$('vars').classList.remove('open');}
+function openVars(on){$('vars').classList.toggle('open',on);if(on)$('funcs').classList.remove('open');}
+
+/* ---- top bar ---- */
+function syncBar(){
+  document.querySelectorAll('#segAngle button').forEach(b=>b.classList.toggle('on',(b.dataset.a==='deg')===CFG.deg));
+  document.querySelectorAll('#segMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===CFG.mode));
+  $('dVal').textContent=CFG.digits;
+  refreshVars();save();updateGhost();
+}
+document.querySelectorAll('#segAngle button').forEach(b=>b.onclick=()=>{CFG.deg=b.dataset.a==='deg';syncBar();inp.focus();});
+document.querySelectorAll('#segMode button').forEach(b=>b.onclick=()=>{CFG.mode=b.dataset.m;syncBar();inp.focus();});
+$('dMinus').onclick=()=>{CFG.digits=Math.max(3,CFG.digits-1);syncBar();inp.focus();};
+$('dPlus').onclick=()=>{CFG.digits=Math.min(15,CFG.digits+1);syncBar();inp.focus();};
+$('btnConsts').onclick=()=>toggleConsts();
+$('cclose').onclick=()=>toggleConsts(false);
+$('btnHelp').onclick=()=>{inp.value='help';runInput();};
+$('btnClear').onclick=()=>{logEl.innerHTML='';sessionText.length=0;inp.focus();};
+$('btnVars').onclick=()=>openVars(!$('vars').classList.contains('open'));
+$('btnFuncs').onclick=()=>openFuncs(!$('funcs').classList.contains('open'));
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{$(b.dataset.close).classList.remove('open');});
+$('btnExport').onclick=()=>{
+  try{
+    const blob=new Blob([sessionText.join('\n')+'\n'],{type:'text/plain'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='engcalc_session.txt';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  }catch(e){toast('Export not available');}
+};
+
+/* ---- chips ---- */
+['ans','j','pi','(',')','^','!','@',',',';','=','=> M','=> k','=> hex'].forEach(s=>{
+  const c=mkEl('button','chip',esc(s));c.type='button';c.onclick=()=>insertAtCaret(s);$('chips').appendChild(c);
+});
+
+/* ---- tabs ---- */
+let curTab='console';
+function showTab(name){
+  curTab=name;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+name));
+  if(name==='console')inp.focus();else if(name==='solver')$('eqs').focus();else{convRender();$('c10').focus();}
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+/* ---- solver tab ---- */
+const EXAMPLES={
+  '3':'2x + y - z = 8\n-3x - y + 2z = -11\n-2x + y + 2z = -3',
+  '4':'x + y + z + w = 10\n2x - y + z - w = -1\nx + 2y - z + w = 6\nx - y + 2z + 3w = 17',
+  'mesh':'(1k + 2k)*i1 - 2k*i2 = 5\n-2k*i1 + (2k + 3k)*i2 = 0'
+};
+function doSolve(){
+  const out=$('solout'),unkTxt=$('unk').value.trim();
+  const unk=unkTxt?unkTxt.split(/[\s,]+/).filter(Boolean):null;
+  try{
+    const store=$('storeSol').checked;
+    const r=solveEquations($('eqs').value.split(/[;\n]/),unk,store);
+    out.innerHTML='';
+    r.warns.forEach(w=>out.appendChild(mkEl('div','warn','⚠ '+esc(w))));
+    const tbl=mkEl('div','soltbl');
+    r.rows.forEach(row=>{
+      const f=fmtValue(row.v);
+      const line=mkEl('div','solrow','<span class="vn">'+esc(row.name)+'</span><span class="eq">=</span>');
+      const val=mkEl('span','res',f.html);val.title='Click to copy';val.onclick=()=>copyText(f.text);line.appendChild(val);
+      if(f.alt)line.appendChild(mkEl('span','alt',esc(f.alt)));
+      tbl.appendChild(line);
+    });
+    out.appendChild(tbl);
+    out.appendChild(mkEl('div','alt',store?'Stored as variables — use them in the console, e.g. x + y.':'Not stored (tick "store as variables" to keep them).'));
+    const txt=r.A.map((row,i)=>row.map(v=>fmtValue(v).text.padStart(10)).join(' ')+'   |  '+fmtValue(r.b[i]).text.padStart(10)).join('\n');
+    const det=mkEl('details','');
+    det.innerHTML='<summary class="alt" style="cursor:pointer;padding:6px 0">coefficient matrix [A | b] &nbsp;(unknowns: '+esc(r.names.join(', '))+')</summary><pre class="mx">'+esc(txt)+'</pre>';
+    out.appendChild(det);
+    refreshVars();save();
+  }catch(e){out.innerHTML='<div class="out err" style="padding-left:0">✖ '+esc(e.message)+'</div>';}
+}
+function initSolver(){
+  $('btnSolve').onclick=doSolve;
+  document.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{$('eqs').value=EXAMPLES[b.dataset.ex];$('unk').value='';doSolve();});
+  $('btnEqClear').onclick=()=>{$('eqs').value='';$('solout').innerHTML='';$('eqs').focus();};
+  $('eqs').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doSolve();}});
+}
+
+/* ---- base converter tab ---- */
+let cval=255n;
+function toBaseStr(v,base,w){
+  let u=v;if(w&&u<0n)u=u+(1n<<BigInt(w));
+  const neg=u<0n;let s=(neg?-u:u).toString(base).toUpperCase();
+  if(w&&!neg){if(base===2)s=s.padStart(w,'0');else if(base===16)s=s.padStart(Math.ceil(w/4),'0');}
+  if(base===2||base===16)s=s.replace(/\B(?=([0-9A-Z]{4})+$)/g,'_');
+  return (neg?'-':'')+s;
+}
+function convRender(skip){
+  const w=Number($('cw').value),bn=Number($('cbn').value);
+  const set=(id,val)=>{const el=$(id);el.classList.remove('bad');if(id!==skip)el.value=val;};
+  set('c10',cval.toString());set('c16',toBaseStr(cval,16,w));set('c2',toBaseStr(cval,2,w));set('c8',toBaseStr(cval,8,w));set('cn',toBaseStr(cval,bn,w));
+  let u,bw,info;
+  if(w){
+    const full=1n<<BigInt(w);u=((cval%full)+full)%full;bw=w;
+    const sg=u>=(full>>1n)?u-full:u;
+    info='<b>'+w+'-bit</b> &nbsp; unsigned <span class="n">'+u+'</span> &nbsp; signed <span class="n">'+sg+'</span> &nbsp; hex <span class="u">0x'+u.toString(16).toUpperCase()+'</span>';
+    if(cval>=full||cval<-(full>>1n))info+=' &nbsp; <span class="err">⚠ does not fit in '+w+' bits</span>';
+  }else{
+    u=cval<0n?-cval:cval;const len=u===0n?1:u.toString(2).length;bw=Math.min(128,Math.max(8,Math.ceil(len/8)*8));
+    info='bit length <b>'+(u===0n?0:len)+'</b>'+(cval<0n?' &nbsp; (negative: bits show the magnitude)':'');
+  }
+  $('cinfo').innerHTML=info;
+  const bg=$('bitgrid');bg.innerHTML='';
+  for(let i=bw-1;i>=0;i--){
+    const on=((u>>BigInt(i))&1n)===1n;
+    const b=mkEl('button','bit'+(on?' on':''),on?'1':'0');b.type='button';b.title='bit '+i;
+    b.onclick=()=>{const nu=u^(1n<<BigInt(i));cval=(!w&&cval<0n)?-nu:nu;convRender();};
+    const cell=mkEl('span','bcell');cell.appendChild(b);cell.appendChild(mkEl('small','',i%4===0?String(i):''));
+    bg.appendChild(cell);
+    if(i%4===0&&i!==0)bg.appendChild(mkEl('span','bgap'));
+  }
+}
+function initConv(){
+  const sel=$('cbn');
+  for(let b=2;b<=36;b++){const o=document.createElement('option');o.value=b;o.textContent=b;if(b===3)o.selected=true;sel.appendChild(o);}
+  [['c10',()=>10],['c16',()=>16],['c2',()=>2],['c8',()=>8],['cn',()=>Number(sel.value)]].forEach(([id,bf])=>{
+    $(id).addEventListener('input',()=>{
+      try{cval=parseBig($(id).value,bf());convRender(id);}catch(e){$(id).classList.add('bad');}
+    });
+  });
+  $('cw').onchange=()=>convRender();sel.onchange=()=>convRender();
+  document.querySelectorAll('.cp').forEach(b=>b.onclick=()=>copyText($(b.dataset.for).value));
+  convRender();
+}
+
+/* ---- init ---- */
+load();buildFuncs();buildConsts();refreshVars();syncBar();banner();initSolver();initConv();
+histPos=hist.length;inp.focus();
+window.__engcalc={runInput,execLine,showTab,doSolve,convRender};
+})();
+}
+</script>
+</body>
+</html>
