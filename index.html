@@ -618,7 +618,7 @@ function angOut(r,unit){
   if(!Number.isFinite(val)) return val;
   const fx=x=>numParts(x,'fix',CFG.digits).m;
   const other=deg?fx(r)+' rad':fx(r*180/Math.PI)+'°';
-  return new Disp(fx(val)+(deg?'°':' rad'),val,'= '+other);
+  const d=new Disp(fx(val)+(deg?'°':' rad'),val,'= '+other);d.unit=deg?'deg':'rad';return d;
 }
 const angFn=f=>x=>{const r=f(x);return isC(r)?fromRad(r):angOut(r,'cur');};
 def('Trig','asin','asin(x)','Inverse sine. Result in current angle unit','asin(0.5)',1,1,angFn(casin));
@@ -663,6 +663,7 @@ def('Rounding','frac','frac(x)','Fractional part','frac(2.75)',1,1,x=>{x=real(x,
 /* Complex */
 def('Complex','mag','mag(z)','Magnitude |z|','mag(3+4j)',1,1,cabs);
 def('Complex','phase','phase(z)','Phase angle of z in the current RAD/DEG unit (follows the toggle)','phase(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
+def('Complex','ph','ph(z)','Short for phase(z): angle of z in the current RAD/DEG unit','ph(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
 def('Complex','phase_deg','phase_deg(z)','Phase angle in DEGREES, whatever the toggle says','phase_deg(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'deg'));
 def('Complex','phase_rad','phase_rad(z)','Phase angle in RADIANS, whatever the toggle says','phase_rad(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'rad'));
 def('Complex','re','re(z)','Real part','re(3+4j)',1,1,z=>Re(z));
@@ -920,7 +921,7 @@ const ASSIGN=/^([A-Za-z_][A-Za-z0-9_]*)\s*([+\-*\/^]?)=(?!=)\s*([\s\S]+)$/;
 
 /* "=> directive" trailing display override: show the result in a chosen suffix / mode / base
    without changing what's stored. The stored value and ans remain the raw number. */
-const FMTDIR=new Set(['a','f','p','n','u','µ','μ','m','k','M','G','T','P','meg','eng','sci','fix','hex','bin','oct','dec']);
+const FMTDIR=new Set(['a','f','p','n','u','µ','μ','m','k','M','G','T','P','meg','eng','sci','fix','hex','bin','oct','dec','deg','rad']);
 function stripFormat(s){
   /* "to" / "in" are typed-word alternatives to "=>" (e.g. "5MHz/60us to M"); they only count when a known directive follows */
   let m=/^([\s\S]+?)\s*=>\s*([A-Za-z_µμ][A-Za-z0-9_]*)\s*$/.exec(s),word=false;
@@ -928,11 +929,18 @@ function stripFormat(s){
   if(!m)return [s,null];
   const body=m[1].trim(),fmt=m[2];
   if(!body||(word&&!FMTDIR.has(fmt)))return [s,null];
-  if(!FMTDIR.has(fmt)) throw new CalcError(`'${fmt}' isn't a known format directive (use: expr to directive). Try one of:  a f p n u m k M G T P meg | eng sci fix | hex bin oct dec`);
+  if(!FMTDIR.has(fmt)) throw new CalcError(`'${fmt}' isn't a known format directive (use: expr to directive). Try one of:  a f p n u m k M G T P meg | eng sci fix | hex bin oct dec | deg rad`);
   return [body,fmt];
 }
 function applyFormat(rawIn,fmt){
   const raw=U(rawIn);
+  if(fmt==='deg'||fmt==='rad'){
+    /* the number is read in its own angle unit (phase_deg etc.) or else the current RAD/DEG switch, then shown in the one asked for */
+    const x=real(raw,'to '+fmt),src=rawIn.unit||(CFG.deg?'deg':'rad');
+    const v=src===fmt?x:(fmt==='deg'?x*180/Math.PI:x*Math.PI/180);
+    const t=numParts(v,'fix',CFG.digits).m;
+    return new Disp(fmt==='deg'?t+'°':t+' rad',raw,'');
+  }
   if(fmt==='hex')return toBase(real(raw,'to hex'),16,'0x');
   if(fmt==='bin')return toBase(real(raw,'to bin'),2,'0b');
   if(fmt==='oct')return toBase(real(raw,'to oct'),8,'0o');
@@ -1343,11 +1351,12 @@ function helpHtml(){
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> means 2*a1 (while <code>a1</code> exists; without it <code>2a1</code> is resistor notation = 2.1 atto). A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
 <h3>COMPLEX</h3>
-<table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> (follows RAD/DEG) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@30</code> or <code>polar(5,30)</code> (angle follows RAD/DEG)</td></tr>
+<table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> or <code>ph()</code> (follows RAD/DEG) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@30</code> or <code>polar(5,30)</code> (angle follows RAD/DEG)</td></tr>
 <tr><td></td><td><code>sqrt(-4)</code>, <code>ln(-1)</code>, <code>asin(2)</code> return complex results automatically</td></tr></table>
 <h3>DISPLAY ANY RESULT IN A CHOSEN UNIT: <code>expr to directive</code> &nbsp;(<code>in</code> and <code>=&gt;</code> work too)</h3>
 <table><tr><td>suffixes</td><td><code>5MHz / 60us to M</code> shows the result forced into mega (<code>83.333e-3 M</code>). The stored value and <code>ans</code> stay unchanged. Any suffix letter works: <code>a f p n u m k M G T P meg</code>.</td></tr>
 <tr><td>display mode</td><td><code>... to eng</code> &nbsp; <code>... to sci</code> &nbsp; <code>... to fix</code> &mdash; override just for this result</td></tr>
+<tr><td>angles</td><td><code>pi in deg</code> &rarr; <code>180°</code> &nbsp; <code>90 in rad</code> (with DEG on) &rarr; <code>1.5708 rad</code>. The number is read in the current RAD/DEG unit and shown in the one you name.</td></tr>
 <tr><td>bases</td><td><code>255 to hex</code> &nbsp; <code>0xFF in bin</code> &nbsp; <code>0b1010 to dec</code> &nbsp; <code>... to oct</code></td></tr>
 <tr><td>with assignment</td><td><code>x = 10M to k</code> stores x = 1e7, displays <code>10000 k</code></td></tr>
 <tr><td>on complex</td><td><code>(1+2j)*1k to k</code> rescales both real and imaginary parts</td></tr></table>
