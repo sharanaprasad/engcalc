@@ -9,7 +9,7 @@ or a phone. No install, no network required.
 
 ## Features
 
-- **Engineering notation**, case-sensitive: `10p`, `2.2k`, `5MHz`, `4k7`
+- **Engineering notation**, case-sensitive: `10p`, `2.2k`, `5MHz`
   (`m` is milli, `M` is mega)
 - **Complex numbers**: `3+4j`, `(1+2j)*(3-4j)`, `mag()`, `phase()`,
   `phase_deg()`, `phase_rad()`, polar form `5@30`

@@ -355,17 +355,6 @@ function tokenize(src){
         if(i<n&&ID_CHAR.test(src[i])) throw E('Unexpected text after number literal',i);
         push('num',Number(BigInt('0'+kind+digs)),start);continue;
       }
-      /* resistor style 4k7 -> 4.7k */
-      m=/^(\d+)(meg|[afpnu\u00b5\u03bcmkMGTP])(\d+)/.exec(rest);
-      /* 2a1 / 4k1 / 3m2: if a variable with that exact name exists it wins (2*a1); otherwise it is resistor notation */
-      if(m&&!isDeclared(m[2]+m[3])){
-        const exp=m[2]==='meg'?6:SUFEXP[m[2]];
-        let val=scaleNum(m[1]+'.'+m[3],exp);
-        i+=m[0].length;
-        const um=/^[A-Za-z\u03a9\u2126]+/.exec(src.slice(i));
-        if(um&&UNITS.has(um[0])) i+=um[0].length;
-        push('num',val,start);continue;
-      }
       m=/^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/.exec(rest);
       const numStr=m[0];i+=numStr.length;
       let j=i;while(j<n&&ID_CHAR.test(src[j]))j++;
@@ -979,6 +968,7 @@ function execStatement(sIn,base){
   /* strip trailing "=> directive"; apply to the final value only (store raw) */
   const [s,fmt]=stripFormat(sIn);
   let m;
+  if((m=/^(\d[A-Za-z0-9_]*)\s*(?:\([^)]*\))?\s*[+\-*\/^]?=(?!=)/.exec(s))) throw E("Names can't start with a digit: '"+m[1]+"'",0);
   if((m=FUNDEF.exec(s))){
     const name=m[1];POSOFF=base;
     const w=validateName(name,'func',0);
@@ -1340,7 +1330,7 @@ function helpHtml(){
   return `<div class="helpbox">
 <h3>NUMBERS &amp; ENGINEERING SUFFIXES (case-sensitive, glued to the number)</h3>
 <table><tr><td>a f p n u/µ</td><td>atto femto pico nano micro &nbsp;<code>2.2u</code> <code>10p</code></td></tr>
-<tr><td>m &nbsp; k</td><td>milli, kilo &nbsp;<code>5m</code> = 0.005 &nbsp; <code>4k7</code> = 4700 (resistor style)</td></tr>
+<tr><td>m &nbsp; k</td><td>milli, kilo &nbsp;<code>5m</code> = 0.005 &nbsp; <code>4.7k</code> = 4700</td></tr>
 <tr><td>M &nbsp; meg</td><td>mega &nbsp;<code>5M</code> = <code>5meg</code> = 5e6 &nbsp;(<b>m</b> is milli, <b>M</b> is mega)</td></tr>
 <tr><td>G T P</td><td>giga tera peta &nbsp;<code>1.2G / 3m</code></td></tr>
 <tr><td>units</td><td>trailing units are ignored: <code>10pF</code> <code>5MHz</code> <code>2.2kΩ</code> <code>3dB</code> <code>1mm</code></td></tr></table>
@@ -1348,7 +1338,7 @@ function helpHtml(){
 <table><tr><td><code>x = 1</code></td><td>define. <code>x=1; y=2; x+y</code> runs left to right, prints the last result. <code>x += 1</code> works.</td></tr>
 <tr><td><code>2x</code> <code>3(4+1)</code></td><td>implicit multiplication. <code>2pi</code> = 2·π</td></tr>
 <tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code></td></tr>
-<tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> means 2*a1 (while <code>a1</code> exists; without it <code>2a1</code> is resistor notation = 2.1 atto). A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
+<tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
 <h3>COMPLEX</h3>
 <table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> or <code>ph()</code> (follows RAD/DEG) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@30</code> or <code>polar(5,30)</code> (angle follows RAD/DEG)</td></tr>
@@ -1383,7 +1373,7 @@ function addEntry(text,res){
 }
 function banner(){
   const b=mkEl('div','banner');
-  b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4k7</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
+  b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
   ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
