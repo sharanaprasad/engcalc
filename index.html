@@ -240,7 +240,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <button type="button" data-k="tab" title="Autocomplete (Tab)">Tab</button>
         <button type="button" data-k="(">(</button><button type="button" data-k=")">)</button>
         <button type="button" data-k="^">^</button><button type="button" data-k=",">,</button>
-        <button type="button" data-k="=">=</button><button type="button" data-k=";">;</button>
+        <button type="button" data-k="=">=</button><button type="button" data-k=";">;</button><button type="button" data-k=" to ">to</button>
         <span class="kg"></span>
         <button type="button" data-k="erase" title="Clear the input line (Esc)">&#9003;</button>
       </div>
@@ -922,19 +922,21 @@ const ASSIGN=/^([A-Za-z_][A-Za-z0-9_]*)\s*([+\-*\/^]?)=(?!=)\s*([\s\S]+)$/;
    without changing what's stored. The stored value and ans remain the raw number. */
 const FMTDIR=new Set(['a','f','p','n','u','µ','μ','m','k','M','G','T','P','meg','eng','sci','fix','hex','bin','oct','dec']);
 function stripFormat(s){
-  const m=/^([\s\S]+?)\s*=>\s*([A-Za-z_µμ][A-Za-z0-9_]*)\s*$/.exec(s);
+  /* "to" / "in" are typed-word alternatives to "=>" (e.g. "5MHz/60us to M"); they only count when a known directive follows */
+  let m=/^([\s\S]+?)\s*=>\s*([A-Za-z_µμ][A-Za-z0-9_]*)\s*$/.exec(s),word=false;
+  if(!m){m=/^([\s\S]*?\S)\s+(?:to|in)\s+([A-Za-z_µμ][A-Za-z0-9_]*)\s*$/.exec(s);word=true;}
   if(!m)return [s,null];
   const body=m[1].trim(),fmt=m[2];
-  if(!body)return [s,null];
-  if(!FMTDIR.has(fmt)) throw new CalcError(`'=> ${fmt}' isn't a known format directive. Try one of:  a f p n u m k M G T P meg | eng sci fix | hex bin oct dec`);
+  if(!body||(word&&!FMTDIR.has(fmt)))return [s,null];
+  if(!FMTDIR.has(fmt)) throw new CalcError(`'${fmt}' isn't a known format directive (use: expr to directive). Try one of:  a f p n u m k M G T P meg | eng sci fix | hex bin oct dec`);
   return [body,fmt];
 }
 function applyFormat(rawIn,fmt){
   const raw=U(rawIn);
-  if(fmt==='hex')return toBase(real(raw,'=> hex'),16,'0x');
-  if(fmt==='bin')return toBase(real(raw,'=> bin'),2,'0b');
-  if(fmt==='oct')return toBase(real(raw,'=> oct'),8,'0o');
-  if(fmt==='dec'){const x=real(raw,'=> dec');if(!Number.isInteger(x)||!Number.isFinite(x))throw new CalcError('=> dec needs an integer');return new Disp(BigInt(x).toString(),x,'');}
+  if(fmt==='hex')return toBase(real(raw,'to hex'),16,'0x');
+  if(fmt==='bin')return toBase(real(raw,'to bin'),2,'0b');
+  if(fmt==='oct')return toBase(real(raw,'to oct'),8,'0o');
+  if(fmt==='dec'){const x=real(raw,'to dec');if(!Number.isInteger(x)||!Number.isFinite(x))throw new CalcError('to dec needs an integer');return new Disp(BigInt(x).toString(),x,'');}
   if(fmt==='eng'||fmt==='sci'||fmt==='fix'){
     const saved=CFG.mode;CFG.mode=fmt;
     try{const r=fmtValue(raw);return new Disp(r.text,raw,r.alt);}
@@ -942,7 +944,7 @@ function applyFormat(rawIn,fmt){
   }
   const norm=(fmt==='µ'||fmt==='μ')?'u':fmt;
   const exp=norm==='meg'?6:SUFEXP[norm];
-  if(exp===undefined)throw new CalcError(`'=> ${fmt}' isn't a known format directive`);
+  if(exp===undefined)throw new CalcError(`'${fmt}' isn't a known format directive`);
   const sufCh=norm==='meg'?'M':(norm==='u'?'µ':norm);
   const scalePart=x=>{
     if(x===0)return '0';
@@ -1343,12 +1345,12 @@ function helpHtml(){
 <h3>COMPLEX</h3>
 <table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> (follows RAD/DEG) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@30</code> or <code>polar(5,30)</code> (angle follows RAD/DEG)</td></tr>
 <tr><td></td><td><code>sqrt(-4)</code>, <code>ln(-1)</code>, <code>asin(2)</code> return complex results automatically</td></tr></table>
-<h3>DISPLAY ANY RESULT IN A CHOSEN UNIT: <code>expr =&gt; directive</code></h3>
-<table><tr><td>suffixes</td><td><code>5MHz / 60us =&gt; M</code> shows the result forced into mega (<code>83.333e-3 M</code>). The stored value and <code>ans</code> stay unchanged. Any suffix letter works: <code>a f p n u m k M G T P meg</code>.</td></tr>
-<tr><td>display mode</td><td><code>...=&gt; eng</code> &nbsp; <code>...=&gt; sci</code> &nbsp; <code>...=&gt; fix</code> &mdash; override just for this result</td></tr>
-<tr><td>bases</td><td><code>255 =&gt; hex</code> &nbsp; <code>0xFF =&gt; bin</code> &nbsp; <code>0b1010 =&gt; dec</code> &nbsp; <code>...=&gt; oct</code></td></tr>
-<tr><td>with assignment</td><td><code>x = 10M =&gt; k</code> stores x = 1e7, displays <code>10000 k</code></td></tr>
-<tr><td>on complex</td><td><code>(1+2j)*1k =&gt; k</code> rescales both real and imaginary parts</td></tr></table>
+<h3>DISPLAY ANY RESULT IN A CHOSEN UNIT: <code>expr to directive</code> &nbsp;(<code>in</code> and <code>=&gt;</code> work too)</h3>
+<table><tr><td>suffixes</td><td><code>5MHz / 60us to M</code> shows the result forced into mega (<code>83.333e-3 M</code>). The stored value and <code>ans</code> stay unchanged. Any suffix letter works: <code>a f p n u m k M G T P meg</code>.</td></tr>
+<tr><td>display mode</td><td><code>... to eng</code> &nbsp; <code>... to sci</code> &nbsp; <code>... to fix</code> &mdash; override just for this result</td></tr>
+<tr><td>bases</td><td><code>255 to hex</code> &nbsp; <code>0xFF in bin</code> &nbsp; <code>0b1010 to dec</code> &nbsp; <code>... to oct</code></td></tr>
+<tr><td>with assignment</td><td><code>x = 10M to k</code> stores x = 1e7, displays <code>10000 k</code></td></tr>
+<tr><td>on complex</td><td><code>(1+2j)*1k to k</code> rescales both real and imaginary parts</td></tr></table>
 <h3>SOLVE EQUATIONS (3, 4 or more unknowns, linear)</h3>
 <table><tr><td><code>solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3</code></td><td>unknowns are auto-detected and stored as variables (x=2, y=3, z=-1). Pin them down with <code>solve x,y: ...</code>. Engineering notation and <code>j</code> work in the coefficients. The <b>Solver</b> tab has a bigger editor and the coefficient matrix.</td></tr></table>
 <h3>BASES</h3>
@@ -1374,7 +1376,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4k7</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us => M','255 => hex','twos(-5, 8)','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   b.appendChild(mkEl('p','','Type <b>help</b> for the full guide. Open <b style="color:var(--coral)">⚛ Constants</b> for Boltzmann, Planck, q, c, &hellip;'));
@@ -1586,7 +1588,7 @@ $('btnExport').onclick=()=>{
 };
 
 /* ---- chips ---- */
-['ans','j','pi','(',')','^','!','@',',',';','=','=> M','=> k','=> hex'].forEach(s=>{
+['ans','j','pi','(',')','^','!','@',',',';','=',' to M',' to k',' to hex'].forEach(s=>{
   const c=mkEl('button','chip',esc(s));c.type='button';c.onclick=()=>insertAtCaret(s);$('chips').appendChild(c);
 });
 

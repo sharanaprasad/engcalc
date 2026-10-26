@@ -22,8 +22,8 @@ or a phone. No install, no network required.
   coefficient, VSWR, wavelength, skin depth, Xc/Xl/Zc/Zl, par/ser), ADC/SerDes
   (`enob`, `ktc`, `Vt`, `rj2pp`, `qfactor`, `erfc`, `qfunc`)
 - **33 physical constants** in a searchable drawer
-- **`expr => directive`** forces the display into any suffix / mode / base
-  (`5MHz/60us => M`, `255 => hex`)
+- **`expr to directive`** (also `in` or `=>`) forces the display into any suffix / mode / base
+  (`5MHz/60us to M`, `255 to hex`)
 - **Dark colorful UI**, offline, keyboard-first (↑↓ history, Tab complete,
   Ctrl+K search, Ctrl+L clear)
 
