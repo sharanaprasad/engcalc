@@ -31,7 +31,7 @@ const chips=[...d.querySelectorAll('#chips button')].map(b=>b.textContent.trim()
 ok(chips.includes('to M'),'chip "to M" exists: '+chips.join(','));
 
 // Help mentions =>
-d.getElementById('btnHelp').click();
+{const i0=d.getElementById('inp');i0.value='help';i0.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));}
 const helpText=log.textContent;
 ok(helpText.includes('=>'),'help mentions =>');
 ok(helpText.includes('DISPLAY ANY RESULT'),'help has new section');

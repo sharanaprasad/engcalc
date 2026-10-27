@@ -90,7 +90,7 @@ f('fsearch').value='';f('fsearch').dispatchEvent(new w.Event('input'));
 // 13. Help/clear buttons
 tabTo('console');
 log.innerHTML='';
-d.getElementById('btnHelp').click();
+{const i0=d.getElementById('inp');i0.value='help';i0.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));}
 console.log('t13: help button, log has help text:',log.textContent.includes('ENGINEERING SUFFIXES'));
 d.getElementById('btnClear').click();
 console.log('t13b: clear button, log empty:',log.children.length===0);

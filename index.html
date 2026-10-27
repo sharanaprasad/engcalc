@@ -124,6 +124,99 @@ button{font-family:inherit;cursor:pointer}
 .expbody{padding:10px 14px 14px}
 .expprev{margin:8px 0;border:1px solid var(--line);border-radius:10px;padding:8px;background:rgba(255,255,255,.04);overflow:auto;max-height:48vh;min-height:60px;text-align:center;color:var(--dim)}
 .expprev img{max-width:100%;height:auto;display:block;margin:0 auto}
+/* ---- the guide ---- */
+#guide{position:fixed;inset:0;z-index:70;overflow:auto;scroll-behavior:smooth;color:var(--txt);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.7;
+  background:radial-gradient(900px 520px at 8% -10%,rgba(124,58,237,.34),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(34,211,238,.20),transparent 55%),radial-gradient(900px 600px at 50% 125%,rgba(244,114,182,.18),transparent 60%),var(--bg)}
+#guide[hidden]{display:none}
+#guide code,#guide kbd{font-family:var(--mono)}
+#guide code{color:var(--cyan);background:rgba(34,211,238,.09);padding:1px 6px;border-radius:6px;font-size:.9em;white-space:nowrap}
+#guide kbd{font-size:12px;padding:1px 8px;border:1px solid var(--line);border-bottom-width:2px;border-radius:7px;background:rgba(255,255,255,.06);color:var(--txt)}
+.g-top{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:12px;padding:10px 20px;background:rgba(7,10,22,.84);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.g-top .gl{font-weight:800;font-size:17px;background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#fbbf24,#22d3ee);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 9s linear infinite}
+.g-top .gsub{color:var(--dim);font-size:13px}
+.g-prog{position:absolute;left:0;bottom:-1px;height:3px;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--mag))}
+.g-hero{max-width:980px;margin:0 auto;padding:64px 24px 28px;text-align:center}
+.g-eyebrow{display:inline-block;color:var(--cyan);border:1px solid rgba(34,211,238,.4);background:rgba(34,211,238,.08);border-radius:999px;padding:3px 14px;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.g-hero h1{font-size:clamp(36px,7vw,66px);line-height:1.08;margin:18px 0 14px;letter-spacing:-1px}
+.g-grad{background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.g-lead{max-width:720px;margin:0 auto 18px;color:#b9c4ea;font-size:18px}
+.g-lead b{color:var(--amber)}
+.g-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:18px 0}
+.g-chips span{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:999px;padding:5px 14px;font-size:13px;color:var(--txt)}
+.g-cta{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:22px 0 6px}
+.g-btn{font-family:inherit;font-size:15px;border-radius:12px;padding:10px 20px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--txt);cursor:pointer}
+.g-btn:hover{border-color:var(--cyan);box-shadow:0 0 18px rgba(34,211,238,.25)}
+.g-btn.pri{background:linear-gradient(135deg,rgba(34,211,238,.30),rgba(167,139,250,.30));border-color:var(--cyan);color:#fff;font-weight:700}
+.g-wrap{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;padding:10px 22px 90px}
+.g-toc{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:2px;max-height:calc(100vh - 100px);overflow:auto;padding:6px 0}
+.g-toch{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:0 0 8px 12px}
+.g-toc a{display:flex;gap:10px;align-items:baseline;color:var(--dim);text-decoration:none;font-size:14px;padding:6px 12px;border-radius:10px;border-left:2px solid transparent}
+.g-toc a:before{content:attr(data-n);font-family:var(--mono);font-size:11px;opacity:.7;min-width:1.4em}
+.g-toc a:hover{color:#fff;background:rgba(255,255,255,.05)}
+.g-toc a.on{color:#fff;background:rgba(34,211,238,.10);border-left-color:var(--cyan)}
+.g-main{min-width:0}
+.g-sec{position:relative;scroll-margin-top:78px;margin:0 0 30px;padding:26px 28px 22px 34px;border:1px solid var(--line);border-radius:20px;background:rgba(13,18,38,.62);backdrop-filter:blur(8px)}
+.g-sec:before{content:"";position:absolute;left:0;top:22px;bottom:22px;width:4px;border-radius:0 4px 4px 0;background:var(--ac,var(--cyan));box-shadow:0 0 16px var(--ac,var(--cyan))}
+.g-num{position:absolute;right:22px;top:14px;font-family:var(--mono);font-weight:800;font-size:54px;line-height:1;color:var(--ac,var(--cyan));opacity:.16}
+.g-sec h2{margin:0 0 10px;font-size:26px;letter-spacing:-.3px}
+.g-sec h3{margin:0 0 4px;font-size:16px;color:var(--ac,var(--cyan))}
+.g-sec p{margin:10px 0}
+.g-sec b{color:#fff}
+.gx{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto;gap:12px;align-items:center;margin:9px 0;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(4,7,18,.65);font-family:var(--mono);font-size:14px}
+#guide .gx .gin{display:block;background:transparent;padding:0;white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.55}
+.gx .gin:before{content:"\203a ";color:var(--violet);font-weight:800}
+.gx .gout{color:var(--cyan);font-weight:600;white-space:pre-wrap;word-break:break-word;min-height:1.2em}
+.gx .gout.bad{color:var(--coral)}
+.gtry{font-family:inherit;font-size:12px;border-radius:9px;padding:5px 12px;border:1px solid rgba(34,211,238,.5);background:rgba(34,211,238,.10);color:var(--cyan);cursor:pointer;white-space:nowrap}
+.gtry:hover{background:rgba(34,211,238,.22);box-shadow:0 0 14px rgba(34,211,238,.3)}
+.g-list,.g-steps{margin:10px 0;padding-left:22px}
+.g-list li,.g-steps li{margin:5px 0}
+.g-steps{counter-reset:st;list-style:none;padding-left:0}
+.g-steps li{counter-increment:st;position:relative;padding-left:38px}
+.g-steps li:before{content:counter(st);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:800;color:#06101c;background:linear-gradient(135deg,var(--cyan),var(--violet))}
+.g-tip,.g-note,.g-warn{margin:14px 0;padding:11px 16px;border-radius:0 12px 12px 0;font-size:15px}
+.g-tip{border-left:3px solid var(--cyan);background:rgba(34,211,238,.08)}
+.g-note{border-left:3px solid var(--violet);background:rgba(167,139,250,.10)}
+.g-warn{border-left:3px solid var(--amber);background:rgba(251,191,36,.09)}
+.g-link{font-family:inherit;font-size:13px;background:transparent;border:0;border-bottom:1px dashed var(--cyan);color:var(--cyan);padding:0 1px;cursor:pointer}
+.g-link:hover{color:#fff;border-bottom-color:#fff}
+.g-tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px;min-width:640px}
+.g-tbl th{font-family:var(--mono);font-size:18px;color:var(--amber);padding:6px 8px;border-bottom:1px solid var(--line);text-align:center}
+.g-tbl td{padding:6px 8px;text-align:center;color:var(--dim);line-height:1.35}
+.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:12px 0}
+.g-card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(4,7,18,.5)}
+.g-card p{font-size:14px;margin:4px 0 6px;color:#b9c4ea}
+.g-cheat .g-card code{display:inline-block;margin:2px 2px}
+.g-keys{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.g-keys kbd{font-size:15px;min-width:42px;text-align:center;padding:5px 10px}
+.g-keys .gk-enter{color:var(--cyan);border-color:var(--cyan)}
+.g-faq details{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:rgba(4,7,18,.45)}
+.g-faq summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none}
+.g-faq summary::-webkit-details-marker{display:none}
+.g-faq summary:before{content:"\25B8";color:var(--amber);display:inline-block;width:1.2em;transition:transform .15s}
+.g-faq details[open] summary:before{transform:rotate(90deg)}
+.g-faq details p{margin:0;padding:0 16px 12px 34px;color:#b9c4ea;font-size:15px}
+.g-end{text-align:center;padding:26px 10px 10px}
+.g-end h2{font-size:32px;margin:0}
+.tb.pulse{border-color:var(--cyan);animation:gpulse 2.2s ease-in-out infinite}
+@keyframes gpulse{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{box-shadow:0 0 16px 2px rgba(34,211,238,.6)}}
+.ginvite{margin-top:6px}
+@media (max-width:900px){
+  .g-wrap{grid-template-columns:1fr;gap:6px;padding:6px 14px 70px}
+  .g-toc{position:sticky;top:50px;z-index:4;flex-direction:row;overflow-x:auto;gap:6px;padding:8px 2px;max-height:none;background:rgba(7,10,22,.86);backdrop-filter:blur(8px);margin:0 -14px;padding-left:14px}
+  .g-toch{display:none}
+  .g-toc a{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+  .g-toc a.on{border-color:var(--cyan)}
+  .g-sec{padding:20px 16px 16px 20px;scroll-margin-top:110px}
+  .g-hero{padding:38px 16px 12px}
+  .g-lead{font-size:16px}
+}
+@media (max-width:640px){
+  .gx{grid-template-columns:1fr auto}
+  .gx .gout{grid-column:1/-1}
+  .g-num{font-size:40px}
+}
 #chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
 .chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:3px 9px;font-size:12px}
 .chip:hover{color:#fff;border-color:var(--violet)}
@@ -234,7 +327,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
     <div class="seg" id="segMode" title="Result display mode"><button data-m="eng">ENG</button><button data-m="sci">SCI</button><button data-m="fix">FIX</button></div>
     <div class="seg" title="Significant digits"><button id="dMinus">−</button><span id="dVal">6</span><button id="dPlus">+</button></div>
     <button class="tb" id="btnConsts" title="Physical constants (Esc closes)">⚛ Constants</button>
-    <button class="tb" id="btnHelp">? Help</button>
+    <button class="tb" id="btnHelp" title="Open the illustrated guide (F1)">? Help</button>
     <button class="tb" id="btnExport" title="Export the last calculations as an image (PNG) for slides">⭳ Export</button>
     <button class="tb" id="btnClear" title="Clear the screen and all variables (Ctrl+L)">⌫ Clear</button>
   </header>
@@ -314,6 +407,245 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
     </aside>
   </main>
 </div>
+<div id="guide" hidden role="dialog" aria-label="EngCalc guide">
+  <div class="g-top">
+    <span class="gl">&#9889; EngCalc guide</span>
+    <span class="gsub">a 5-minute tour</span>
+    <span class="grow"></span>
+    <button class="tb" id="gClose" title="Close (Esc)">&#10005; Close</button>
+    <div class="g-prog" id="gProg"></div>
+  </div>
+
+  <header class="g-hero">
+    <div class="g-eyebrow">first time here?</div>
+    <h1>Type it the way<br>you <span class="g-grad">say it.</span></h1>
+    <p class="g-lead">EngCalc is a calculator built for engineers: <b>2.2k</b>, <b>10p</b> and <b>5MHz</b> just work, complex numbers and matrices are built in, and it can even differentiate, integrate and take Laplace transforms. It runs entirely in your browser &mdash; nothing you type leaves your device.</p>
+    <div class="g-chips">
+      <span>&#9889; engineering notation</span><span>&#8730;-1 complex numbers</span><span>[ ] matrices</span><span>&#8747; calculus</span><span>&#8466; Laplace</span><span>&#128247; export for slides</span>
+    </div>
+    <div class="g-cta">
+      <button class="g-btn pri" data-scroll="g-start">Start the tour &darr;</button>
+      <button class="g-btn" data-close-guide>Skip &mdash; let me calculate</button>
+    </div>
+  </header>
+
+  <div class="g-wrap">
+    <nav class="g-toc" id="gToc" aria-label="Contents">
+      <div class="g-toch">Contents</div>
+      <a href="#g-start" data-n="1">Your first minute</a>
+      <a href="#g-notation" data-n="2">Engineering notation</a>
+      <a href="#g-convert" data-n="3">Convert &amp; reformat</a>
+      <a href="#g-vars" data-n="4">Variables &amp; functions</a>
+      <a href="#g-complex" data-n="5">Complex numbers &amp; angles</a>
+      <a href="#g-equations" data-n="6">Solving equations</a>
+      <a href="#g-matrices" data-n="7">Matrices</a>
+      <a href="#g-calculus" data-n="8">Calculus</a>
+      <a href="#g-laplace" data-n="9">Laplace &amp; transfer functions</a>
+      <a href="#g-tabs" data-n="10">Tabs &amp; panels</a>
+      <a href="#g-share" data-n="11">Share your work</a>
+      <a href="#g-phone" data-n="12">On your phone</a>
+      <a href="#g-faq" data-n="13">Good to know</a>
+      <a href="#g-cheat" data-n="14">Cheat sheet</a>
+    </nav>
+
+    <main class="g-main">
+
+      <section class="g-sec" id="g-start" style="--ac:var(--cyan)">
+        <div class="g-num">1</div>
+        <h2>Your first minute</h2>
+        <p>There is one input line at the bottom. Type, press <kbd>Enter</kbd>, read the answer. That is the whole idea.</p>
+        <div class="gx" data-ex="2.2k * 3"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="10p * 2.5k"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="100/8&#10;ans * 2"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>Answers come back in engineering notation (<b>4.7k</b>, <b>25n</b>) with the plain number underneath. Everything is clickable:</p>
+        <ul class="g-list">
+          <li><b>Click a result</b> to copy it.</li>
+          <li><b>Click an old input</b> to put it back on the input line.</li>
+          <li><kbd>&uarr;</kbd> <kbd>&darr;</kbd> walk through what you typed before. <kbd>Tab</kbd> completes a function name.</li>
+          <li><b>ans</b> is the previous result (<b>ans2</b> the one before).</li>
+          <li>The line above the input shows a <b>live preview</b> while you type.</li>
+        </ul>
+        <div class="g-tip"><b>Stuck?</b> Type <code>help</code> for the compact reference, or press <kbd>F1</kbd> any time to come back to this guide.</div>
+      </section>
+
+      <section class="g-sec" id="g-notation" style="--ac:var(--amber)">
+        <div class="g-num">2</div>
+        <h2>Engineering notation</h2>
+        <p>Glue a one-letter multiplier straight onto a number. Units after it are simply ignored, so you can write them the way you would on paper.</p>
+        <div class="fwrap"><table class="g-tbl">
+          <tr><th>a</th><th>f</th><th>p</th><th>n</th><th>u or &micro;</th><th>m</th><th>k</th><th>M or meg</th><th>G</th><th>T</th><th>P</th></tr>
+          <tr><td>atto<br>10<sup>-18</sup></td><td>femto<br>10<sup>-15</sup></td><td>pico<br>10<sup>-12</sup></td><td>nano<br>10<sup>-9</sup></td><td>micro<br>10<sup>-6</sup></td><td>milli<br>10<sup>-3</sup></td><td>kilo<br>10<sup>3</sup></td><td>mega<br>10<sup>6</sup></td><td>giga<br>10<sup>9</sup></td><td>tera<br>10<sup>12</sup></td><td>peta<br>10<sup>15</sup></td></tr>
+        </table></div>
+        <div class="gx" data-ex="5MHz / 60us"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="1/(2*pi*10k*1n)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="4.7k + 2.2k"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="g-warn"><b>Case matters.</b> <code>5m</code> is <i>milli</i> (0.005) but <code>5M</code> is <i>mega</i> (5,000,000). Units such as <code>F</code>, <code>Hz</code>, <code>V</code>, <code>&Omega;</code> after the number are fine: <code>10pF</code>, <code>2.2k&Omega;</code>.</div>
+        <p>The header buttons <b>ENG / SCI / FIX</b> change how results are shown, and <b>&minus; 6 +</b> sets the number of significant digits (or type <code>mode sci</code>, <code>digits 8</code>).</p>
+      </section>
+
+      <section class="g-sec" id="g-convert" style="--ac:var(--mag)">
+        <div class="g-num">3</div>
+        <h2>Convert &amp; reformat</h2>
+        <p>Add <b>to</b> (or <b>in</b>) and a target at the end of any line to show the result differently. The stored value never changes.</p>
+        <div class="gx" data-ex="5MHz/60us to M"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="255 to hex"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="0xFF to bin"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="1234567 to sci"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="asin(0.5) in deg"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>Targets: a suffix letter (<code>k</code>, <code>M</code>, <code>n</code>&hellip;), <code>eng</code> <code>sci</code> <code>fix</code>, number bases <code>hex</code> <code>bin</code> <code>oct</code> <code>dec</code>, and angles <code>deg</code> <code>rad</code>. For bit-level work open the <button class="g-link" data-tab="conv">Base converter tab</button>.</p>
+      </section>
+
+      <section class="g-sec" id="g-vars" style="--ac:var(--green)">
+        <div class="g-num">4</div>
+        <h2>Variables &amp; your own functions</h2>
+        <p>Use <code>=</code> to store a value. Stored names appear in the <b>Variables</b> panel on the left; click one to drop it into your input.</p>
+        <div class="gx" data-ex="R1 = 2.2k&#10;R2 = 4.7k&#10;par(R1, R2)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>Define a function with parentheses on the left. Multiplication can be implicit: <code>2x</code>, <code>3(4+1)</code>, <code>2pi</code>.</p>
+        <div class="gx" data-ex="g1(x) = x^2 + 1&#10;g1(3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="g-warn"><b>Name rules.</b> The multiplier letters <code>a f p n u m k M G T P</code> can&rsquo;t be names, because <code>2p</code> must always mean pico. Use names like <code>R1</code>, <code>C_load</code>, <code>x1</code>. Names can&rsquo;t start with a digit.</div>
+        <p>Tidy up with <code>del x</code> (one name), <code>delall</code> (all variables) or <code>clear</code> (the screen <i>and</i> all variables).</p>
+      </section>
+
+      <section class="g-sec" id="g-complex" style="--ac:var(--violet)">
+        <div class="g-num">5</div>
+        <h2>Complex numbers &amp; angles</h2>
+        <p>Use <b>j</b> for the imaginary unit. Magnitude, phase, polar form and the usual arithmetic are built in.</p>
+        <div class="gx" data-ex="(1+2j) * (3-4j)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="mag(3+4j)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="phase(3+4j) in deg"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="5@(pi/6)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="g-note"><b>Angles are always radians</b>, like most tools. When you want degrees, convert the result with <code>in deg</code>, or use <code>sind</code>, <code>cosd</code>, <code>tand</code>. To feed degrees in, write <code>sin(30 in rad)</code>.</div>
+        <div class="gx" data-ex="sin(pi/6)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="sin(30 in rad)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+      </section>
+
+      <section class="g-sec" id="g-equations" style="--ac:var(--coral)">
+        <div class="g-num">6</div>
+        <h2>Solving equations</h2>
+        <p>Any <code>=</code> that isn&rsquo;t a plain assignment is treated as an equation to solve. Solutions are stored as variables so you can keep using them.</p>
+        <div class="gx" data-ex="2x = 4"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="x+y=5; x-y=1"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="x^2 - 3x + 2 = 0"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="solve x,y,z: 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>Linear systems of any size work, including complex coefficients; single quadratics use the quadratic formula (complex roots too). The <button class="g-link" data-tab="solver">Solver tab</button> gives you a bigger box for larger systems.</p>
+      </section>
+
+      <section class="g-sec" id="g-matrices" style="--ac:var(--blue)">
+        <div class="g-num">7</div>
+        <h2>Matrices</h2>
+        <p>Write rows separated by <code>;</code> and columns separated by spaces (or commas). The word <code>matrix</code> is optional.</p>
+        <div class="gx" data-ex="[1 2; 3 4] * [5; 6]"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="A = [1 2; 3 4]&#10;det(A)&#10;inv(A)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>Solve <b>A&middot;x = b</b> with <code>inv(A)*b</code>:</p>
+        <div class="gx" data-ex="A = [2 1; 1 3]&#10;b = [3; 5]&#10;inv(A)*b"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>You also have <code>A'</code> (transpose), <code>A^2</code>, <code>A^-1</code>, <code>A(2,1)</code> (one entry), <code>trace</code>, <code>rank</code>, <code>eye(n)</code>, <code>zeros(r,c)</code>, <code>ones(r,c)</code>. Glue a minus to its number to start a new entry: <code>[1 -2]</code> has two entries, <code>[1 - 2]</code> has one.</p>
+      </section>
+
+      <section class="g-sec" id="g-calculus" style="--ac:var(--orange)">
+        <div class="g-num">8</div>
+        <h2>Calculus</h2>
+        <p><b>diff</b> and <b>integ</b> work on formulas, not just numbers, and the answers come back as expressions you can copy and reuse.</p>
+        <div class="gx" data-ex="diff(x^2*sin(x))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="integ(x*exp(x))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="integ(x^2, 0, 3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="integ(exp(-x^2), -inf, inf)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <ul class="g-list">
+          <li>With one variable you can leave it out: <code>diff(x^3)</code>. With several, name it: <code>diff(R1*x^2, x)</code>.</li>
+          <li><code>integ(f)</code> gives an antiderivative <b>+ C</b>. Add limits for a number: <code>integ(f, x, a, b)</code>, using <code>inf</code> for infinity.</li>
+          <li>When there is no closed form, a definite integral falls back to accurate numeric integration and says so.</li>
+          <li><code>diff(f, x, 2)</code> is the second derivative.</li>
+        </ul>
+        <div class="gx" data-ex="diff(R1*x^2, x)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+      </section>
+
+      <section class="g-sec" id="g-laplace" style="--ac:var(--mag)">
+        <div class="g-num">9</div>
+        <h2>Laplace &amp; transfer functions</h2>
+        <p><b>LT</b> transforms a time function into <i>s</i>; <b>ILT</b> goes back. <b>poles</b> and <b>zeros</b> read off the roots. Use <b>u(t)</b> for the unit step and <b>delta(t)</b> for the impulse.</p>
+        <div class="gx" data-ex="LT(exp(-2*t)*sin(3*t))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="ILT(1/(s^2+3*s+2))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="poles(1/(s^2+2*s+5))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>Name a transfer function with parentheses and get its step response by dividing by <i>s</i>:</p>
+        <div class="gx" data-ex="H(s) = 1/(s^2+s+1)&#10;poles(H(s))&#10;ILT(H(s)/s)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="g-tip">Repeated and complex poles, delays like <code>exp(-s*T)</code>, and impulse terms are all handled. Write <code>2*u(t)</code> rather than <code>2u(t)</code>, because <code>2u</code> means 2 micro.</div>
+      </section>
+
+      <section class="g-sec" id="g-tabs" style="--ac:var(--cyan)">
+        <div class="g-num">10</div>
+        <h2>Tabs &amp; panels</h2>
+        <div class="g-grid">
+          <div class="g-card"><h3>Console</h3><p>Where everything above happens. History scrolls up; each answer is clickable.</p></div>
+          <div class="g-card"><h3>Solver</h3><p>A multi-line box for bigger linear systems, with examples and the coefficient matrix shown.</p><button class="g-link" data-tab="solver">Open Solver &#9656;</button></div>
+          <div class="g-card"><h3>Base converter</h3><p>Type in decimal, hex, binary, octal or any base; click individual bits; see two&rsquo;s complement.</p><button class="g-link" data-tab="conv">Open converter &#9656;</button></div>
+          <div class="g-card"><h3>Formulas</h3><p>A series explorer (watch sin x build up term by term, with the error) plus reference tables: integrals, identities, Laplace pairs, small-x approximations and RF/analog formulas.</p><button class="g-link" data-tab="formulas">Open Formulas &#9656;</button></div>
+          <div class="g-card"><h3>&#9883; Constants</h3><p>Boltzmann, Planck, electron charge, speed of light and more. Click one to insert it.</p><button class="g-link" data-act="consts">Open constants &#9656;</button></div>
+          <div class="g-card"><h3>&fnof; Functions</h3><p>Every built-in function, grouped, with a search box (<kbd>Ctrl</kbd>+<kbd>K</kbd>). Hover for the signature and an example.</p><button class="g-link" data-act="funcs">Open functions &#9656;</button></div>
+        </div>
+      </section>
+
+      <section class="g-sec" id="g-share" style="--ac:var(--green)">
+        <div class="g-num">11</div>
+        <h2>Share your work</h2>
+        <p>Need your calculations on a slide? Press <b>&#10515; Export</b>:</p>
+        <ol class="g-steps">
+          <li>Choose how many of the last calculations to include.</li>
+          <li>Pick <b>Light</b> (white slides) or <b>Dark</b>, and a size. The preview updates live.</li>
+          <li><b>Copy image</b> and paste straight into PowerPoint, or <b>Download PNG</b>.</li>
+        </ol>
+        <p><button class="g-link" data-act="export">Open the export dialog &#9656;</button> &nbsp; A plain-text copy of the whole session is there too.</p>
+      </section>
+
+      <section class="g-sec" id="g-phone" style="--ac:var(--violet)">
+        <div class="g-num">12</div>
+        <h2>On your phone</h2>
+        <p>Phone keyboards hide a few things engineers need, so the calculator adds a key bar under the input line:</p>
+        <div class="g-keys"><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>Tab</kbd><kbd>(</kbd><kbd>)</kbd><kbd>^</kbd><kbd>,</kbd><kbd>=</kbd><kbd>;</kbd><kbd>to</kbd><kbd>[ ]</kbd><kbd>&#9003;</kbd><kbd class="gk-enter">&#9166;</kbd></div>
+        <ul class="g-list">
+          <li><b>&uarr; &darr;</b> recall earlier inputs, <b>Tab</b> completes names, <b>&#9166;</b> evaluates, <b>&#9003;</b> clears the line.</li>
+          <li><b>to</b> inserts the conversion word; <b>[ ]</b> drops in matrix brackets with the cursor inside.</li>
+          <li>The header&rsquo;s <b>x= Vars</b> and <b>&fnof; Funcs</b> buttons slide the panels in.</li>
+        </ul>
+      </section>
+
+      <section class="g-sec" id="g-faq" style="--ac:var(--amber)">
+        <div class="g-num">13</div>
+        <h2>Good to know</h2>
+        <div class="g-faq">
+          <details><summary>Why did <code>5m</code> and <code>5M</code> give different answers?</summary><p>Multiplier letters are case-sensitive: <code>m</code> = milli, <code>M</code> = mega. This follows SI, so <code>5mV</code> and <code>5MV</code> mean what you expect.</p></details>
+          <details><summary>Why is <code>sin(90)</code> not 1?</summary><p>Angles are radians. Use <code>sind(90)</code>, or <code>sin(90 in rad)</code> to convert from degrees first.</p></details>
+          <details><summary>What does <code>3s</code> mean?</summary><p><code>3*s</code>. A bare <b>s</b> is just a name (handy for Laplace work). <code>ms</code>, <code>us</code> and <code>ns</code> still work as time units.</p></details>
+          <details><summary>My result looks like a formula, not a number.</summary><p>Results of <code>diff</code>, <code>integ</code> and <code>LT</code> are symbolic. Give the variable a value (<code>x = 2</code>) and use the result in arithmetic to get a number.</p></details>
+          <details><summary>What does <code>clear</code> clear?</summary><p>The screen <i>and</i> every stored variable, function and <code>ans</code>. Use <code>del x</code> or <code>delall</code> to remove variables without clearing the screen.</p></details>
+          <details><summary>Is my work saved?</summary><p>Variables, functions and your settings are kept in this browser, on this device only. Nothing is sent anywhere.</p></details>
+          <details><summary>Why &ldquo;Unknown name&rdquo;?</summary><p>You used a name that isn&rsquo;t defined. Define it with <code>name = value</code>, or check the spelling. Function names need brackets: <code>sin(x)</code>.</p></details>
+        </div>
+      </section>
+
+      <section class="g-sec" id="g-cheat" style="--ac:var(--cyan)">
+        <div class="g-num">14</div>
+        <h2>Cheat sheet</h2>
+        <div class="g-grid g-cheat">
+          <div class="g-card"><h3>Numbers</h3><code>2.2k</code> <code>10pF</code> <code>5MHz</code> <code>3+4j</code> <code>0xFF</code> <code>1e-9</code></div>
+          <div class="g-card"><h3>Convert</h3><code>x to M</code> <code>x to hex</code> <code>x in deg</code> <code>x to sci</code></div>
+          <div class="g-card"><h3>Store</h3><code>R1 = 2.2k</code> <code>f1(x) = x^2</code> <code>del R1</code> <code>clear</code></div>
+          <div class="g-card"><h3>Solve</h3><code>2x = 4</code> <code>x+y=5; x-y=1</code> <code>x^2-3x+2=0</code></div>
+          <div class="g-card"><h3>Matrix</h3><code>[1 2; 3 4]</code> <code>det</code> <code>inv</code> <code>A'</code> <code>A(2,1)</code></div>
+          <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code></div>
+          <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code></div>
+          <div class="g-card"><h3>RF &amp; analog</h3><code>par(a,b)</code> <code>dBm(x)</code> <code>f0(L,C)</code> <code>vswr</code> <code>enob</code></div>
+          <div class="g-card"><h3>Keys</h3><kbd>Enter</kbd> run &middot; <kbd>&uarr;</kbd> history &middot; <kbd>Tab</kbd> complete &middot; <kbd>Ctrl</kbd>+<kbd>K</kbd> functions &middot; <kbd>Ctrl</kbd>+<kbd>L</kbd> clear &middot; <kbd>F1</kbd> this guide</div>
+        </div>
+      </section>
+
+      <div class="g-end">
+        <h2>You&rsquo;re ready.</h2>
+        <p>Close this guide and start typing. You can come back any time with <b>? Help</b> or <kbd>F1</kbd>.</p>
+        <div class="g-cta"><button class="g-btn pri" data-close-guide>Start calculating &#9656;</button><button class="g-btn" data-guide-help>Open the compact reference</button></div>
+      </div>
+
+    </main>
+  </div>
+</div>
 <div id="exp" class="expov" hidden>
   <div class="expcard" role="dialog" aria-label="Export as image">
     <div class="ph"><span>Export as image</span><button class="x" id="expClose" title="Close (Esc)">&#10005;</button></div>
@@ -376,7 +708,8 @@ function decompose(s){
   if(s.startsWith('meg')){exp=6;rest=s.slice(3);pref=true;}
   else if(has(SUFEXP,s[0])){exp=SUFEXP[s[0]];rest=s.slice(1);pref=true;}
   if(rest==='') return pref?{exp,imag}:null;
-  if(UNITS.has(rest)||(pref&&rest==='m')) return {exp,imag};
+  /* a bare "s" is not treated as the unit seconds: 3s means 3*s (the Laplace variable); ms, us, ns still work */
+  if((UNITS.has(rest)&&!(rest==='s'&&!pref))||(pref&&rest==='m')) return {exp,imag};
   return null;
 }
 const isDeclared=n=>STATE.vars.has(n)||STATE.funcs.has(n);
@@ -883,7 +1216,8 @@ function symPrep(n,d){
     }
     case 'un':return {...n,a:symPrep(n.a,d)};
     case 'bin':return {...n,a:symPrep(n.a,d),b:symPrep(n.b,d)};
-    case 'num':case 'id':return n;
+    case 'id':{const v=STATE.vars.get(n.name);return v instanceof Sym?symPrep(v.ast,d+1):n;}
+    case 'num':return n;
   }
   throw new CalcError("Can't handle ! @ matrices or conversions inside diff / integ");
 }
@@ -921,7 +1255,8 @@ const SD_TABLE={
   log2:u=>sDiv(SN(1),sMul(u,SCALL('ln',SN(2)))),
   sqrt:u=>sDiv(SN(1),sMul(SN(2),SCALL('sqrt',u))),
   cbrt:u=>sDiv(SN(1),sMul(SN(3),sPow(u,SN(2/3)))),
-  abs:u=>SCALL('sign',u)
+  abs:u=>SCALL('sign',u),
+  u:x=>SCALL('delta',x)
 };
 function symD(n,x){
   if(!symHas(n,x))return SN(0);
@@ -1015,7 +1350,9 @@ const SI_ANTI={
   sqrt:u=>sMul(SN(2/3),sPow(u,SN(1.5))),
   asin:u=>sAdd(sMul(u,SCALL('asin',u)),SCALL('sqrt',sSub(SN(1),sPow(u,SN(2))))),
   acos:u=>sSub(sMul(u,SCALL('acos',u)),SCALL('sqrt',sSub(SN(1),sPow(u,SN(2))))),
-  atan:u=>sSub(sMul(u,SCALL('atan',u)),sDiv(SCALL('ln',sAdd(SN(1),sPow(u,SN(2)))),SN(2)))
+  atan:u=>sSub(sMul(u,SCALL('atan',u)),sDiv(SCALL('ln',sAdd(SN(1),sPow(u,SN(2)))),SN(2))),
+  delta:u=>SCALL('u',u),
+  u:u=>sMul(u,SCALL('u',u))
 };
 const sOdd=(name,u)=>{const s=symSplit(u);return s.c<0?sNeg(SCALL(name,sNeg(u))):SCALL(name,u);};
 const SI_FAM={exp:{k:'exp',s:1},sin:{k:'cos',s:-1},cos:{k:'sin',s:1},sinh:{k:'cosh',s:1},cosh:{k:'sinh',s:1}};
@@ -1319,6 +1656,302 @@ function symNum(s){
   catch(e){if(e instanceof CalcError)throw new CalcError("Can't evaluate the symbolic result "+symPrint(s.ast)+" — "+e.message);throw e;}
 }
 
+/* ---- Laplace transforms: LT, ILT, poles, zeros ---- */
+function symSimplify(n){
+  switch(n.t){
+    case 'un':return sNeg(symSimplify(n.a));
+    case 'bin':{
+      const a=symSimplify(n.a),b=symSimplify(n.b);
+      switch(n.op){
+        case '+':return sAdd(a,b);
+        case '-':return sSub(a,b);
+        case '*':return sMul(a,b);
+        case '/':return sDiv(a,b);
+        case '^':return sPow(a,b);
+      }
+      return {...n,a,b};
+    }
+    case 'call':return {...n,args:n.args.map(symSimplify)};
+  }
+  return n;
+}
+const symIsZero=n=>n.t==='num'&&n.v===0;
+const symIsOne=n=>n.t==='num'&&n.v===1;
+
+/* forward transform of one product term: constant * t^n * exp(a t) * (sin|cos|sinh|cosh)(w t + phi), with u(t-T) and delta(t-T) */
+function ltTerm(term,t,s){
+  const S=SID(s),T=SID(t),sp=symSplit(term);
+  /* steps and impulses first: u(t-T) delays the rest, delta(t-T) samples it */
+  const isStep=([b,e])=>{
+    if(e!==1||b.t!=='call'||(b.name!=='u'&&b.name!=='delta')||b.args.length!==1)return false;
+    const l=symLin(b.args[0],t);return !!l&&symIsOne(l.A);
+  };
+  const steps=sp.f.filter(isStep);
+  if(steps.length){
+    if(steps.length>1)return null;
+    const b=steps[0][0],Td=sNeg(symLin(b.args[0],t).B);
+    const R=symBuild(sp.c,sp.f.filter(x=>!isStep(x)));
+    if(b.name==='delta'){
+      const val=symSimplify(symSubst(R,T,Td));
+      return symIsZero(Td)?val:sMul(val,SCALL('exp',sNeg(sMul(Td,S))));
+    }
+    const numNeg=Td.t==='num'&&typeof Td.v==='number'&&Td.v<=0;
+    if(symIsZero(Td)||numNeg)return symLT(R,t,s);
+    const G=symLT(symSimplify(symSubst(R,T,sAdd(T,Td))),t,s);
+    return G&&sMul(G,SCALL('exp',sNeg(sMul(Td,S))));
+  }
+  const K=[],shift=[],core=[];
+  let n=0;
+  for(const [b,e] of sp.f){
+    if(!symHas(b,t)){K.push([b,e]);continue;}
+    if(b.t==='id'&&b.name===t&&Number.isInteger(e)&&e>=0){n+=e;continue;}
+    if(e!==1)return null;
+    let ex=null;
+    if(b.t==='call'&&b.name==='exp'&&b.args.length===1)ex=b.args[0];
+    else if(b.t==='bin'&&b.op==='^'&&b.a.t==='id'&&b.a.name==='e')ex=b.b;
+    if(ex){
+      const l=symLin(ex,t);if(!l)return null;
+      shift.push(l.A);
+      if(!symIsZero(l.B))K.push([SCALL('exp',l.B),1]);
+      continue;
+    }
+    core.push(b);
+  }
+  const Kn=symBuild(sp.c,K);
+  let G;
+  if(!core.length)G=sDiv(SN(1),S);
+  else if(core.length===1&&core[0].t==='call'&&core[0].args.length===1&&['sin','cos','sinh','cosh'].includes(core[0].name)){
+    const c=core[0],l=symLin(c.args[0],t);if(!l)return null;
+    const w=l.A,ph=l.B,zero=symIsZero(ph),den=c.name.endsWith('h')?sSub(sPow(S,SN(2)),sPow(w,SN(2))):sAdd(sPow(S,SN(2)),sPow(w,SN(2)));
+    switch(c.name){
+      case 'sin':G=zero?sDiv(w,den):sDiv(sAdd(sMul(w,SCALL('cos',ph)),sMul(S,SCALL('sin',ph))),den);break;
+      case 'cos':G=zero?sDiv(S,den):sDiv(sSub(sMul(S,SCALL('cos',ph)),sMul(w,SCALL('sin',ph))),den);break;
+      case 'sinh':if(!zero)return null;G=sDiv(w,den);break;
+      case 'cosh':if(!zero)return null;G=sDiv(S,den);break;
+    }
+  }else return null;
+  for(let i=0;i<n;i++)G=sNeg(symD(G,s));
+  const a=shift.length?sSum(shift):SN(0);
+  if(!symIsZero(a))G=symSimplify(symSubst(G,S,sSub(S,a)));
+  return sMul(Kn,G);
+}
+function symLT(f,t,s){
+  const out=[];
+  for(const [sg,term] of symTerms(symSimplify(f),1,[])){
+    let r;
+    if(!symHas(term,t))r=sDiv(term,SID(s));
+    else r=ltTerm(term,t,s);
+    if(!r)return null;
+    out.push(sg===1?r:sNeg(r));
+  }
+  return sSum(out);
+}
+
+/* ---- rational functions with numeric coefficients, polynomial roots ---- */
+const plTrim=c=>{c=c.slice();let mx=0;c.forEach(v=>{mx=Math.max(mx,Math.abs(v));});while(c.length>1&&Math.abs(c[c.length-1])<=1e-13*mx)c.pop();return c;};
+const plEval=(c,z)=>{let r=0;for(let i=c.length-1;i>=0;i--)r=add(mul(r,z),c[i]);return r;};
+const plDer=c=>c.slice(1).map((v,i)=>v*(i+1));
+const plMul=(a,b)=>{const r=Array(a.length+b.length-1).fill(0);a.forEach((u,i)=>b.forEach((v,j)=>{r[i+j]=add(r[i+j],mul(u,v));}));return r;};
+const plAdd=(a,b)=>{const r=Array(Math.max(a.length,b.length)).fill(0);a.forEach((v,i)=>{r[i]=add(r[i],v);});b.forEach((v,i)=>{r[i]=add(r[i],v);});return r;};
+function plShift(c,p){const a=c.slice(),n=a.length;for(let i=0;i<n-1;i++)for(let j=n-2;j>=i;j--)a[j]=add(a[j],mul(p,a[j+1]));return a;}
+function snapNum(x){
+  if(!Number.isFinite(x))return x;
+  const tol=1e-9*(1+Math.abs(x)),r=Math.round(x);
+  if(Math.abs(x-r)<=tol)return r;
+  for(let q=2;q<=60;q++){const p=Math.round(x*q);if(Math.abs(x-p/q)<=tol)return p/q;}
+  return x;
+}
+const snapC=z=>{if(!isC(z))return snapNum(z);const re=snapNum(z.re),im=Math.abs(z.im)<=1e-9*(1+Math.abs(z.re))?0:snapNum(z.im);return mk(re,im);};
+/* real-coefficient polynomial (ascending) -> [{z, m}] roots with multiplicities */
+function plRoots(c0){
+  let c=plTrim(c0);const out=[];
+  let z0=0;while(c.length>1&&c[0]===0){c.shift();z0++;}
+  if(z0)out.push({z:0,m:z0});
+  const deg=c.length-1;
+  if(deg<1)return out;
+  if(deg===1){out.push({z:snapNum(-c[0]/c[1]),m:1});return out;}
+  if(deg===2){
+    const r=quadFormula(c[2],c[1],c[0]).r;
+    if(cabs(sub(r[0],r[1]))<=1e-12*(1+cabs(r[0])))out.push({z:snapC(r[0]),m:2});
+    else{out.push({z:snapC(r[0]),m:1});out.push({z:snapC(r[1]),m:1});}
+    return out;
+  }
+  if(deg>40)throw new CalcError('Polynomial degree is too high (max 40)');
+  const a=c.map(v=>v/c[deg]);
+  const r0=Math.max(0.3,Math.pow(Math.abs(a[0])||1,1/deg));
+  const z=Array.from({length:deg},(_,k)=>mk(r0*Math.cos(2*Math.PI*k/deg+0.4),r0*Math.sin(2*Math.PI*k/deg+0.4)));
+  for(let it=0;it<3000;it++){
+    let md=0,zm=1;
+    for(let i=0;i<deg;i++){
+      let den=1;for(let j=0;j<deg;j++)if(j!==i)den=mul(den,sub(z[i],z[j]));
+      if(cabs(den)===0)den=1e-12;
+      const dz=div(plEval(a,z[i]),den);z[i]=sub(z[i],dz);md=Math.max(md,cabs(dz));zm=Math.max(zm,cabs(z[i]));
+    }
+    if(md<=1e-15*zm)break;
+  }
+  const used=Array(deg).fill(false),cl=[];
+  for(let i=0;i<deg;i++){
+    if(used[i])continue;used[i]=true;const g=[z[i]];
+    for(let j=i+1;j<deg;j++)if(!used[j]&&cabs(sub(z[i],z[j]))<=5e-4*(1+cabs(z[i]))){used[j]=true;g.push(z[j]);}
+    cl.push(g);
+  }
+  const ders=[c];for(let k=1;k<deg;k++)ders.push(plDer(ders[k-1]));
+  const res=[];
+  for(const g of cl){
+    const m=g.length;let p=g.reduce((acc,x)=>add(acc,x),0);p=div(p,m);
+    const f1=ders[m-1],f2=m<ders.length?ders[m]:plDer(ders[m-1]);
+    for(let it=0;it<60;it++){const d=plEval(f2,p);if(cabs(d)===0)break;const dz=div(plEval(f1,p),d);p=sub(p,dz);if(cabs(dz)<=1e-15*(1+cabs(p)))break;}
+    res.push({z:snapC(p),m});
+  }
+  /* real polynomial: make complex roots exact conjugate pairs */
+  const real=res.filter(r=>!isC(r.z)),up=res.filter(r=>isC(r.z)&&r.z.im>0);
+  const lo=res.filter(r=>isC(r.z)&&r.z.im<0);
+  const outC=[...real,...up,...up.map(r=>({z:mk(r.z.re,-r.z.im),m:r.m}))];
+  if(lo.length!==up.length)return out.concat(res);
+  return out.concat(outC);
+}
+/* rational function in x with numeric coefficients: {N, D} polynomial arrays, or null */
+function symRat(n,x){
+  if(!symHas(n,x)){
+    try{DEPTH=0;POSOFF=0;const v=U(ev(n,null));return typeof v==='number'&&Number.isFinite(v)?{N:[v],D:[1]}:null;}catch(e){return null;}
+  }
+  const neg=p=>p.map(v=>-v);
+  switch(n.t){
+    case 'id':return {N:[0,1],D:[1]};
+    case 'un':{const r=symRat(n.a,x);return r&&{N:neg(r.N),D:r.D};}
+    case 'bin':{
+      if(n.op==='^'){
+        if(n.b.t!=='num'||typeof n.b.v!=='number'||!Number.isInteger(n.b.v)||Math.abs(n.b.v)>30)return null;
+        const r=symRat(n.a,x);if(!r)return null;
+        let N=[1],D=[1];for(let i=0;i<Math.abs(n.b.v);i++){N=plMul(N,r.N);D=plMul(D,r.D);}
+        return n.b.v<0?{N:D,D:N}:{N,D};
+      }
+      const a=symRat(n.a,x),b=symRat(n.b,x);if(!a||!b)return null;
+      if(n.op==='+')return {N:plAdd(plMul(a.N,b.D),plMul(b.N,a.D)),D:plMul(a.D,b.D)};
+      if(n.op==='-')return {N:plAdd(plMul(a.N,b.D),neg(plMul(b.N,a.D))),D:plMul(a.D,b.D)};
+      if(n.op==='*')return {N:plMul(a.N,b.N),D:plMul(a.D,b.D)};
+      if(n.op==='/'){if(plTrim(b.N).every(v=>v===0))return null;return {N:plMul(a.N,b.D),D:plMul(a.D,b.N)};}
+    }
+  }
+  return null;
+}
+const plFlat=rs=>{const o=[];rs.forEach(r=>{for(let i=0;i<r.m;i++)o.push(r.z);});return o;};
+function symPoleZero(F,x){
+  const r=symRat(F,x);
+  if(!r)throw new CalcError('poles / zeros need a rational function with numeric coefficients, e.g. (s+1)/(s^2+3s+2). Variables with values (R1 = 2.2k) are fine; unknown symbols are not.');
+  const N=plTrim(r.N),D=plTrim(r.D);
+  const zr=plFlat(plRoots(N)),pr=plFlat(plRoots(D));
+  const zs=zr.slice(),ps=pr.slice();
+  for(let i=zs.length-1;i>=0;i--){
+    const j=ps.findIndex(p=>cabs(sub(p,zs[i]))<=1e-6*(1+cabs(p)));
+    if(j>=0){ps.splice(j,1);zs.splice(i,1);}
+  }
+  const ord=(a,b)=>cabs(a)-cabs(b)||Im(b)-Im(a);
+  return {zeros:zs.sort(ord),poles:ps.sort(ord),N,D};
+}
+
+/* ---- inverse transform of a rational function by partial fractions ---- */
+function iltRational(F,s,t){
+  const r=symRat(F,s);if(!r)return null;
+  let N=plTrim(r.N),D=plTrim(r.D);
+  if(D.length===1&&D[0]===0)return null;
+  const lead=D[D.length-1];N=N.map(v=>v/lead);D=D.map(v=>v/lead);
+  const terms=[];
+  /* polynomial part: only a constant (impulse) is supported */
+  let rem=N.slice();
+  if(N.length>=D.length){
+    const q=Array(N.length-D.length+1).fill(0);
+    for(let i=N.length-D.length;i>=0;i--){const c=rem[i+D.length-1];q[i]=c;for(let j=0;j<D.length;j++)rem[i+j]-=c*D[j];}
+    rem=rem.slice(0,D.length-1);
+    if(q.length>1&&q.slice(1).some(v=>Math.abs(v)>1e-12))throw new CalcError('ILT: the numerator degree is higher than the denominator degree by more than 0, which would need derivatives of delta(t). Only a constant term (an impulse) is supported.');
+    if(Math.abs(q[0])>1e-12)terms.push(sMul(SN(snapNum(q[0])),SCALL('delta',SID(t))));
+  }
+  const roots=plRoots(D);
+  const T=SID(t);
+  const fact=k=>{let f=1;for(let i=2;i<=k;i++)f*=i;return f;};
+  for(const rt of roots){
+    const p=rt.z,m=rt.m;
+    if(isC(p)&&p.im<0)continue;
+    /* residue coefficients: Taylor series of N/Q around p, where Q = D/(s-p)^m */
+    let Q=[1];
+    for(const o of roots){if(o===rt)continue;for(let i=0;i<o.m;i++)Q=plMul(Q,[sub(p,o.z),1]);}
+    const Ns=plShift(N,p).slice(0,m),Qs=Q.slice(0,m);
+    while(Ns.length<m)Ns.push(0);
+    while(Qs.length<m)Qs.push(0);
+    const q0=Qs[0],c=[];
+    for(let k=0;k<m;k++){let acc=Ns[k];for(let i=1;i<=k;i++)acc=sub(acc,mul(Qs[i],c[k-i]));c.push(div(acc,q0));}
+    for(let k=1;k<=m;k++){
+      const A=c[m-k];
+      if(cabs(A)<=1e-10)continue;
+      const tp=sPow(T,SN(k-1)),kf=fact(k-1);
+      if(!isC(p)){
+        const Ar=snapNum(Re(A)/kf);
+        terms.push(sMul(sMul(SN(Ar),tp),p===0?SN(1):SCALL('exp',sMul(SN(p),T))));
+      }else{
+        const sig=p.re,w=p.im,ex=sig===0?SN(1):SCALL('exp',sMul(SN(sig),T));
+        const ca=snapNum(2*Re(A)/kf),sa=snapNum(-2*Im(A)/kf),wt=sMul(SN(w),T);
+        const body=sAdd(sMul(SN(ca),SCALL('cos',wt)),sMul(SN(sa),SCALL('sin',wt)));
+        terms.push(sMul(sMul(tp,ex),body));
+      }
+    }
+  }
+  return sSum(terms);
+}
+/* F(s) = sum of terms; terms with an exp(-s*T) factor become delayed copies */
+function symILT(F,s,t){
+  const terms=symTerms(symSimplify(F),1,[]);
+  const plain=[],out=[];
+  for(const [sg,term] of terms){
+    const sp=symSplit(term);let delay=null;const keep=[];
+    for(const [b,e] of sp.f){
+      if(e===1&&b.t==='call'&&b.name==='exp'&&b.args.length===1&&symHas(b.args[0],s)){
+        const l=symLin(b.args[0],s);
+        if(l&&symIsZero(l.B)&&!delay){delay=sNeg(l.A);continue;}
+      }
+      keep.push([b,e]);
+    }
+    if(delay&&!(delay.t==='num'&&delay.v<=0)){
+      const g=symILT(symBuild(sp.c*sg,keep),s,t);if(!g)return null;
+      const Tn=SID(t),sh=symSimplify(symSubst(g,Tn,sSub(Tn,delay)));
+      out.push(sMul(sh,SCALL('u',sSub(Tn,delay))));
+    }else plain.push(sg===1?term:sNeg(term));
+  }
+  if(plain.length){const g=iltRational(sSum(plain),s,t);if(!g)return null;out.push(g);}
+  return sSum(out);
+}
+
+/* ---- entry points ---- */
+function symLTCall(n,sc,wantAst){
+  const f=symPrep(n.args[0]);
+  const t=n.args.length>=2?symVarName(n.args[1]):'t',s=n.args.length>=3?symVarName(n.args[2]):'s';
+  if(t===s)throw new CalcError('The time variable and the s variable must be different names');
+  const G=symLT(f,t,s);
+  if(!G)throw new CalcError('LT: no rule for '+symPrint(f)+'. Supported: constants, t^n, exp(a*t), sin/cos/sinh/cosh(w*t+phi), delta(t-T), u(t-T), sums, and products of those');
+  return wantAst?G:symResult(new Sym(G,false,'Laplace transform  '+t+' → '+s),sc);
+}
+function symILTCall(n,sc,wantAst){
+  const F=symPrep(n.args[0]);
+  let s;
+  if(n.args.length>=2)s=symVarName(n.args[1]);
+  else{const free=[...symFree(F,new Set())];s=free.includes('s')?'s':(free.length===1?free[0]:'s');}
+  const t=n.args.length>=3?symVarName(n.args[2]):'t';
+  if(t===s)throw new CalcError('The time variable and the s variable must be different names');
+  const g=symILT(F,s,t);
+  if(!g)throw new CalcError('ILT needs a rational function of '+s+' with numeric coefficients (variables with values are fine), optionally times exp(-s*T) delays');
+  return wantAst?g:symResult(new Sym(g,false,'inverse Laplace transform  '+s+' → '+t+'  (for t ≥ 0)'),sc);
+}
+function symPZCall(which){
+  return (n,sc,wantAst)=>{
+    const F=symPrep(n.args[0]);
+    let s;
+    if(n.args.length>=2)s=symVarName(n.args[1]);
+    else{const free=[...symFree(F,new Set())];s=free.includes('s')?'s':(free.length===1?free[0]:'s');}
+    const r=symPoleZero(F,s),list=which==='poles'?r.poles:r.zeros;
+    if(!list.length)throw new CalcError(which==='poles'?'No finite poles (the denominator is constant)':'No finite zeros (the numerator is constant)');
+    return new Mat([list.map(cleanC)]);
+  };
+}
+
 /* ---- angle handling: everything is radians; sind/cosd/tand switch to degrees internally (exact multiples of 90) ---- */
 function sinA(x){
   if(CFG.deg){if(x%90===0){return [0,1,0,-1][((x/90)%4+4)%4];}x=x*Math.PI/180;}
@@ -1499,17 +2132,38 @@ def('Matrix','eye','eye(n)','n-by-n identity matrix','eye(3)',1,1,n=>matEye(dimA
 def('Matrix','zeros','zeros(r, c)','Matrix of zeros (c defaults to r)','zeros(2, 3)',1,2,(r,c)=>{r=dimArg(r,'zeros');c=c===undefined?r:dimArg(c,'zeros');return new Mat(Array.from({length:r},()=>Array(c).fill(0)));});
 def('Matrix','ones','ones(r, c)','Matrix of ones (c defaults to r)','ones(2, 3)',1,2,(r,c)=>{r=dimArg(r,'ones');c=c===undefined?r:dimArg(c,'ones');return new Mat(Array.from({length:r},()=>Array(c).fill(1)));});
 def('Algebra','quad','quad(a, b, c)','Roots of a\u00b7x\u00b2 + b\u00b7x + c = 0 from the quadratic formula, as the matrix [x1 x2] (complex roots too)','quad(1, -3, 2)',3,3,(a,b,c)=>new Mat([quadFormula(a,b,c).r]));
-const symDef=(name,sig,desc,ex,min,max,call)=>{
+const symDef=(name,sig,desc,ex,min,max,call,noAst)=>{
   def('Calculus',name,sig,desc,ex,min,max,()=>{throw new CalcError(name+'() works on an expression, not a value');});
   FUNCS[name].sym=(n,sc)=>{
     if(n.args.length<min||n.args.length>max)throw E(name+'() takes '+min+'–'+max+' argument(s):  '+sig,n.pos);
     try{return call(n,sc,false);}catch(e){if(e instanceof CalcError&&e.pos===undefined)throw E(e.message,n.pos);throw e;}
   };
-  FUNCS[name].symAst=n=>call(n,null,true);
+  if(!noAst)FUNCS[name].symAst=n=>call(n,null,true);
 };
 symDef('diff','diff(expr, x, n)','Symbolic derivative. x is optional when there is one variable; n = order. Example: diff(x^2*sin(x))','diff(x^2*sin(x))',1,3,symDiffCall);
 symDef('integ','integ(expr, x, a, b)','Integral. Without limits: closed-form antiderivative + C. With limits (a, b, use inf for infinity): exact if possible, else numeric','integ(x*exp(x))',1,4,symIntegCall);
 symDef('integrate','integrate(expr, x, a, b)','Same as integ','integrate(1/(x^2+1), 0, inf)',1,4,symIntegCall);
+def('Calculus','u','u(t)','Unit step: 0 for t < 0, 1 for t >= 0. u(t-T) is a step delayed by T. Write 2*u(t), not 2u(t) (2u means 2 micro)','u(t-2)',1,1,x=>{x=real(x,'u');return x>=0?1:0;});
+def('Calculus','delta','delta(t)','Unit impulse (Dirac delta). Used symbolically by LT / ILT / integ; numerically it is infinite at 0 and 0 elsewhere','delta(t-1)',1,1,x=>{x=real(x,'delta');return x===0?Infinity:0;});
+symDef('LT','LT(f, t, s)','Laplace transform of f(t); t and s are optional. Handles t^n, exp(a*t), sin/cos/sinh/cosh, delta(t-T), u(t-T), sums and products of those','LT(t*exp(-2*t)*sin(3*t))',1,3,symLTCall);
+symDef('laplace','laplace(f, t, s)','Same as LT','laplace(1 - exp(-t))',1,3,symLTCall);
+symDef('ILT','ILT(F, s, t)','Inverse Laplace transform of a rational F(s): partial fractions with repeated and complex poles, exp(-s*T) delays. Result is for t >= 0','ILT(1/(s^2+3*s+2))',1,3,symILTCall);
+symDef('ilaplace','ilaplace(F, s, t)','Same as ILT','ilaplace(1/(s*(s^2+4)))',1,3,symILTCall);
+symDef('poles','poles(F, s)','Poles of a rational F(s) as a matrix (repeated poles listed repeatedly, cancelled pole/zero pairs removed). Works on LT(...) results','poles(LT(exp(-t)*sin(2*t)))',1,2,symPZCall('poles'),true);
+{
+  const zf=FUNCS.zeros;
+  zf.desc='Matrix of zeros (c defaults to r). zeros(F) with a rational F(s) gives the zeros of a transfer function';
+  zf.sig='zeros(r, c)  or  zeros(F, s)';
+  zf.sym=(n,sc)=>{
+    let vals=null;
+    try{vals=n.args.map(a=>U(ev(a,sc)));}catch(e){if(!(e instanceof CalcError))throw e;}
+    if(vals&&vals.every(v=>typeof v==='number')){
+      if(vals.length>2)throw E('zeros() takes 1\u20132 numbers (matrix size) or a rational function F(s)',n.pos);
+      return zf.fn(...vals);
+    }
+    try{return symPZCall('zeros')(n,sc,false);}catch(e){if(e instanceof CalcError&&e.pos===undefined)throw E(e.message,n.pos);throw e;}
+  };
+}
 def('Complex','mag','mag(z)','Magnitude |z|','mag(3+4j)',1,1,cabs);
 def('Complex','phase','phase(z)','Phase angle of z in radians (phase_deg for degrees)','phase(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
 def('Complex','ph','ph(z)','Short for phase(z): angle of z in radians','ph(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
@@ -1618,7 +2272,7 @@ def('Number / Bits','signed','signed(x, w)',"Read a w-bit pattern as a signed (t
 const exOf=f=>typeof f.ex==='function'?f.ex():f.ex;
 
 /* ---- name validation ---- */
-const COMMANDS=new Set(['help','?','clear','cls','vars','funcs','consts','constants','mode','digits','deg','rad','del','delall','reset','solve']);
+const COMMANDS=new Set(['guide','help','?','clear','cls','vars','funcs','consts','constants','mode','digits','deg','rad','del','delall','reset','solve']);
 const isReserved=n=>has(FUNCS,n)||COMMANDS.has(n)||n==='ans'||n==='ans2'||n==='pi'||n==='e'||n==='j';
 function validateName(name,kind,pos){
   const what=kind==='func'?'Function':'Variable';
@@ -1910,6 +2564,7 @@ function runCommand(t,items,ui){
   const info=h=>items.push({kind:'info',html:h});
   switch(c){
     case 'help':case '?':if(argc)return false;ui.push({cmd:'help'});return true;
+    case 'guide':if(argc)return false;ui.push({cmd:'guide'});return true;
     case 'clear':case 'cls':{if(argc)return false;const n=STATE.vars.size+STATE.funcs.size;wipeState();ui.push({cmd:'clear',n});return true;}
     case 'vars':if(argc)return false;items.push(varsItem());return true;
     case 'consts':case 'constants':if(argc)return false;ui.push({cmd:'consts'});return true;
@@ -2247,6 +2902,7 @@ function renderItem(it){
 }
 function helpHtml(){
   return `<div class="helpbox">
+<p><button class="tb" data-guide>&#128214; Open the illustrated guide</button> &nbsp;<span class="alt">(this page is the compact reference)</span></p>
 <h3>NUMBERS &amp; ENGINEERING SUFFIXES (case-sensitive, glued to the number)</h3>
 <table><tr><td>a f p n u/µ</td><td>atto femto pico nano micro &nbsp;<code>2.2u</code> <code>10p</code></td></tr>
 <tr><td>m &nbsp; k</td><td>milli, kilo &nbsp;<code>5m</code> = 0.005 &nbsp; <code>4.7k</code> = 4700</td></tr>
@@ -2261,6 +2917,7 @@ function helpHtml(){
 <tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2x = 4</code> gives <code>x = 2</code>, <code>2x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
+<tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros, and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
@@ -2304,10 +2961,11 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','solve x,y,z: 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','solve x,y,z: 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
-  b.appendChild(mkEl('p','','Type <b>help</b> for the full guide. Open <b style="color:var(--coral)">⚛ Constants</b> for Boltzmann, Planck, q, c, &hellip;'));
+  if(!guideSeen)b.appendChild(mkEl('p','ginvite','<button class="tb pulse" data-guide>&#128214; New here? Take the 5-minute guide</button>'));
+  b.appendChild(mkEl('p','','Type <b>help</b> for the compact reference, <b>guide</b> for the illustrated guide. Open <b style="color:var(--coral)">⚛ Constants</b> for Boltzmann, Planck, q, c, &hellip;'));
   logEl.appendChild(b);
 }
 
@@ -2345,6 +3003,7 @@ function runInput(){
   res.ui.forEach(u=>{
     if(u.cmd==='clear'){logEl.innerHTML='';sessionText.length=0;refreshVars();save();toast(u.n?'Cleared the screen and '+u.n+' variable'+(u.n>1?'s/functions':'')+'':'Screen cleared');}
     if(u.cmd==='consts')toggleConsts(true);
+    if(u.cmd==='guide')guideOpen();
     if(u.cmd==='sync')syncBar();
   });
   refreshVars();save();updateHint();updateGhost();
@@ -2352,7 +3011,7 @@ function runInput(){
 function wordBeforeCaret(){const m=/[A-Za-z_][A-Za-z0-9_]*$/.exec(inp.value.slice(0,inp.selectionStart));return m?m[0]:'';}
 function candidates(w){
   if(!w)return[];
-  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','matrix','help','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall']);
+  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','matrix','help','guide','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall']);
   return [...all].filter(n=>n.startsWith(w)&&n!==w||n===w).sort((a,b)=>a.length-b.length||a.localeCompare(b));
 }
 function complete(){
@@ -2507,7 +3166,82 @@ $('dMinus').onclick=()=>{CFG.digits=Math.max(3,CFG.digits-1);syncBar();inp.focus
 $('dPlus').onclick=()=>{CFG.digits=Math.min(15,CFG.digits+1);syncBar();inp.focus();};
 $('btnConsts').onclick=()=>toggleConsts();
 $('cclose').onclick=()=>toggleConsts(false);
-$('btnHelp').onclick=()=>{inp.value='help';runInput();};
+/* ---- the guide: live examples are computed by the real engine on a clean state, which is restored afterwards ---- */
+const gEl=$('guide');
+let guideSeen=false;
+try{guideSeen=!!localStorage.getItem('engcalc.guideSeen');}catch(e){}
+if(!guideSeen)$('btnHelp').classList.add('pulse');
+function guideCompute(){
+  const exs=[...gEl.querySelectorAll('.gx')];
+  const snap=serializeState(),cfg={mode:CFG.mode,digits:CFG.digits};
+  try{
+    wipeState();CFG.mode='eng';CFG.digits=6;
+    exs.forEach(el=>{
+      const lines=el.dataset.ex.split('\n');
+      let shown='',bad=false;
+      lines.forEach((l,i)=>{
+        const r=execLine(l),it=r.items[r.items.length-1];
+        if(i===lines.length-1&&it){bad=it.kind==='err';shown=itemText(it)+((it.v instanceof Sym&&it.v.c)?' + C':'');}
+      });
+      el.querySelector('.gin').innerHTML=lines.map(hl).join('\n');
+      const o=el.querySelector('.gout');o.textContent=shown;o.classList.toggle('bad',bad);
+    });
+  }finally{
+    wipeState();loadState(snap);CFG.mode=cfg.mode;CFG.digits=cfg.digits;
+  }
+}
+function guideOpen(){
+  guideCompute();
+  gEl.hidden=false;gEl.scrollTop=0;guideProgress();guideActive();
+  guideSeen=true;try{localStorage.setItem('engcalc.guideSeen','1');}catch(e){}
+  $('btnHelp').classList.remove('pulse');
+  const inv=logEl.querySelector('.ginvite');if(inv)inv.remove();
+}
+function guideClose(){gEl.hidden=true;inp.focus();}
+function guideProgress(){const m=gEl.scrollHeight-gEl.clientHeight;$('gProg').style.width=(m>0?Math.min(100,gEl.scrollTop/m*100):0)+'%';}
+gEl.addEventListener('scroll',guideProgress);
+$('gClose').onclick=guideClose;
+$('btnHelp').onclick=guideOpen;
+gEl.addEventListener('click',e=>{
+  const t=e.target;
+  const tryBtn=t.closest('.gtry');
+  if(tryBtn){
+    const lines=tryBtn.closest('.gx').dataset.ex.split('\n');
+    guideClose();showTab('console');
+    lines.forEach(l=>{inp.value=l;runInput();});
+    inp.focus();return;
+  }
+  if(t.closest('[data-close-guide]')){guideClose();return;}
+  if(t.closest('[data-guide-help]')){guideClose();inp.value='help';runInput();return;}
+  const sc=t.closest('[data-scroll]');
+  if(sc){const el=document.getElementById(sc.dataset.scroll);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const tab=t.closest('[data-tab]');
+  if(tab){guideClose();showTab(tab.dataset.tab);return;}
+  const act=t.closest('[data-act]');
+  if(act){
+    guideClose();
+    if(act.dataset.act==='consts')toggleConsts(true);
+    else if(act.dataset.act==='funcs')openFuncs(true);
+    else if(act.dataset.act==='export')$('btnExport').click();
+    return;
+  }
+  const a=t.closest('.g-toc a');
+  if(a){e.preventDefault();const el=document.getElementById(a.getAttribute('href').slice(1));if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});}
+});
+/* highlight the current section in the contents list (and keep its chip in view on phones) */
+function guideActive(){
+  const top=gEl.getBoundingClientRect().top;let cur=null;
+  gEl.querySelectorAll('.g-sec').forEach(sec=>{if(sec.getBoundingClientRect().top-top<=150)cur=sec;});
+  const toc=$('gToc');let hit=null;
+  toc.querySelectorAll('a').forEach(a=>{const on=!!cur&&a.getAttribute('href')==='#'+cur.id;a.classList.toggle('on',on);if(on)hit=a;});
+  if(hit&&getComputedStyle(toc).flexDirection==='row')toc.scrollLeft=hit.offsetLeft-toc.clientWidth/2+hit.clientWidth/2;
+}
+gEl.addEventListener('scroll',guideActive);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!gEl.hidden){guideClose();}
+  else if(e.key==='F1'){e.preventDefault();if(gEl.hidden)guideOpen();else guideClose();}
+});
+logEl.addEventListener('click',e=>{if(e.target.closest('[data-guide]'))guideOpen();});
 $('btnClear').onclick=()=>{clearAll();inp.focus();};
 $('btnVars').onclick=()=>openVars(!$('vars').classList.contains('open'));
 $('btnFuncs').onclick=()=>openFuncs(!$('funcs').classList.contains('open'));
@@ -2698,6 +3432,18 @@ const REF=[
     ['hyperbolic','cosh\u00b2x \u2212 sinh\u00b2x = 1;  sinh x = (e\u02e3\u2212e\u207b\u02e3)/2;  cosh x = (e\u02e3+e\u207b\u02e3)/2',''],
     ['logs','ln(ab) = ln a + ln b;  log_b x = ln x / ln b',''],
     ['decibels','dB = 20 log10(V2/V1) = 10 log10(P2/P1);  dBm = 10 log10(P / 1 mW)','3 dB = \u00d7\u221a2 in voltage, \u00d72 in power']
+  ]},
+  {t:'Laplace transforms  (F(s) = ∫₀^∞ f(t) e^(−st) dt)',rows:[
+    ['basic pairs','1 ↔ 1/s;   tⁿ ↔ n!/sⁿ⁺¹;   e^(at) ↔ 1/(s−a);   t e^(at) ↔ 1/(s−a)²','LT(t*exp(-2*t))'],
+    ['sinusoids','sin ωt ↔ ω/(s²+ω²);   cos ωt ↔ s/(s²+ω²);   sinh ωt ↔ ω/(s²−ω²);   cosh ωt ↔ s/(s²−ω²)',''],
+    ['damped','e^(−at) sin ωt ↔ ω/((s+a)²+ω²);   e^(−at) cos ωt ↔ (s+a)/((s+a)²+ω²)',''],
+    ['impulse, step','δ(t) ↔ 1;   u(t) ↔ 1/s;   u(t−T) ↔ e^(−sT)/s;   δ(t−T) ↔ e^(−sT)','delta(t), u(t) in the calculator'],
+    ['properties','a f + b g ↔ a F + b G;   e^(at) f(t) ↔ F(s−a);   t f(t) ↔ −F′(s);   f(t−T) u(t−T) ↔ e^(−sT) F(s)',''],
+    ['derivative, integral','f′(t) ↔ sF(s) − f(0);   f″(t) ↔ s²F(s) − s f(0) − f′(0);   ∫₀ᵗ f ↔ F(s)/s',''],
+    ['limits','initial value f(0⁺) = lim s→∞ sF(s);   final value f(∞) = lim s→0 sF(s)','final value only if all poles of sF(s) are in the left half-plane'],
+    ['convolution','(f * g)(t) ↔ F(s) G(s)','a system output is the input convolved with the impulse response h(t) = ILT(H(s))'],
+    ['step response','y(t) = ILT(H(s)/s)','ILT(H/s) in the calculator; poles(H) gives the stability picture'],
+    ['2nd-order system','H = ωn²/(s² + 2ζωn s + ωn²);  poles at −ζωn ± jωn√(1−ζ²);  overshoot = e^(−πζ/√(1−ζ²));  settling (2%) ≈ 4/(ζωn)','']
   ]},
   {t:'Sums & factorials',rows:[
     ['geometric','\u03a3\u2096\u208c\u2080\u207f r\u1d4f = (1 \u2212 r\u207f\u207a\u00b9)/(1 \u2212 r);  \u03a3\u2096\u208c\u2080^\u221e r\u1d4f = 1/(1 \u2212 r)','|r| < 1 for the infinite sum'],

@@ -11,7 +11,7 @@ const inp=d.getElementById('inp'),log=d.getElementById('log');
 const run=s=>{inp.value=s;inp.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));return log.lastElementChild.textContent.replace(/\s+/g,' ');};
 
 // every welcome example runs without an error
-const chipTexts=[...d.querySelectorAll('#log button, #log .try, #log [data-run]')].map(b=>b.textContent);
+const chipTexts=[...d.querySelectorAll('#log .banner .ex button')].map(b=>b.textContent);
 let bad=[];
 for(const c of chipTexts){const out=run(c);if(/✖|ERROR/.test(out))bad.push(c+' -> '+out.slice(0,80));}
 ok(bad.length===0,'welcome examples all run ('+chipTexts.length+'): '+bad.join(' | '));
@@ -42,6 +42,15 @@ ok(!!dbtn,'diff button exists');
 dbtn.dispatchEvent(new w.Event('mouseenter'));
 ok(d.getElementById('finfo').textContent.includes('diff(expr'),'diff info card shows its signature');
 
+r=run('LT(t*exp(-2*t))');
+ok(r.includes('1/(s + 2)^2'),'LT works in the console: '+r);
+r=run('ILT(1/(s^2+3*s+2))');
+ok(r.includes('exp(-t) - exp(-2*t)'),'ILT works in the console: '+r);
+r=run('poles(1/(s^2+3*s+2))');
+ok(r.includes('-1')&&r.includes('-2'),'poles works in the console: '+r);
+ok(['LT','ILT','poles','delta','u'].every(n=>[...d.querySelectorAll('#fgroups .fb')].some(b=>b.textContent===n)),'LT, ILT, poles, delta and u are in the function drawer');
+[...d.querySelectorAll('#tabs button')].find(b=>b.dataset.tab==='formulas').click();
+ok(d.getElementById('fref').textContent.includes('Laplace transforms'),'Formulas tab has a Laplace transforms group');
 ok(errors.length===0,'no script errors '+errors.join('; '));
 console.log(fail?fail+' FAILED':'all passed');
 process.exit(fail?1:0);
