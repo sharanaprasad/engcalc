@@ -8,7 +8,7 @@ const {execLine,fmtValue,CFG,STATE,ev,parseExpr,symPrint,U,Sym,Mat,numIntegrate,
 let fail=0,total=0;
 function reset(){CFG.deg=false;CFG.mode='eng';CFG.digits=6;STATE.vars.clear();STATE.funcs.clear();STATE.solved.clear();STATE.ans=STATE.ans2=undefined;}
 function last(line){const r=execLine(line);return r.items[r.items.length-1];}
-function text(line){const it=last(line);if(!it)return 'NOITEM';if(it.kind==='err')return 'ERR: '+it.msg;if(it.kind==='val'||it.kind==='assign')return fmtValue(it.v).text;if(it.kind==='def')return 'DEF '+it.name;return it.kind;}
+function text(line){const it=last(line);if(!it)return 'NOITEM';if(it.kind==='err')return 'ERR: '+it.msg;if(it.kind==='val'||it.kind==='assign')return fmtValue(it.v).text;if(it.kind==='solve')return it.rows.map(r=>r.name+' = '+fmtValue(r.v).text).join(', ');if(it.kind==='def')return 'DEF '+it.name;return it.kind;}
 function t(line,exp){total++;const got=text(line);const ok=exp instanceof RegExp?exp.test(got):got===exp;if(!ok){fail++;console.log('FAIL',JSON.stringify(line),'=>',JSON.stringify(got),'expected',exp);}}
 const close=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(a),Math.abs(b));
 const nodeAt=(ast,vars)=>U(ev(ast,new Map(Object.entries(vars))));
@@ -36,15 +36,15 @@ t('ILT(1/(s+1)+2)','2*delta(t) + exp(-t)');
 t('ILT((s+1)/(s^2+2s+5))','exp(-t)*cos(2*t)');
 t('ILT(1/(s^2+1)*exp(-s))','sin(t - 1)*u(t - 1)');
 t('ILT(LT(t^2*exp(-3t)))','t^2*exp(-3*t)');
-t('poles(1/(s^2+3s+2))','[-1 -2]');
-t('poles((s+1)/(s^2+3s+2))','[-2]');
-t('zeros((s+1)/(s^2+3s+5))','[-1]');
+t('poles(1/(s^2+3s+2))','p1 = -1, p2 = -2');
+t('poles((s+1)/(s^2+3s+2))','p1 = -2');
+t('zeros((s+1)/(s^2+3s+5))','z1 = -1');
 t('zeros((s+1)/(s^2+3s+2))',/No finite zeros/);   // the zero cancels the pole at -1
-t('zeros((s-2)*(s+5)/(s^2+1))','[2 -5]');
-t('poles(1/(s+1)^3)','[-1 -1 -1]');
-t('poles(1/(s^2+2s+5))','[-1+2j -1-2j]');
-t('poles(LT(exp(-t)*sin(2t)))','[-1+2j -1-2j]');
-t('poles(1/(s*(s+1)*(s+2)*(s+3)*(s+4)))','[0 -1 -2 -3 -4]');
+t('zeros((s-2)*(s+5)/(s^2+1))','z1 = 2, z2 = -5');
+t('poles(1/(s+1)^3)','p1 = -1, p2 = -1, p3 = -1');
+t('poles(1/(s^2+2s+5))','p1 = -1 + 2j, p2 = -1 - 2j');
+t('poles(LT(exp(-t)*sin(2t)))','p1 = -1 + 2j, p2 = -1 - 2j');
+t('poles(1/(s*(s+1)*(s+2)*(s+3)*(s+4)))','p1 = 0, p2 = -1, p3 = -2, p4 = -3, p5 = -4');
 t('zeros(2,3)','[0 0 0; 0 0 0]');
 t('zeros(3)','[0 0 0; 0 0 0; 0 0 0]');
 
@@ -105,29 +105,31 @@ for(const F of ['1/(s^2+3s+2)','(s+1)/(s^2+3s+2)','1/(s^3+3s^2+3s+1)','1/(s^4+5s
   let bad='';
   const mag=x=>x&&x.re!==undefined?Math.hypot(x.re,x.im):Math.abs(x);
   const resid=(c,p)=>{const v=plEval(c,p),sc=c.reduce((a,co,k)=>a+Math.abs(co)*Math.pow(Math.max(1,mag(p)),k),0);return mag(v)/sc;};
-  P.v.d[0].forEach(p=>{if(!(resid(D,p)<=1e-6))bad+=' pole '+JSON.stringify(p)+' residual '+resid(D,p);});
-  if(Z.kind!=='err'&&N.length>1)Z.v.d[0].forEach(z=>{if(!(resid(N,z)<=1e-6))bad+=' zero '+JSON.stringify(z)+' residual '+resid(N,z);});
+  P.rows.map(r=>r.v).forEach(p=>{if(!(resid(D,p)<=1e-6))bad+=' pole '+JSON.stringify(p)+' residual '+resid(D,p);});
+  if(Z.kind!=='err'&&N.length>1)Z.rows.map(r=>r.v).forEach(z=>{if(!(resid(N,z)<=1e-6))bad+=' zero '+JSON.stringify(z)+' residual '+resid(N,z);});
   if(bad){fail++;console.log('FAIL poles/zeros of '+F+':'+bad);}
 }
 
 // ---- notation: transfer functions as functions, Sym variables, defined component values
 reset();
 t('H(s)=1/(s^2+s+1)','DEF H');
-t('poles(H(s))','[-500m+866.025m*j -500m-866.025m*j]');
+t('poles(H(s))','p1 = -500m + 866.025m*j, p2 = -500m - 866.025m*j');
 total++;{const it=last('ILT(H(s)/s)');const g=it.v.ast,s=2.3;const num=numIntegrate(x=>nodeAt(g,{t:x})*Math.exp(-s*x),0,60);if(!close(num,1/(s*(s*s+s+1)),1e-6)){fail++;console.log('FAIL step response of H');}}
 t('H1(s)=1/(s^2+s+1)','DEF H1');
-t('poles(H1)','[-500m+866.025m*j -500m-866.025m*j]');
-t('poles(H1(s))','[-500m+866.025m*j -500m-866.025m*j]');
+t('poles(H1)','p1 = -500m + 866.025m*j, p2 = -500m - 866.025m*j');
+t('p1','-500m + 866.025m*j');
+t('p1*p2','1');   // the product of the poles of s^2+s+1
+t('poles(H1(s))','p1 = -500m + 866.025m*j, p2 = -500m - 866.025m*j');
 t('ILT(H1/s)',/exp\(-t\/2\)/);
 t('F2(x)=x^2','DEF F2');
 t('diff(F2)','2*x');
 t('integ(F2)','x^3/3');
 t('LT(F2(t))','2/s^3');
 t('G1 = LT(exp(-t))','1/(s + 1)');
-t('poles(G1)','[-1]');
+t('poles(G1)','p1 = -1');
 t('R1 = 2.2k','2.2k');
 t('C1 = 1u','1µ');
-t('poles(1/(R1*C1*s+1))',/^\[-454\.5/);
+t("poles(1/(R1*C1*s+1))",/^p1 = -454.5/);
 t('3s',/Unknown name 's'/);
 t('5ms','5m');
 t('s = 2','2');

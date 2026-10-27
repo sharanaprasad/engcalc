@@ -561,7 +561,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <section class="g-sec" id="g-laplace" style="--ac:var(--mag)">
         <div class="g-num">9</div>
         <h2>Laplace &amp; transfer functions</h2>
-        <p><b>LT</b> transforms a time function into <i>s</i>; <b>ILT</b> goes back. <b>poles</b> and <b>zeros</b> read off the roots. Use <b>u(t)</b> for the unit step and <b>delta(t)</b> for the impulse.</p>
+        <p><b>LT</b> transforms a time function into <i>s</i>; <b>ILT</b> goes back. <b>poles</b> and <b>zeros</b> read off the roots and store them as <code>p1</code>, <code>p2</code>&hellip; and <code>z1</code>, <code>z2</code>&hellip; Use <b>u(t)</b> for the unit step and <b>delta(t)</b> for the impulse.</p>
         <div class="gx" data-ex="LT(exp(-2*t)*sin(3*t))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="ILT(1/(s^2+3*s+2))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="poles(1/(s^2+2*s+5))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
@@ -1955,7 +1955,9 @@ function symPZCall(which){
     else{const free=[...symFree(F,new Set())];s=free.includes('s')?'s':(free.length===1?free[0]:'s');}
     const r=symPoleZero(F,s),list=which==='poles'?r.poles:r.zeros;
     if(!list.length)throw new CalcError(which==='poles'?'No finite poles (the denominator is constant)':'No finite zeros (the numerator is constant)');
-    return new Mat([list.map(cleanC)]);
+    const m=new Mat([list.map(cleanC)]);
+    m.pz={kind:which,names:list.map((_,i)=>(which==='poles'?'p':'z')+(i+1))};
+    return m;
   };
 }
 
@@ -2553,6 +2555,12 @@ function execStatement(sIn,base){
   POSOFF=base;
   const ast=parseExpr(s);
   const raw=ev(ast,null);
+  if(!fmt&&raw instanceof Mat&&raw.pz&&ast.t==='call'){
+    const rows=raw.d[0].map((v,i)=>({name:raw.pz.names[i],v}));
+    rows.forEach(r=>{STATE.vars.set(r.name,r.v);STATE.solved.add(r.name);});
+    STATE.ans2=STATE.ans;STATE.ans=raw;
+    return {kind:'solve',rows,warns:[],title:raw.pz.kind};
+  }
   /* bare "ans" / "ans2" is a reference, not a new result: don't push a duplicate history entry */
   const bare=ast.t==='id'&&(ast.name==='ans'||ast.name==='ans2');
   if(!bare){STATE.ans2=STATE.ans;STATE.ans=raw instanceof Sym?raw:U(raw);}
@@ -2871,7 +2879,7 @@ function itemText(it){
     case 'def':return 'f '+it.name+'('+it.params.join(', ')+') = '+it.body;
     case 'err':return 'ERROR: '+it.msg;
     case 'vars':return it.list.map(x=>x.name+' = '+fmtValue(x.v).text).join('\n');
-    case 'solve':return 'solution: '+it.rows.map(x=>x.name+' = '+fmtValue(x.v).text).join(', ');
+    case 'solve':return (it.title||'solution')+': '+it.rows.map(x=>x.name+' = '+fmtValue(x.v).text).join(', ');
     default:return (it.html||'').replace(/<br>/g,'\n').replace(/<[^>]+>/g,'');
   }
 }
@@ -2894,7 +2902,7 @@ function renderItem(it){
       if(it.pos!==undefined&&it.pos>=0)box.appendChild(mkEl('pre','caret',' '.repeat(it.pos+2)+'\u2191'));
       box.appendChild(mkEl('div','out err','\u2716 '+esc(it.msg)));break;}
     case 'solve':{
-      box.appendChild(mkEl('div','alt','solution &mdash; stored as variables:'));
+      box.appendChild(mkEl('div','alt',(it.title?esc(it.title):'solution')+' &mdash; stored as variables:'));
       it.rows.forEach(x=>box.appendChild(valueRow('<span class="vn">'+esc(x.name)+'</span><span class="eq">=</span>',x.v)));
       if(it.note)box.appendChild(mkEl('div','alt',esc(it.note)));
       break;}
@@ -2924,7 +2932,7 @@ function helpHtml(){
 <tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2x = 4</code> gives <code>x = 2</code>, <code>2x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
-<tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros, and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
+<tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros as <code>p1</code>, <code>p2</code>, &hellip; and <code>z1</code>, <code>z2</code>, &hellip; (stored as variables), and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
