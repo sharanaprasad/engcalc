@@ -218,10 +218,9 @@ button{font-family:inherit;cursor:pointer}
   .g-num{font-size:40px}
 }
 .pl-grid{display:flex;flex-direction:column;gap:12px}
-.pl-main{order:-1;background:var(--panel);z-index:2}
 .pl-side{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:10px;align-items:start}
-@media (min-width:901px){.pl-main{position:sticky;top:-14px;padding-top:6px}}
-.pl-side details{border:1px solid var(--line);border-radius:12px;margin:0;background:rgba(4,7,18,.35)}
+
+.pl-top details,.pl-side details{border:1px solid var(--line);border-radius:12px;margin:0;background:rgba(4,7,18,.35)}
 .pl-side summary{cursor:pointer;padding:8px 12px;font-weight:700;color:var(--amber);font-size:13px;letter-spacing:.4px}
 .pl-in{padding:2px 12px 10px}
 .pl-row{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:7px 0;font-size:12px;color:var(--dim)}
@@ -232,6 +231,7 @@ button{font-family:inherit;cursor:pointer}
 .pl-tr .pl-e{grid-row:1;grid-column:2;width:100%}
 .pl-row2{grid-column:2;display:flex;gap:6px;flex-wrap:wrap}
 .pl-row2 input{flex:1;min-width:90px}
+@media (min-width:1300px){.pl-top .pl-tr{grid-template-columns:14px minmax(0,2.2fr) auto auto minmax(0,1fr)}.pl-top .pl-row2{display:contents}.pl-top .pl-row2 input{min-width:0}}
 .pl-sw{width:11px;height:11px;border-radius:50%;display:inline-block}
 .pl-cv{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b1020}
 #plCv{display:block;width:100%;touch-action:pan-y;cursor:crosshair}
@@ -412,7 +412,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <div id="view-plot" class="view"><div class="vpad pl">
         <div class="vtitle">Plot<span class="vsub">any variable &middot; log axes &middot; two y axes &middot; markers you place &middot; export for slides</span></div>
         <div class="pl-grid">
-          <div class="pl-side">
+          <div class="pl-top">
             <details open><summary>Functions &amp; range</summary><div class="pl-in">
               <div class="pl-row"><label>Variable <input id="plVar" size="4" value="x" spellcheck="false" autocomplete="off"></label>
                 <label>from <input id="plA" size="7" value="1" spellcheck="false" autocomplete="off"></label>
@@ -430,6 +430,12 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
                 <button class="chip" data-plex="lp">RC low-pass</button><button class="chip" data-plex="step">step + axes</button><button class="chip" data-plex="trig">sin &amp; cos</button></div>
               <div class="alt" style="padding-left:0">Use any variable name above. Complex results: pick magnitude, dB or phase. Your own functions work: <code>H1(j*2*pi*f)</code>.</div>
             </div></details>
+          </div>
+          <div class="pl-main">
+            <div class="pl-cv"><canvas id="plCv"></canvas></div>
+            <div class="alt" id="plMsg" style="padding-left:2px">Type an expression and press Plot.</div>
+          </div>
+          <div class="pl-side">
             <details><summary>Axes &amp; labels</summary><div class="pl-in">
               <div class="pl-row"><label>title <input id="plTitle" size="22" placeholder="optional"></label></div>
               <div class="pl-row"><label>x label <input id="plXL" size="12" placeholder="Frequency"></label><label>unit <input id="plXU" size="5" placeholder="Hz"></label></div>
@@ -451,10 +457,6 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
                 <label>size <select id="plSize"><option value="800x450">800 &times; 450</option><option value="1000x563" selected>1000 &times; 563</option><option value="1280x720">1280 &times; 720</option><option value="1000x700">1000 &times; 700 (tall)</option></select></label></div>
               <div class="pl-row"><button class="tb pri" id="plPng">&#10515; Download PNG</button><button class="tb" id="plCopy">&#10697; Copy image</button><button class="tb" id="plCsv">&#10515; CSV data</button></div>
             </div></details>
-          </div>
-          <div class="pl-main">
-            <div class="pl-cv"><canvas id="plCv"></canvas></div>
-            <div class="alt" id="plMsg" style="padding-left:2px">Type an expression and press Plot.</div>
           </div>
         </div>
       </div></div>
@@ -4072,7 +4074,7 @@ function plWrite(sp){
   ['L','R'].forEach(ax=>{const a=sp.axes[ax];plId('pl'+ax+'S').value=a.scale||'lin';plId('pl'+ax+'Min').value=f(a.min);plId('pl'+ax+'Max').value=f(a.max);plId('pl'+ax+'L').value=a.label||'';plId('pl'+ax+'U').value=a.unit||'';});
 }
 function plSave(){try{localStorage.setItem('engcalc.plot',JSON.stringify(PLS.spec));}catch(e){}}
-function plRun(){
+function plRun(scroll){
   const msg=plId('plMsg');
   try{
     const sp=plRead();
@@ -4082,12 +4084,14 @@ function plRun(){
     plSave();
   }catch(e){PLS.data=null;msg.textContent=e.message;msg.classList.add('bad');}
   plMarkersRender();plPaint();
+  /* on a phone the controls fill the screen: bring the fresh plot into view */
+  if(scroll===true&&window.innerWidth<900&&PLS.data){const cv=plId('plCv');if(cv.scrollIntoView)cv.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
 function plPaint(){
   const cv=plId('plCv');if(!cv)return;
   const w=Math.max(260,Math.floor(cv.parentElement.clientWidth)||620);
   const stacked=PLS.spec&&PLS.spec.layout==='stacked';
-  const h=Math.round(w*(stacked?0.74:0.56));
+  const vh=window.innerHeight||800,h=Math.round(Math.min(w*(stacked?0.74:0.56),Math.max(240,vh*(stacked?0.64:0.5))));
   const dpr=Math.min(3,window.devicePixelRatio||1);
   PLS.w=w;PLS.h=h;
   cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
@@ -4169,8 +4173,8 @@ function initPlot(){
   if(saved&&saved.traces){try{PLS.data=plotSample(PLS.spec);}catch(e){PLS.data=null;}}
   plMarkersRender();
   const debounce=()=>{clearTimeout(PLS.timer);PLS.timer=setTimeout(plRun,350);};
-  plId('plGo').onclick=plRun;
-  ['plVar','plA','plB','plN','plE0','plE1','plE2','plLb0','plLb1','plLb2','plTitle','plXL','plXU','plLL','plLU','plRL','plRU','plLMin','plLMax','plRMin','plRMax'].forEach(id=>{plId(id).addEventListener('input',debounce);plId(id).addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(PLS.timer);plRun();}});});
+  plId('plGo').onclick=()=>plRun(true);
+  ['plVar','plA','plB','plN','plE0','plE1','plE2','plLb0','plLb1','plLb2','plTitle','plXL','plXU','plLL','plLU','plRL','plRU','plLMin','plLMax','plRMin','plRMax'].forEach(id=>{plId(id).addEventListener('input',debounce);plId(id).addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(PLS.timer);plRun(true);}});});
   ['plXS','plLay','plAs0','plAs1','plAs2','plAx0','plAx1','plAx2','plLS','plRS'].forEach(id=>plId(id).addEventListener('change',plRun));
   plId('plTheme').addEventListener('change',()=>{plMarkersRender();plPaint();});
   plId('plClr').onclick=()=>{PLS.spec=new PlotSpec({xvar:plId('plVar').value||'x',xmin:1,xmax:1e6,xscale:'log',traces:[{expr:'',as:'auto',axis:'L',label:''},{expr:'',as:'auto',axis:'L',label:''},{expr:'',as:'auto',axis:'R',label:''}]});PLS.data=null;plWrite(PLS.spec);plMarkersRender();plSave();plId('plMsg').textContent='Cleared.';plId('plMsg').classList.remove('bad');plPaint();};

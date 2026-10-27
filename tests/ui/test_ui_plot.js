@@ -42,6 +42,14 @@ const mrows=()=>d.querySelectorAll('#plMList .pl-mk').length;
   ok(texts.includes('1k')&&texts.includes('100k')&&texts.some(t=>/Frequency\s+\(Hz\)/.test(t)),'log axis with engineering tick labels and the caption was drawn');
   ok(!!w.localStorage.getItem('engcalc.plot'),'the plot is remembered in the browser');
 
+  // ---- layout: the plot never takes over the screen, and the expression boxes sit above it
+  w.innerHeight=500;$('plLay').value='stacked';fire($('plLay'),'change');
+  ok(parseInt($('plCv').style.height,10)<=Math.max(240,500*0.64)+1,'the plot height is capped to the screen: '+$('plCv').style.height);
+  const kids=[...$('view-plot').querySelector('.pl-grid').children].map(c=>c.className);
+  ok(kids[0]==='pl-top'&&kids[1]==='pl-main'&&kids[2]==='pl-side','expressions first, then the plot, then axes / markers / export: '+kids);
+  ok(!!$('view-plot').querySelector('.pl-top #plE0')&&!!$('view-plot').querySelector('.pl-side #plMList'),'trace inputs live above the plot, markers below');
+  $('plLay').value='overlay';fire($('plLay'),'change');
+
   // ---- manual markers: at x, where y equals a level, at the cursor
   $('plMX').value='1k';$('plMXB').click();
   ok(mrows()===1,'marker added at a typed x');
