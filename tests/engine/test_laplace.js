@@ -115,6 +115,14 @@ reset();
 t('H(s)=1/(s^2+s+1)','DEF H');
 t('poles(H(s))','[-500m+866.025m*j -500m-866.025m*j]');
 total++;{const it=last('ILT(H(s)/s)');const g=it.v.ast,s=2.3;const num=numIntegrate(x=>nodeAt(g,{t:x})*Math.exp(-s*x),0,60);if(!close(num,1/(s*(s*s+s+1)),1e-6)){fail++;console.log('FAIL step response of H');}}
+t('H1(s)=1/(s^2+s+1)','DEF H1');
+t('poles(H1)','[-500m+866.025m*j -500m-866.025m*j]');
+t('poles(H1(s))','[-500m+866.025m*j -500m-866.025m*j]');
+t('ILT(H1/s)',/exp\(-t\/2\)/);
+t('F2(x)=x^2','DEF F2');
+t('diff(F2)','2*x');
+t('integ(F2)','x^3/3');
+t('LT(F2(t))','2/s^3');
 t('G1 = LT(exp(-t))','1/(s + 1)');
 t('poles(G1)','[-1]');
 t('R1 = 2.2k','2.2k');

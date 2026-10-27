@@ -1216,7 +1216,14 @@ function symPrep(n,d){
     }
     case 'un':return {...n,a:symPrep(n.a,d)};
     case 'bin':return {...n,a:symPrep(n.a,d),b:symPrep(n.b,d)};
-    case 'id':{const v=STATE.vars.get(n.name);return v instanceof Sym?symPrep(v.ast,d+1):n;}
+    case 'id':{
+      const v=STATE.vars.get(n.name);
+      if(v instanceof Sym)return symPrep(v.ast,d+1);
+      /* a bare one-argument function name stands for the function itself: poles(H1) means poles(H1(s)) */
+      const uf=STATE.funcs.get(n.name);
+      if(uf&&v===undefined&&uf.params.length===1&&!has(FUNCS,n.name))return symPrep(uf.ast,d+1);
+      return n;
+    }
     case 'num':return n;
   }
   throw new CalcError("Can't handle ! @ matrices or conversions inside diff / integ");
