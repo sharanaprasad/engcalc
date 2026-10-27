@@ -32,19 +32,19 @@ Type `help` in the console for the full guide.
 ## Repository layout
 
 ```
-engcalc_console_v1_3/
+engcalc/
 ├── README.md                        this file
-├── engcalc_console_v1_3.html        the calculator (single-file app)
+├── index.html                       the calculator (single-file app)
 └── tests/
     ├── run_all.sh                   runs every test suite
     ├── engine/                      Node tests of the calculation engine
-    │   ├── test_core.js             163 cases — basic parsing, suffixes,
+    │   ├── test_core.js             161 cases — basic parsing, suffixes,
     │   │                            variables, complex, bases
-    │   ├── test_extended.js         1077 cases — identities on random
+    │   ├── test_extended.js         1071 cases — identities on random
     │   │                            complex points, name rules, bases,
     │   │                            solver, unit parsing
-    │   ├── test_format.js           56 cases — the "=> directive" feature
-    │   ├── test_audit.js            308 edge cases — parser, formatting,
+    │   ├── test_format.js           56 cases — the "to / in / => directive" feature
+    │   ├── test_audit.js            190 edge cases — parser, formatting,
     │   │                            precedence, implicit mult, bits, solver
     │   └── test_regression.js       48 cases — bugs that have been fixed
     └── ui/                          jsdom-based DOM / UI tests
@@ -52,7 +52,8 @@ engcalc_console_v1_3/
         │                            keyboard shortcuts
         ├── test_ui_deep.js          22 cases — tab round-trips, converter,
         │                            persistence, ans history
-        └── test_ui_format.js        9 cases — "=> directive" in the UI
+        ├── test_ui_format.js        9 cases — "to / => directive" in the UI
+        └── test_ui_formulas.js      14 cases — Formulas tab and series explorer
 ```
 
 Total: ~1,600 tests across engine and UI.
@@ -64,7 +65,7 @@ Requires Node.js 18+ and `jsdom` for the UI tests.
 ```bash
 cd tests
 npm init -y >/dev/null && npm install jsdom
-./run_all.sh
+bash run_all.sh
 ```
 
 Or individually:

@@ -105,6 +105,18 @@ button{font-family:inherit;cursor:pointer}
 #keybar button:hover{border-color:var(--violet)}
 #keybar button:active{background:rgba(167,139,250,.25)}
 #keybar .kg{flex:1}
+.mtx{display:inline-table;border-collapse:separate;border-spacing:12px 1px;border-left:2px solid var(--violet);border-right:2px solid var(--violet);border-radius:7px;margin:2px 4px;vertical-align:middle}
+.mtx td{text-align:right;padding:1px 0;white-space:nowrap}
+.ftbl{border-collapse:collapse;font-size:12px;margin:6px 0 4px;width:100%}
+.ftbl th{color:var(--dim);font-weight:600;text-align:right;padding:3px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.ftbl td{padding:3px 8px;text-align:right;white-space:nowrap}
+.ftbl th:nth-child(2),.ftbl td:nth-child(2){text-align:left}
+.ftbl tbody tr:hover td{background:rgba(255,255,255,.04)}
+.ftbl.fref th,.ftbl.fref td{text-align:left;white-space:normal;vertical-align:top}
+.ftbl.fref td:first-child{color:var(--dim);width:26%}
+.ftbl code{cursor:pointer;color:var(--cyan)}
+.fwrap{overflow-x:auto}
+.fgrp{margin:18px 0 2px;color:var(--amber);font-size:13px;font-weight:700;letter-spacing:.5px}
 #chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
 .chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:3px 9px;font-size:12px}
 .chip:hover{color:#fff;border-color:var(--violet)}
@@ -212,7 +224,6 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
     <div class="grow"></div>
     <button class="tb mob" id="btnVars">x= Vars</button>
     <button class="tb mob" id="btnFuncs">ƒ Funcs</button>
-    <div class="seg" id="segAngle" title="Angle unit for trig and @"><button data-a="rad">RAD</button><button data-a="deg">DEG</button></div>
     <div class="seg" id="segMode" title="Result display mode"><button data-m="eng">ENG</button><button data-m="sci">SCI</button><button data-m="fix">FIX</button></div>
     <div class="seg" title="Significant digits"><button id="dMinus">−</button><span id="dVal">6</span><button id="dPlus">+</button></div>
     <button class="tb" id="btnConsts" title="Physical constants (Esc closes)">⚛ Constants</button>
@@ -226,7 +237,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <div id="varlist"></div>
     </aside>
     <section id="console" class="panel">
-      <nav id="tabs"><button data-tab="console" class="on">Console</button><button data-tab="solver">Solver</button><button data-tab="conv">Base converter</button></nav>
+      <nav id="tabs"><button data-tab="console" class="on">Console</button><button data-tab="solver">Solver</button><button data-tab="conv">Base converter</button><button data-tab="formulas">Formulas</button></nav>
       <div id="view-console" class="view on">
       <div id="log" aria-live="polite"></div>
       <div id="hint"></div>
@@ -240,7 +251,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <button type="button" data-k="tab" title="Autocomplete (Tab)">Tab</button>
         <button type="button" data-k="(">(</button><button type="button" data-k=")">)</button>
         <button type="button" data-k="^">^</button><button type="button" data-k=",">,</button>
-        <button type="button" data-k="=">=</button><button type="button" data-k=";">;</button><button type="button" data-k=" to ">to</button>
+        <button type="button" data-k="=">=</button><button type="button" data-k=";">;</button><button type="button" data-k=" to ">to</button><button type="button" data-k="[]" title="Matrix brackets">[ ]</button>
         <span class="kg"></span>
         <button type="button" data-k="erase" title="Clear the input line (Esc)">&#9003;</button>
       </div>
@@ -273,6 +284,16 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         </div>
         <div id="cinfo"></div>
         <div id="bitgrid"></div>
+      </div></div>
+      <div id="view-formulas" class="view"><div class="vpad">
+        <div class="vtitle">Formulas<span class="vsub">series explorer &middot; integrals &middot; identities &middot; click a formula to copy it</span></div>
+        <div class="vrowf">
+          <label>Series <select id="fsel"></select></label>
+          <label>x = <input type="text" id="fx" size="8" value="0.5" autocomplete="off" spellcheck="false"></label>
+          <label>terms <input type="number" id="fn" min="1" max="12" value="6" style="width:62px;background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:8px;color:#fff;font-family:inherit;font-size:14px;padding:6px 9px"></label>
+        </div>
+        <div id="fseries"></div>
+        <div id="fref"></div>
       </div></div>
     </section>
     <aside id="funcs" class="panel">
@@ -307,6 +328,8 @@ const E=(msg,pos)=>new CalcError(msg,pos===undefined?undefined:pos+POSOFF);
 /* ---- values: number | Cx | Disp(text,num) ---- */
 class Cx{constructor(re,im){this.re=re;this.im=im;}}
 class Disp{constructor(text,num,alt){this.text=text;this.num=num;this.alt=alt;}}
+class Mat{constructor(d){this.d=d;this.r=d.length;this.c=d[0].length;}}
+const noMat=(v,w)=>{if(v instanceof Mat)throw new CalcError(w+" doesn't work on matrices");return v;};
 const isC=v=>v instanceof Cx;
 const U=v=>v instanceof Disp?v.num:v;
 const mk=(re,im)=>im===0?re:new Cx(re,im);
@@ -376,6 +399,10 @@ function tokenize(src){
     if(rest.startsWith('<<')||rest.startsWith('>>')){push('op',rest.slice(0,2),start);i+=2;continue;}
     const OPS={'+':'+','-':'-','\u2212':'-','*':'*','\u00d7':'*','\u00b7':'*','/':'/','\u00f7':'/','%':'%','^':'^','!':'!','&':'&','|':'|','~':'~','@':'@'};
     if(has(OPS,ch)){push('op',OPS[ch],start);i++;continue;}
+    if(ch==='['){push('lb','[',start);i++;continue;}
+    if(ch===']'){push('rb',']',start);i++;continue;}
+    if(ch===';'){push('semi',';',start);i++;continue;}
+    if(ch==="'"){push('op',"'",start);i++;continue;}
     if(ch==='('){push('lp','(',start);i++;continue;}
     if(ch===')'){push('rp',')',start);i++;continue;}
     if(ch===','){push('comma',',',start);i++;continue;}
@@ -389,19 +416,24 @@ function tokenize(src){
 function parseExpr(src){
   const toks=tokenize(src);
   if(!toks.length) throw E('Empty expression',0);
-  let p=0;
+  let p=0,inMat=0;
   const isOp=v=>p<toks.length&&toks[p].t==='op'&&toks[p].v===v;
   const endPos=()=>toks[p]?toks[p].pos:src.length;
+  const isConv=()=>{const t=toks[p],u=toks[p+1];return !!(t&&u&&t.t==='id'&&(t.v==='in'||t.v==='to')&&u.t==='id'&&(u.v==='deg'||u.v==='rad'));};
+  /* "expr in deg|rad" at the loosest precedence: top level, inside ( ) and in function arguments */
+  function conv(){let a=bitor();while(isConv()){const pos=toks[p].pos,fmt=toks[p+1].v;p+=2;a={t:'fmt',a,fmt,pos};}return a;}
   function bitor(){let a=bitand();while(isOp('|')){const pos=toks[p].pos;p++;a={t:'bin',op:'|',a,b:bitand(),pos};}return a;}
   function bitand(){let a=shift();while(isOp('&')){const pos=toks[p].pos;p++;a={t:'bin',op:'&',a,b:shift(),pos};}return a;}
   function shift(){let a=add();while(isOp('<<')||isOp('>>')){const o=toks[p].v,pos=toks[p].pos;p++;a={t:'bin',op:o,a,b:add(),pos};}return a;}
-  function add(){let a=mul();while(isOp('+')||isOp('-')){const o=toks[p].v,pos=toks[p].pos;p++;a={t:'bin',op:o,a,b:mul(),pos};}return a;}
+  /* inside [ ], "1 -2" is two entries but "1 - 2" is a subtraction (space before a sign, none after, starts a new entry) */
+  const matSep=()=>inMat&&toks[p].sp&&p+1<toks.length&&!toks[p+1].sp;
+  function add(){let a=mul();while((isOp('+')||isOp('-'))&&!matSep()){const o=toks[p].v,pos=toks[p].pos;p++;a={t:'bin',op:o,a,b:mul(),pos};}return a;}
   function mul(){
     let a=atx();
     for(;;){
       const t=toks[p];if(!t)break;
       if(t.t==='op'&&(t.v==='*'||t.v==='/'||t.v==='%')){p++;a={t:'bin',op:t.v,a,b:atx(),pos:t.pos};}
-      else if(t.t==='id'||t.t==='lp'){a={t:'bin',op:'*',a,b:atx(),pos:t.pos};}
+      else if((t.t==='id'||t.t==='lp')&&!(inMat&&t.sp)&&!isConv()){a={t:'bin',op:'*',a,b:atx(),pos:t.pos};}
       else break;
     }
     return a;
@@ -418,38 +450,60 @@ function parseExpr(src){
     if(isOp('^')){const pos=toks[p].pos;p++;return {t:'bin',op:'^',a,b:unary(),pos};}
     return a;
   }
-  function postfix(){let a=primary();while(isOp('!')){const pos=toks[p].pos;p++;a={t:'fact',a,pos};}return a;}
+  function postfix(){let a=primary();while(isOp('!')||isOp("'")){const tr=isOp("'"),pos=toks[p].pos;p++;a=tr?{t:'tr',a,pos}:{t:'fact',a,pos};}return a;}
+  function matLit(){
+    const open=toks[p];p++;
+    const savedM=inMat;inMat=1;
+    const rows=[[]];
+    for(;;){
+      const t=toks[p];
+      if(!t) throw E("Missing ']'",src.length);
+      if(t.t==='rb'){p++;break;}
+      if(t.t==='semi'){p++;if(rows[rows.length-1].length)rows.push([]);continue;}
+      if(t.t==='comma'){p++;continue;}
+      rows[rows.length-1].push(bitor());
+    }
+    inMat=savedM;
+    if(!rows[rows.length-1].length)rows.pop();
+    if(!rows.length) throw E('Empty matrix',open.pos);
+    const w=rows[0].length;
+    rows.forEach((r,i)=>{if(r.length!==w)throw E('Row '+(i+1)+' has '+r.length+' entries but row 1 has '+w,open.pos);});
+    return {t:'mat',rows,pos:open.pos};
+  }
   function primary(){
     const t=toks[p];
     if(!t) throw E('Unexpected end of expression',src.length);
     if(t.t==='num'){p++;return {t:'num',v:t.v,pos:t.pos};}
+    if(t.t==='lb')return matLit();
+    if(t.t==='id'&&t.v==='matrix'&&toks[p+1]&&toks[p+1].t==='lb'){p++;return matLit();}
     if(t.t==='id'){
       p++;
       if(toks[p]&&toks[p].t==='lp'){
-        p++;const args=[];
+        p++;const args=[];const savedM=inMat;inMat=0;
         if(toks[p]&&toks[p].t==='rp'){p++;}
-        else{for(;;){args.push(bitor());
+        else{for(;;){args.push(conv());
           if(toks[p]&&toks[p].t==='comma'){p++;continue;}
           if(toks[p]&&toks[p].t==='rp'){p++;break;}
           throw E("Expected ',' or ')'",endPos());}}
+        inMat=savedM;
         return {t:'call',name:t.v,args,pos:t.pos};
       }
       return {t:'id',name:t.v,pos:t.pos};
     }
-    if(t.t==='lp'){p++;const e=bitor();if(!toks[p]||toks[p].t!=='rp') throw E("Missing ')'",endPos());p++;return e;}
+    if(t.t==='lp'){p++;const savedM=inMat;inMat=0;const e=conv();if(!toks[p]||toks[p].t!=='rp') throw E("Missing ')'",endPos());p++;inMat=savedM;return e;}
     throw E("Unexpected '"+src.slice(t.pos,t.pos+1)+"'",t.pos);
   }
-  const ast=bitor();
+  const ast=conv();
   if(p<toks.length) throw E("Unexpected '"+src.slice(toks[p].pos,toks[p].pos+1)+"'",toks[p].pos);
   return ast;
 }
 
 /* ---- arithmetic with complex support ---- */
-const neg=a=>isC(a)?mk(-a.re,-a.im):-a;
-const add=(a,b)=>{a=U(a);b=U(b);return(isC(a)||isC(b))?mk(Re(a)+Re(b),Im(a)+Im(b)):a+b;};
-const sub=(a,b)=>{a=U(a);b=U(b);return(isC(a)||isC(b))?mk(Re(a)-Re(b),Im(a)-Im(b)):a-b;};
-const mul=(a,b)=>{a=U(a);b=U(b);if(!isC(a)&&!isC(b))return a*b;return mk(Re(a)*Re(b)-Im(a)*Im(b),Re(a)*Im(b)+Im(a)*Re(b));};
-const div=(a,b)=>{a=U(a);b=U(b);if(!isC(a)&&!isC(b))return a/b;
+const neg=a=>a instanceof Mat?matMap(a,neg):isC(a)?mk(-a.re,-a.im):-a;
+const add=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('+',a,b);return(isC(a)||isC(b))?mk(Re(a)+Re(b),Im(a)+Im(b)):a+b;};
+const sub=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('-',a,b);return(isC(a)||isC(b))?mk(Re(a)-Re(b),Im(a)-Im(b)):a-b;};
+const mul=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('*',a,b);if(!isC(a)&&!isC(b))return a*b;return mk(Re(a)*Re(b)-Im(a)*Im(b),Re(a)*Im(b)+Im(a)*Re(b));};
+const div=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('/',a,b);if(!isC(a)&&!isC(b))return a/b;
   const d=Re(b)*Re(b)+Im(b)*Im(b);if(d===0)return NaN;
   return mk((Re(a)*Re(b)+Im(a)*Im(b))/d,(Im(a)*Re(b)-Re(a)*Im(b))/d);};
 const cabs=a=>isC(a)?Math.hypot(a.re,a.im):Math.abs(a);
@@ -460,6 +514,7 @@ function cln(z){
 }
 function pow(a,b){
   a=U(a);b=U(b);
+  if(a instanceof Mat||b instanceof Mat)return matBin('^',a,b);
   if(!isC(a)&&!isC(b)){
     if(a>=0||Number.isInteger(b)) return Math.pow(a,b);
     if(a<0) return cexp(mul(b,cln(a)));
@@ -478,6 +533,105 @@ function csqrt(z){
   const m=Math.hypot(z.re,z.im);const re=Math.sqrt((m+z.re)/2);let im=Math.sqrt((m-z.re)/2);if(z.im<0)im=-im;return mk(re,im);
 }
 const J=new Cx(0,1);
+
+/* ---- matrices (entries are numbers or Cx) ---- */
+/* clean float noise: snap to a whole number only when relatively very close; zero out entries tiny next to the biggest one */
+const tidy=x=>{if(isC(x))return mk(tidy(x.re),tidy(x.im));if(!Number.isFinite(x))return x;const r=Math.round(x);return r!==0&&Math.abs(x-r)<=1e-12*Math.abs(x)?r:x;};
+function matTidy(m){
+  let sc=0;m.d.forEach(r=>r.forEach(x=>{sc=Math.max(sc,cabs(x));}));
+  const z=x=>Math.abs(x)<=1e-13*sc?0:x;
+  return matMap(m,x=>isC(x)?tidy(mk(z(x.re),z(x.im))):tidy(z(x)));
+}
+const matMap=(m,f)=>new Mat(m.d.map(r=>r.map(f)));
+const matDims=m=>m.r+'\u00d7'+m.c;
+function matEye(n){return new Mat(Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?1:0)));}
+function matMul(a,b){
+  if(a.c!==b.r)throw new CalcError("Can't multiply "+matDims(a)+' by '+matDims(b)+' (columns of the first must equal rows of the second)');
+  return matTidy(new Mat(a.d.map(row=>b.d[0].map((_,j)=>{let acc=0;for(let k=0;k<a.c;k++)acc=add(acc,mul(row[k],b.d[k][j]));return acc;}))));
+}
+function matT(m){return m instanceof Mat?new Mat(m.d[0].map((_,j)=>m.d.map(r=>r[j]))):m;}
+function matDet(m){
+  if(m.r!==m.c)throw new CalcError('det needs a square matrix (this one is '+matDims(m)+')');
+  const n=m.r,a=m.d.map(r=>r.slice());let det=1,sc=0;
+  m.d.forEach(r=>r.forEach(x=>{sc=Math.max(sc,cabs(x));}));
+  for(let c=0;c<n;c++){
+    let p=c,best=cabs(a[c][c]);
+    for(let r=c+1;r<n;r++){const v=cabs(a[r][c]);if(v>best){best=v;p=r;}}
+    if(best===0)return 0;
+    if(p!==c){[a[c],a[p]]=[a[p],a[c]];det=neg(det);}
+    det=mul(det,a[c][c]);
+    for(let r=c+1;r<n;r++){const f=div(a[r][c],a[c][c]);for(let k=c;k<n;k++)a[r][k]=sub(a[r][k],mul(f,a[c][k]));}
+  }
+  return cabs(det)<=1e-13*Math.pow(sc,n)?0:tidy(det);
+}
+function matInv(m){
+  if(m.r!==m.c)throw new CalcError('inverse needs a square matrix (this one is '+matDims(m)+')');
+  const n=m.r,a=m.d.map((r,i)=>[...r,...Array.from({length:n},(_,j)=>i===j?1:0)]);
+  let scale=0;m.d.forEach(r=>r.forEach(x=>{scale=Math.max(scale,cabs(x));}));
+  for(let c=0;c<n;c++){
+    let p=c,best=cabs(a[c][c]);
+    for(let r=c+1;r<n;r++){const v=cabs(a[r][c]);if(v>best){best=v;p=r;}}
+    if(best===0||best<=scale*1e-13)throw new CalcError('Matrix is singular (determinant is 0), so it has no inverse');
+    [a[c],a[p]]=[a[p],a[c]];
+    const pv=a[c][c];for(let k=0;k<2*n;k++)a[c][k]=div(a[c][k],pv);
+    for(let r=0;r<n;r++){if(r===c)continue;const f=a[r][c];if(cabs(f)===0)continue;for(let k=0;k<2*n;k++)a[r][k]=sub(a[r][k],mul(f,a[c][k]));}
+  }
+  return matTidy(new Mat(a.map(r=>r.slice(n))));
+}
+function matRank(m){
+  const a=m.d.map(r=>r.slice());let scale=0;a.forEach(r=>r.forEach(x=>{scale=Math.max(scale,cabs(x));}));
+  if(scale===0)return 0;
+  let rank=0;
+  for(let c=0;c<m.c&&rank<m.r;c++){
+    let p=rank,best=cabs(a[rank][c]);
+    for(let r=rank+1;r<m.r;r++){const v=cabs(a[r][c]);if(v>best){best=v;p=r;}}
+    if(best<=scale*1e-12)continue;
+    [a[rank],a[p]]=[a[p],a[rank]];
+    for(let r=rank+1;r<m.r;r++){const f=div(a[r][c],a[rank][c]);for(let k=c;k<m.c;k++)a[r][k]=sub(a[r][k],mul(f,a[rank][k]));}
+    rank++;
+  }
+  return rank;
+}
+function matBin(op,a,b){
+  const A=a instanceof Mat,B=b instanceof Mat;
+  if(op==='+'||op==='-'){
+    if(!(A&&B))throw new CalcError("Can't "+(op==='+'?'add':'subtract')+' a matrix and a single number');
+    if(a.r!==b.r||a.c!==b.c)throw new CalcError('Matrix sizes differ ('+matDims(a)+' vs '+matDims(b)+')');
+    return new Mat(a.d.map((r,i)=>r.map((x,j)=>op==='+'?add(x,b.d[i][j]):sub(x,b.d[i][j]))));
+  }
+  if(op==='*'){if(A&&B)return matMul(a,b);return A?matMap(a,x=>mul(x,b)):matMap(b,x=>mul(a,x));}
+  if(op==='/'){
+    if(!A)throw new CalcError("Can't divide a number by a matrix \u2014 use inv(A)");
+    return B?matMul(a,matInv(b)):matMap(a,x=>div(x,b));
+  }
+  if(op==='^'){
+    if(!A||B||isC(b)||!Number.isInteger(b))throw new CalcError('A matrix can only be raised to a whole-number power');
+    if(a.r!==a.c)throw new CalcError('Only square matrices have powers (this one is '+matDims(a)+')');
+    if(Math.abs(b)>1024)throw new CalcError('Matrix power too large');
+    let n=Math.abs(b),base=b<0?matInv(a):a,res=matEye(a.r);
+    while(n>0){if(n&1)res=matMul(res,base);base=matMul(base,base);n=Math.floor(n/2);}
+    return matTidy(res);
+  }
+  throw new CalcError("Operator '"+op+"' doesn't work on matrices");
+}
+function quadFormula(a,b,c){
+  if(cabs(a)===0)throw new CalcError('a must not be 0 (that is linear: x = -c/b)');
+  const D=sub(mul(b,b),mul(4,mul(a,c))),sq=csqrt(D);
+  return {D,r:[cleanC(div(add(neg(b),sq),mul(2,a))),cleanC(div(sub(neg(b),sq),mul(2,a)))]};
+}
+/* single-unknown equation that isn't linear: sample f(t)=lhs-rhs, fit a*t^2+b*t+c, check it really is quadratic, then use the formula */
+function quadRoots(eq,nm){
+  const f=t=>{const sc=new Map([[nm,t]]);return sub(U(ev(eq.l,sc)),U(ev(eq.r,sc)));};
+  let v;try{v=[0,1,-1,2,-2,3].map(f);}catch(e){return null;}
+  if(v.some(x=>x instanceof Mat))return null;
+  const [f0,f1,fm,f2,fm2,f3]=v,c=f0,a=sub(div(add(f1,fm),2),c),b=div(sub(f1,fm),2);
+  const scale=Math.max(...v.map(cabs),1e-300),pred=t=>add(add(mul(a,t*t),mul(b,t)),c);
+  for(const [t,y] of [[2,f2],[-2,fm2],[3,f3]])if(!(cabs(sub(pred(t),y))<=1e-9*scale))return null;
+  if(cabs(a)<=1e-12*scale)return null;
+  const q=quadFormula(a,b,c);
+  const t=x=>fmtValue(cleanC(x)).text;
+  return {r:q.r,note:'quadratic formula  '+nm+' = (-b \u00b1 \u221a(b\u00b2-4ac)) / 2a   with a = '+t(a)+', b = '+t(b)+', c = '+t(c)+'   (b\u00b2-4ac = '+t(q.D)+')'};
+}
 function csin(z){return isC(z)?mk(Math.sin(z.re)*Math.cosh(z.im),Math.cos(z.re)*Math.sinh(z.im)):Math.sin(z);}
 function ccos(z){return isC(z)?mk(Math.cos(z.re)*Math.cosh(z.im),-Math.sin(z.re)*Math.sinh(z.im)):Math.cos(z);}
 function ctan(z){return isC(z)?div(csin(z),ccos(z)):Math.tan(z);}
@@ -491,7 +645,7 @@ function casinh(z){return isC(z)?cln(add(z,csqrt(add(mul(z,z),1)))):Math.asinh(z
 function cacosh(z){if(!isC(z)&&z>=1)return Math.acosh(z);return cln(add(z,mul(csqrt(add(z,1)),csqrt(sub(z,1)))));}
 function catanh(z){if(!isC(z)&&Math.abs(z)<1)return Math.atanh(z);return mul(.5,cln(div(add(1,z),sub(1,z))));}
 
-/* ---- angle handling (DEG/RAD toggle) with exact multiples of 90 ---- */
+/* ---- angle handling: everything is radians; sind/cosd/tand switch to degrees internally (exact multiples of 90) ---- */
 function sinA(x){
   if(CFG.deg){if(x%90===0){return [0,1,0,-1][((x/90)%4+4)%4];}x=x*Math.PI/180;}
   const r=Math.sin(x);return(Math.abs(r)<1e-15&&Math.abs(x)>1e-3)?0:r;
@@ -597,9 +751,9 @@ const V=Infinity;
 const A1=(f)=>(x)=>f(x);
 
 /* Trig */
-def('Trig','sin','sin(x)','Sine. Angle in the current RAD/DEG unit','sin(pi/6)',1,1,x=>isC(x)?csin(toRad(x)):sinA(x));
-def('Trig','cos','cos(x)','Cosine. Angle in the current RAD/DEG unit','cos(pi/3)',1,1,x=>isC(x)?ccos(toRad(x)):cosA(x));
-def('Trig','tan','tan(x)','Tangent. Angle in the current RAD/DEG unit','tan(pi/4)',1,1,x=>isC(x)?ctan(toRad(x)):tanA(x));
+def('Trig','sin','sin(x)','Sine. Angle in radians (use sind for degrees)','sin(pi/6)',1,1,x=>isC(x)?csin(toRad(x)):sinA(x));
+def('Trig','cos','cos(x)','Cosine. Angle in radians (use cosd for degrees)','cos(pi/3)',1,1,x=>isC(x)?ccos(toRad(x)):cosA(x));
+def('Trig','tan','tan(x)','Tangent. Angle in radians (use tand for degrees)','tan(pi/4)',1,1,x=>isC(x)?ctan(toRad(x)):tanA(x));
 /* angle results are shown with their unit (deg or rad), never as "785.398m" */
 function angOut(r,unit){
   const deg=unit==='deg'||(unit==='cur'&&CFG.deg);
@@ -610,10 +764,18 @@ function angOut(r,unit){
   const d=new Disp(fx(val)+(deg?'°':' rad'),val,'= '+other);d.unit=deg?'deg':'rad';return d;
 }
 const angFn=f=>x=>{const r=f(x);return isC(r)?fromRad(r):angOut(r,'cur');};
-def('Trig','asin','asin(x)','Inverse sine. Result in current angle unit','asin(0.5)',1,1,angFn(casin));
-def('Trig','acos','acos(x)','Inverse cosine. Result in current angle unit','acos(0.5)',1,1,angFn(cacos));
-def('Trig','atan','atan(x)','Inverse tangent. Result in current angle unit','atan(1)',1,1,angFn(catan));
-def('Trig','atan2','atan2(y, x)','Four-quadrant arctangent. Result in current angle unit','atan2(1, -1)',2,2,(y,x)=>angOut(Math.atan2(real(y,'atan2'),real(x,'atan2')),'cur'));
+def('Trig','asin','asin(x)','Inverse sine. Result in radians (use asind for degrees)','asin(0.5)',1,1,angFn(casin));
+def('Trig','acos','acos(x)','Inverse cosine. Result in radians (use acosd for degrees)','acos(0.5)',1,1,angFn(cacos));
+def('Trig','atan','atan(x)','Inverse tangent. Result in radians (use atand for degrees)','atan(1)',1,1,angFn(catan));
+const inDeg=f=>(...a)=>{const sv=CFG.deg;CFG.deg=true;try{return f(...a);}finally{CFG.deg=sv;}};
+def('Trig','sind','sind(x)','Sine of x in DEGREES','sind(30)',1,1,inDeg(x=>isC(x)?csin(toRad(x)):sinA(x)));
+def('Trig','cosd','cosd(x)','Cosine of x in DEGREES','cosd(60)',1,1,inDeg(x=>isC(x)?ccos(toRad(x)):cosA(x)));
+def('Trig','tand','tand(x)','Tangent of x in DEGREES','tand(45)',1,1,inDeg(x=>isC(x)?ctan(toRad(x)):tanA(x)));
+def('Trig','asind','asind(x)','Inverse sine, result in DEGREES','asind(0.5)',1,1,inDeg(angFn(casin)));
+def('Trig','acosd','acosd(x)','Inverse cosine, result in DEGREES','acosd(0.5)',1,1,inDeg(angFn(cacos)));
+def('Trig','atand','atand(x)','Inverse tangent, result in DEGREES','atand(1)',1,1,inDeg(angFn(catan)));
+def('Trig','atan2d','atan2d(y, x)','Four-quadrant arctangent, result in DEGREES','atan2d(1, -1)',2,2,(y,x)=>angOut(Math.atan2(real(y,'atan2d'),real(x,'atan2d')),'deg'));
+def('Trig','atan2','atan2(y, x)','Four-quadrant arctangent. Result in radians (use atan2d for degrees)','atan2(1, -1)',2,2,(y,x)=>angOut(Math.atan2(real(y,'atan2'),real(x,'atan2')),'cur'));
 def('Trig','sec','sec(x)','Secant = 1/cos','sec(pi/3)',1,1,x=>div(1,isC(x)?ccos(toRad(x)):cosA(x)));
 def('Trig','csc','csc(x)','Cosecant = 1/sin','csc(pi/6)',1,1,x=>div(1,isC(x)?csin(toRad(x)):sinA(x)));
 def('Trig','cot','cot(x)','Cotangent = 1/tan','cot(pi/4)',1,1,x=>div(1,isC(x)?ctan(toRad(x)):tanA(x)));
@@ -630,7 +792,8 @@ def('Hyperbolic','atanh','atanh(x)','Inverse hyperbolic tangent','atanh(0.5)',1,
 
 /* Log / Exp / Roots */
 def('Log / Exp / Roots','ln','ln(x)','Natural logarithm (complex for x<0)','ln(e^2)',1,1,cln);
-def('Log / Exp / Roots','log','log(x)','Base-10 logarithm','log(1k)',1,1,x=>(!isC(x)&&x>0)?Math.log10(x):div(cln(x),Math.LN10));
+def('Log / Exp / Roots','log','log(x, base)','Logarithm, base 10 unless you give a base','log(1k)',1,2,(x,b)=>b===undefined?((!isC(x)&&x>0)?Math.log10(x):div(cln(x),Math.LN10)):div(cln(x),cln(b)));
+def('Log / Exp / Roots','log10','log10(x)','Base-10 logarithm (same as log)','log10(1k)',1,1,x=>(!isC(x)&&x>0)?Math.log10(x):div(cln(x),Math.LN10));
 def('Log / Exp / Roots','log2','log2(x)','Base-2 logarithm','log2(1024)',1,1,x=>(!isC(x)&&x>0)?Math.log2(x):div(cln(x),Math.LN2));
 def('Log / Exp / Roots','logb','logb(x, b)','Logarithm of x in base b','logb(81, 3)',2,2,(x,b)=>div(cln(x),cln(b)));
 def('Log / Exp / Roots','exp','exp(x)','e raised to x (complex ok)','exp(1)',1,1,cexp);
@@ -644,22 +807,34 @@ def('Log / Exp / Roots','hypot','hypot(a, b, ...)','Root of sum of squares','hyp
 /* Rounding */
 def('Rounding','floor','floor(x)','Round down','floor(-2.5)',1,1,x=>Math.floor(real(x,'floor')));
 def('Rounding','ceil','ceil(x)','Round up','ceil(2.1)',1,1,x=>Math.ceil(real(x,'ceil')));
-def('Rounding','round','round(x, n)','Round to n decimals (n optional)','round(3.14159, 2)',1,2,(x,n)=>{x=real(x,'round');n=n===undefined?0:real(n,'round');const k=Math.pow(10,n);return Math.round(x*k)/k;});
+def('Rounding','round','round(x, n)','Round to n decimals (n optional)','round(3.14159, 2)',1,2,(x,n)=>{x=real(x,'round');n=n===undefined?0:real(n,'round');const k=Math.pow(10,n);return Math.sign(x)*Math.round(Number((Math.abs(x)*k).toPrecision(15)))/k;});
+def('Rounding','mod','mod(a, b)','Remainder with the sign of b (like Excel / MATLAB). The % operator keeps the sign of a','mod(-7, 3)',2,2,(a,b)=>{a=real(a,'mod');b=real(b,'mod');return b===0?NaN:a-b*Math.floor(a/b);});
 def('Rounding','trunc','trunc(x)','Drop the fractional part','trunc(-2.7)',1,1,x=>Math.trunc(real(x,'trunc')));
 def('Rounding','sign','sign(x)','-1, 0 or +1','sign(-5)',1,1,x=>Math.sign(real(x,'sign')));
 def('Rounding','frac','frac(x)','Fractional part','frac(2.75)',1,1,x=>{x=real(x,'frac');return x-Math.trunc(x);});
 
 /* Complex */
+const needM=(A,nm)=>{if(!(A instanceof Mat))throw new CalcError(nm+'() needs a matrix, e.g. '+nm+'(matrix [1 2; 3 4])');return A;};
+const dimArg=(v,nm)=>{if(isC(v)||!Number.isInteger(v)||v<1||v>50)throw new CalcError(nm+'() sizes must be whole numbers from 1 to 50');return v;};
+def('Matrix','det','det(A)','Determinant of a square matrix','det(matrix [1 2; 3 4])',1,1,A=>matDet(needM(A,'det')));
+def('Matrix','inv','inv(A)','Inverse of a square matrix (same as A^-1)','inv(matrix [4 7; 2 6])',1,1,A=>matInv(needM(A,'inv')));
+def('Matrix','trans','trans(A)',"Transpose (same as A')",'trans(matrix [1 2 3; 4 5 6])',1,1,A=>matT(needM(A,'trans')));
+def('Matrix','trace','trace(A)','Sum of the diagonal of a square matrix','trace(matrix [1 2; 3 4])',1,1,A=>{needM(A,'trace');if(A.r!==A.c)throw new CalcError('trace needs a square matrix');return A.d.reduce((acc,r,i)=>add(acc,r[i]),0);});
+def('Matrix','rank','rank(A)','Rank of a matrix','rank(matrix [1 2; 2 4])',1,1,A=>matRank(needM(A,'rank')));
+def('Matrix','eye','eye(n)','n-by-n identity matrix','eye(3)',1,1,n=>matEye(dimArg(n,'eye')));
+def('Matrix','zeros','zeros(r, c)','Matrix of zeros (c defaults to r)','zeros(2, 3)',1,2,(r,c)=>{r=dimArg(r,'zeros');c=c===undefined?r:dimArg(c,'zeros');return new Mat(Array.from({length:r},()=>Array(c).fill(0)));});
+def('Matrix','ones','ones(r, c)','Matrix of ones (c defaults to r)','ones(2, 3)',1,2,(r,c)=>{r=dimArg(r,'ones');c=c===undefined?r:dimArg(c,'ones');return new Mat(Array.from({length:r},()=>Array(c).fill(1)));});
+def('Algebra','quad','quad(a, b, c)','Roots of a\u00b7x\u00b2 + b\u00b7x + c = 0 from the quadratic formula, as the matrix [x1 x2] (complex roots too)','quad(1, -3, 2)',3,3,(a,b,c)=>new Mat([quadFormula(a,b,c).r]));
 def('Complex','mag','mag(z)','Magnitude |z|','mag(3+4j)',1,1,cabs);
-def('Complex','phase','phase(z)','Phase angle of z in the current RAD/DEG unit (follows the toggle)','phase(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
-def('Complex','ph','ph(z)','Short for phase(z): angle of z in the current RAD/DEG unit','ph(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
-def('Complex','phase_deg','phase_deg(z)','Phase angle in DEGREES, whatever the toggle says','phase_deg(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'deg'));
-def('Complex','phase_rad','phase_rad(z)','Phase angle in RADIANS, whatever the toggle says','phase_rad(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'rad'));
+def('Complex','phase','phase(z)','Phase angle of z in radians (phase_deg for degrees)','phase(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
+def('Complex','ph','ph(z)','Short for phase(z): angle of z in radians','ph(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
+def('Complex','phase_deg','phase_deg(z)','Phase angle in DEGREES','phase_deg(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'deg'));
+def('Complex','phase_rad','phase_rad(z)','Phase angle in RADIANS (same as phase)','phase_rad(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'rad'));
 def('Complex','re','re(z)','Real part','re(3+4j)',1,1,z=>Re(z));
 def('Complex','im','im(z)','Imaginary part','im(3+4j)',1,1,z=>Im(z));
 def('Complex','conj','conj(z)','Complex conjugate','conj(3+4j)',1,1,z=>mk(Re(z),-Im(z)));
 def('Complex','rect','rect(re, im)','Build a complex number from parts','rect(3, 4)',2,2,(a,b)=>mk(real(a,'rect'),real(b,'rect')));
-def('Complex','polar','polar(mag, ang)','Build from magnitude and angle (angle uses RAD/DEG toggle, same as @)','polar(5, 90)',2,2,(m,a)=>polarMake(real(m,'polar'),real(a,'polar')));
+def('Complex','polar','polar(mag, ang)','Build from magnitude and angle in radians (same as @)','polar(5, pi/2)',2,2,(m,a)=>polarMake(real(m,'polar'),real(a,'polar')));
 function polarMake(m,a){m=real(m,'@');a=real(a,'@');return mk(m*cosA(a),m*sinA(a));}
 
 /* Engineering / RF */
@@ -750,12 +925,10 @@ def('Number / Bits','signed','signed(x, w)',"Read a w-bit pattern as a signed (t
   const full=1n<<BigInt(w),X=BigInt(x);if(X<0n||X>=full)throw new CalcError(`${x} is not a ${w}-bit unsigned pattern`);
   return Number(X>=(full>>1n)?X-full:X);});
 
-/* examples that depend on the RAD/DEG toggle */
+/* trig functions convert tagged angles (90 in rad, phase_deg(z)) to the unit they expect */
 (function(){
-  const me=(n,rad,deg)=>{FUNCS[n].ex=()=>CFG.deg?deg:rad;};
-  me('sin','sin(pi/6)','sin(30)');me('cos','cos(pi/3)','cos(60)');me('tan','tan(pi/4)','tan(45)');
-  me('sec','sec(pi/3)','sec(60)');me('csc','csc(pi/6)','csc(30)');me('cot','cot(pi/4)','cot(45)');
-  me('polar','polar(5, pi/2)','polar(5, 90)');
+  ['sin','cos','tan','sec','csc','cot'].forEach(n=>{FUNCS[n].angIn='cur';});
+  ['sind','cosd','tand'].forEach(n=>{FUNCS[n].angIn='deg';});
 })();
 const exOf=f=>typeof f.ex==='function'?f.ex():f.ex;
 
@@ -798,22 +971,30 @@ function ev(n,sc){
   switch(n.t){
     case 'num':return n.v;
     case 'id':return lookup(n,sc);
-    case 'un':{const a=U(ev(n.a,sc));if(n.op==='-')return neg(a);return Number(-toBig(a,'~')-1n);}
-    case 'fact':return factorial(real(U(ev(n.a,sc)),'!'));
-    case 'polar':return polarMake(U(ev(n.a,sc)),U(ev(n.b,sc)));
+    case 'un':{const a=U(ev(n.a,sc));if(n.op==='-')return neg(a);return Number(-toBig(noMat(a,'~'),'~')-1n);}
+    case 'fact':return factorial(real(noMat(U(ev(n.a,sc)),'!'),'!'));
+    case 'polar':return polarMake(noMat(U(ev(n.a,sc)),'@'),noMat(U(ev(n.b,sc)),'@'));
+    case 'mat':return new Mat(n.rows.map(r=>r.map(x=>{const v=U(ev(x,sc));if(v instanceof Mat)throw E('A matrix entry must be a single number',x.pos);return v;})));
+    case 'tr':return matT(U(ev(n.a,sc)));
+    case 'fmt':return applyFormat(ev(n.a,sc),n.fmt);
     case 'bin':{
       const a=U(ev(n.a,sc)),b=U(ev(n.b,sc));
       switch(n.op){
         case '+':return add(a,b);case '-':return sub(a,b);case '*':return mul(a,b);case '/':return div(a,b);
         case '^':return pow(a,b);
-        case '%':return real(a,'%')%real(b,'%');
-        default:return bigOp(a,b,n.op);
+        case '%':return real(noMat(a,'%'),'%')%real(noMat(b,'%'),'%');
+        default:return bigOp(noMat(a,n.op),noMat(b,n.op),n.op);
       }
     }
     case 'call':{
       const f=has(FUNCS,n.name)?FUNCS[n.name]:null;
       if(f){
-        const args=n.args.map(x=>U(ev(x,sc)));
+        /* trig inputs tagged with a unit (e.g. 90 in rad, phase_deg(z)) are converted to the unit the function expects */
+        const tgt=f.angIn==='cur'?(CFG.deg?'deg':'rad'):f.angIn;
+        const args=n.args.map(x=>{const v=ev(x,sc);
+          if(tgt&&v instanceof Disp&&v.unit&&v.unit!==tgt&&typeof v.num==='number')return tgt==='deg'?v.num*180/Math.PI:v.num*Math.PI/180;
+          return U(v);});
+        if(f.cat!=='Matrix'&&args.some(x=>x instanceof Mat)) throw E(n.name+"() doesn't take a matrix",n.pos);
         if(args.length<f.min||args.length>f.max){
           const rng=f.min===f.max?f.min:(f.max===Infinity?`at least ${f.min}`:`${f.min}\u2013${f.max}`);
           throw E(`${n.name}() takes ${rng} argument(s):  ${f.sig}`,n.pos);
@@ -827,6 +1008,20 @@ function ev(n,sc){
         const scope=new Map();uf.params.forEach((p,i)=>scope.set(p,U(ev(n.args[i],sc))));
         const savedOff=POSOFF;
         try{return ev(uf.ast,scope);}finally{DEPTH--;POSOFF=savedOff;}
+      }
+      const mv=(sc&&sc.has(n.name))?sc.get(n.name):STATE.vars.get(n.name);
+      if(mv instanceof Mat){
+        const ix=n.args.map(x=>U(ev(x,sc)));
+        const ok=(i,max)=>Number.isInteger(i)&&i>=1&&i<=max;
+        if(ix.length===2){
+          if(!ok(ix[0],mv.r)||!ok(ix[1],mv.c)) throw E(n.name+'('+ix.join(',')+') is outside the '+matDims(mv)+' matrix (indices start at 1)',n.pos);
+          return mv.d[ix[0]-1][ix[1]-1];
+        }
+        if(ix.length===1&&(mv.r===1||mv.c===1)){
+          const len=mv.r*mv.c;if(!ok(ix[0],len)) throw E(n.name+'('+ix[0]+') is outside the 1D matrix (size '+len+')',n.pos);
+          return mv.r===1?mv.d[0][ix[0]-1]:mv.d[ix[0]-1][0];
+        }
+        throw E('Use '+n.name+'(row, col) to pick one entry of a matrix',n.pos);
       }
       if(n.args.length===1&&((sc&&sc.has(n.name))||STATE.vars.has(n.name)||has(CONSTS,n.name))){
         return mul(lookup({name:n.name,pos:n.pos},sc),U(ev(n.args[0],sc)));
@@ -872,6 +1067,13 @@ function cleanC(z){
   return z;
 }
 function fmtValue(v){
+  if(v instanceof Mat){
+    const cells=v.d.map(r=>r.map(x=>fmtValue(x)));
+    let alt=matDims(v)+' matrix';
+    if(v.r===v.c&&v.r<=8){try{alt+='   \u00b7   det = '+fmtValue(matDet(v)).text;}catch(e){}}
+    return {html:'<table class="mtx">'+cells.map(r=>'<tr>'+r.map(f=>'<td>'+f.html+'</td>').join('')+'</tr>').join('')+'</table>',
+      text:'['+cells.map(r=>r.map(f=>f.text.replace(/\s+/g,'')).join(' ')).join('; ')+']',alt};
+  }
   if(v instanceof Disp){
     const p=numParts(v.num,CFG.mode,CFG.digits);
     return {html:'<span class="disp">'+esc(v.text)+'</span>',text:v.text,alt:v.alt!==undefined?v.alt:('= '+(Number.isInteger(v.num)&&Math.abs(v.num)<1e21?BigInt(v.num).toString():p.m+p.s)+' (decimal)')};
@@ -918,17 +1120,21 @@ function stripFormat(s){
   if(!m)return [s,null];
   const body=m[1].trim(),fmt=m[2];
   if(!body||(word&&!FMTDIR.has(fmt)))return [s,null];
+  /* deg / rad are real conversions handled inside expressions, so sin(90 in rad) works too */
+  if(fmt==='deg'||fmt==='rad')return [word?s:body+' in '+fmt,null];
   if(!FMTDIR.has(fmt)) throw new CalcError(`'${fmt}' isn't a known format directive (use: expr to directive). Try one of:  a f p n u m k M G T P meg | eng sci fix | hex bin oct dec | deg rad`);
   return [body,fmt];
 }
 function applyFormat(rawIn,fmt){
   const raw=U(rawIn);
+  if(raw instanceof Mat)throw new CalcError('Display directives (to/in/=>) work on single numbers, not matrices');
   if(fmt==='deg'||fmt==='rad'){
-    /* the number is read in its own angle unit (phase_deg etc.) or else the current RAD/DEG switch, then shown in the one asked for */
-    const x=real(raw,'to '+fmt),src=rawIn.unit||(CFG.deg?'deg':'rad');
+    /* "X in deg" reads X as radians, "X in rad" reads X as degrees,
+       unless X is already a tagged angle result such as phase_deg(z). The result is a real conversion and keeps its unit tag. */
+    const x=real(raw,'to '+fmt),src=(rawIn instanceof Disp&&rawIn.unit)?rawIn.unit:(fmt==='deg'?'rad':'deg');
     const v=src===fmt?x:(fmt==='deg'?x*180/Math.PI:x*Math.PI/180);
     const t=numParts(v,'fix',CFG.digits).m;
-    return new Disp(fmt==='deg'?t+'°':t+' rad',raw,'');
+    const d=new Disp(fmt==='deg'?t+'°':t+' rad',v,'');d.unit=fmt;return d;
   }
   if(fmt==='hex')return toBase(real(raw,'to hex'),16,'0x');
   if(fmt==='bin')return toBase(real(raw,'to bin'),2,'0b');
@@ -984,9 +1190,10 @@ function execStatement(sIn,base){
   }
   if((m=ASSIGN.exec(s))){
     const name=m[1],op=m[2];POSOFF=base;
-    const w=validateName(name,'var',0);
+    let w=validateName(name,'var',0);
     POSOFF=base+(s.length-m[3].length);
     let v=U(ev(parseExpr(m[3]),null));
+    if(v instanceof Mat)w=w.filter(x=>!/also reads as a unit/.test(x));
     if(op){
       let old=STATE.vars.has(name)?STATE.vars.get(name):(has(CONSTS,name)?CONSTS[name].v:undefined);
       if(old===undefined) throw E(`'${name}' is not defined yet, so '${op}=' can't be used`,-(s.length-m[3].length)+0);
@@ -1023,8 +1230,7 @@ function runCommand(t,items,ui){
       for(const c2 in cats)h+='<span class="fnn">'+esc(c2)+'</span>: '+cats[c2].map(esc).join(', ')+'<br>';
       if(STATE.funcs.size)h+='<b>Yours</b>: '+[...STATE.funcs.keys()].map(k=>esc(k)+'('+esc(STATE.funcs.get(k).params.join(','))+')').join(', ');
       info(h);return true;}
-    case 'deg':if(argc)return false;CFG.deg=true;info('Angle unit: <b>DEG</b>');ui.push({cmd:'sync'});return true;
-    case 'rad':if(argc)return false;CFG.deg=false;info('Angle unit: <b>RAD</b>');ui.push({cmd:'sync'});return true;
+    case 'deg':case 'rad':if(argc)return false;info('Angles are always <b>radians</b>. Convert a result with <code>x in deg</code> (or <code>x in rad</code> for degrees to radians). <code>sind</code>, <code>cosd</code>, <code>tand</code> take degrees.');return true;
     case 'mode':{
       if(argc===0){info('Display mode: <b>'+CFG.mode.toUpperCase()+'</b> (use: mode eng | sci | fix)');return true;}
       const a=(parts[1]||'').toLowerCase();
@@ -1041,7 +1247,7 @@ function runCommand(t,items,ui){
       let unk=null,body=rest;
       const mm=/^([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)\s*:\s*([\s\S]+)$/.exec(rest);
       if(mm){unk=mm[1].split(',').map(s=>s.trim());body=mm[2];}
-      try{const r=solveEquations(body.split(/[;\n]/),unk,true);items.push({kind:'solve',rows:r.rows,warns:r.warns});}
+      try{const r=solveEquations(body.split(/[;\n]/),unk,true);items.push({kind:'solve',rows:r.rows,warns:r.warns,note:r.note});}
       catch(e){items.push({kind:'err',msg:e.message});}
       return true;}
     case 'del':{
@@ -1059,6 +1265,16 @@ function runCommand(t,items,ui){
   return false;
 }
 
+/* split on ';' except inside [ ] so matrix rows survive */
+function splitStmts(t){
+  const parts=[];let d=0,st=0;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(c==='[')d++;else if(c===']')d=Math.max(0,d-1);
+    else if(c===';'&&d===0){parts.push(t.slice(st,i));st=i+1;}
+  }
+  parts.push(t.slice(st));return parts;
+}
 function execLine(line){
   const items=[],ui=[],t=line.trim();
   if(!t) return {items,ui,text:t};
@@ -1067,14 +1283,14 @@ function execLine(line){
   let last=null;
   try{
     let off=0;const eqs=[];
-    for(const part of t.split(';')){
+    for(const part of splitStmts(t)){
       const lead=part.length-part.trimStart().length,s=part.trim();
       /* an '=' that isn't an assignment or function definition (2x = 4, x+y = 5) is an equation: collect it for the solver */
       if(s&&s.replace(/=>/g,'').includes('=')&&!FUNDEF.test(s)&&!ASSIGN.test(s)){eqs.push(s);}
       else if(s) last=execStatement(s,off+lead);
       off+=part.length+1;
     }
-    if(eqs.length){const r=solveEquations(eqs,null,true);last={kind:'solve',rows:r.rows,warns:r.warns};}
+    if(eqs.length){const r=solveEquations(eqs,null,true);last={kind:'solve',rows:r.rows,warns:r.warns,note:r.note};}
     if(last) items.push(last);
   }catch(e){
     items.push({kind:'err',msg:(e&&e.message)||String(e),pos:e&&e.pos});
@@ -1160,7 +1376,7 @@ function collectIds(n,set){
   switch(n.t){
     case 'id':set.add(n.name);break;
     case 'call':if(!has(FUNCS,n.name)&&!STATE.funcs.has(n.name))set.add(n.name);n.args.forEach(a=>collectIds(a,set));break;
-    case 'un':case 'fact':collectIds(n.a,set);break;
+    case 'un':case 'fact':case 'fmt':collectIds(n.a,set);break;
     case 'bin':case 'polar':collectIds(n.a,set);collectIds(n.b,set);break;
   }
 }
@@ -1193,12 +1409,22 @@ function solveEquations(lines,unkNames,store){
   });
   if(eqs.length!==names.length)throw new CalcError(`${eqs.length} equation(s) but ${names.length} unknown(s) (${names.join(', ')}). You need the same number of each.`+(!(unkNames&&unkNames.length)&&names.length<eqs.length?'  If some unknowns are already variables, list them explicitly:  solve x,y,z: ...':''));
   const unk=new Set(names),A=[],b=[];
+  let quad=null;
   asts.forEach((a,i)=>{
     let f;
-    try{f=lfAdd(linForm(a.l,unk),linForm(a.r,unk),-1);}catch(e){throw new CalcError(`Equation ${i+1}: ${e.message}`);}
+    try{f=lfAdd(linForm(a.l,unk),linForm(a.r,unk),-1);}
+    catch(e){
+      if(asts.length===1&&names.length===1){quad=quadRoots(a,names[0]);if(quad)return;}
+      throw new CalcError(`Equation ${i+1}: ${e.message}`+(asts.length===1&&names.length===1&&/not linear/i.test(e.message)?' (and not a quadratic)':''));
+    }
     A.push(names.map(nm=>f.k.has(nm)?f.k.get(nm):0));
     b.push(neg(f.c));
   });
+  if(quad){
+    const rows=quad.r.map((v,i)=>({name:names[0]+(i+1),v}));
+    if(store)rows.forEach(r=>{STATE.vars.set(r.name,r.v);STATE.solved.add(r.name);});
+    return {rows,A:[],b:[],names:rows.map(r=>r.name),warns,note:quad.note};
+  }
   const x=gaussSolve(A,b);
   const rows=names.map((nm,i)=>({name:nm,v:cleanC(x[i])}));
   if(store)rows.forEach(r=>{STATE.vars.set(r.name,r.v);STATE.solved.add(r.name);});
@@ -1226,8 +1452,8 @@ function parseBig(str,base){
   return neg2?-r:r;
 }
 
-const sv=v=>isC(v)?v.re+','+v.im:String(v);
-const dv=s=>{const p=String(s).split(',').map(Number);return p.length>1&&p[1]!==0?new Cx(p[0],p[1]):p[0];};
+const sv=v=>v instanceof Mat?'M'+JSON.stringify(v.d.map(r=>r.map(sv))):isC(v)?v.re+','+v.im:String(v);
+const dv=s=>{if(String(s)[0]==='M')return new Mat(JSON.parse(s.slice(1)).map(r=>r.map(dv)));const p=String(s).split(',').map(Number);return p.length>1&&p[1]!==0?new Cx(p[0],p[1]):p[0];};
 function serializeState(){
   const vars={};STATE.vars.forEach((v,k)=>{vars[k]=sv(v);});
   return {vars,funcs:[...STATE.funcs.values()].map(f=>f.src),solved:[...STATE.solved],ans:STATE.ans===undefined?null:sv(STATE.ans)};
@@ -1247,11 +1473,11 @@ const LS_KEY='engcalc.console.v1';
 const logEl=$('log'),inp=$('inp'),hintEl=$('hint'),ghost=$('ghost');
 let hist=[],histPos=0,draft='';
 const sessionText=[];
-const CAT_ORDER=['Trig','Hyperbolic','Log / Exp / Roots','Rounding','Complex','Engineering / RF','Noise / ADC / SerDes','Stats','Number / Bits'];
-const CAT_RGB={'Trig':'34,211,238','Hyperbolic':'45,212,191','Log / Exp / Roots':'74,222,128','Rounding':'250,204,21','Complex':'232,121,249','Engineering / RF':'251,191,36','Noise / ADC / SerDes':'251,146,60','Stats':'96,165,250','Number / Bits':'167,139,250','Symbols':'148,163,184'};
+const CAT_ORDER=['Trig','Hyperbolic','Log / Exp / Roots','Rounding','Complex','Engineering / RF','Noise / ADC / SerDes','Stats','Number / Bits','Matrix','Algebra'];
+const CAT_RGB={'Trig':'34,211,238','Hyperbolic':'45,212,191','Log / Exp / Roots':'74,222,128','Rounding':'250,204,21','Complex':'232,121,249','Engineering / RF':'251,191,36','Noise / ADC / SerDes':'251,146,60','Stats':'96,165,250','Number / Bits':'167,139,250','Matrix':'244,114,182','Algebra':'52,211,153','Symbols':'148,163,184'};
 const SYMS=[
   {ins:'j',d:'Imaginary unit. 3+4j or 4j both work'},{ins:'ans',d:'Previous result (ans2 = the one before)'},{ins:'pi',d:'3.14159\u2026'},{ins:'e',d:"Euler's number (2e3 is still scientific notation)"},
-  {ins:'^',d:'Power (also **)'},{ins:'!',d:'Factorial'},{ins:'@',d:'Polar form: 5@30 (angle follows RAD/DEG)'},{ins:'%',d:'Remainder'},
+  {ins:'^',d:'Power (also **)'},{ins:'!',d:'Factorial'},{ins:'@',d:'Polar form: 5@(pi/6) (angle in radians)'},{ins:'%',d:'Remainder'},
   {ins:'&',d:'Bitwise AND'},{ins:'|',d:'Bitwise OR'},{ins:'<<',d:'Shift left'},{ins:'>>',d:'Shift right'},{ins:'~',d:'Bitwise NOT'},{ins:';',d:'Separate statements: x=1; y=2; x+y'}
 ];
 
@@ -1260,7 +1486,7 @@ function save(){try{localStorage.setItem(LS_KEY,JSON.stringify({cfg:CFG,state:se
 function load(){
   try{
     const raw=localStorage.getItem(LS_KEY);if(!raw)return;const o=JSON.parse(raw);
-    if(o.cfg){CFG.deg=!!o.cfg.deg;if(['eng','sci','fix'].includes(o.cfg.mode))CFG.mode=o.cfg.mode;const d=Number(o.cfg.digits);if(Number.isInteger(d)&&d>=3&&d<=15)CFG.digits=d;}
+    if(o.cfg){/* angles are always radians, so a saved angle unit from older versions is ignored */if(['eng','sci','fix'].includes(o.cfg.mode))CFG.mode=o.cfg.mode;const d=Number(o.cfg.digits);if(Number.isInteger(d)&&d>=3&&d<=15)CFG.digits=d;}
     if(o.state)loadState(o.state);
     if(Array.isArray(o.hist))hist=o.hist.filter(x=>typeof x==='string');
   }catch(e){}
@@ -1318,6 +1544,7 @@ function renderItem(it){
     case 'solve':{
       box.appendChild(mkEl('div','alt','solution &mdash; stored as variables:'));
       it.rows.forEach(x=>box.appendChild(valueRow('<span class="vn">'+esc(x.name)+'</span><span class="eq">=</span>',x.v)));
+      if(it.note)box.appendChild(mkEl('div','alt',esc(it.note)));
       break;}
     case 'vars':{
       if(!it.list.length&&!it.funcs.length)box.appendChild(mkEl('div','info','<span class="alt">No variables defined yet. Try:  x = 1</span>'));
@@ -1341,15 +1568,22 @@ function helpHtml(){
 <tr><td><code>2x</code> <code>3(4+1)</code></td><td>implicit multiplication. <code>2pi</code> = 2·π</td></tr>
 <tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code></td></tr>
 <tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2x = 4</code> gives <code>x = 2</code>, <code>2x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
+<tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
+<tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
 <h3>COMPLEX</h3>
-<table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> or <code>ph()</code> (follows RAD/DEG) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@30</code> or <code>polar(5,30)</code> (angle follows RAD/DEG)</td></tr>
+<table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> or <code>ph()</code> (radians) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@(pi/6)</code> or <code>polar(5,pi/6)</code> (angle in radians; <code>5@(30 in rad)</code> for degrees)</td></tr>
 <tr><td></td><td><code>sqrt(-4)</code>, <code>ln(-1)</code>, <code>asin(2)</code> return complex results automatically</td></tr></table>
+<h3>MATRICES &amp; QUADRATICS</h3>
+<table><tr><td><code>A = matrix [1 2 3 ; 4 5 6]</code></td><td>spaces (or commas) separate columns, <code>;</code> separates rows. <code>matrix</code> is optional: <code>[1 2; 3 4]</code> works. Glue a minus to its number to start a new entry: <code>[1 -2]</code> has two entries, <code>[1 - 2]</code> has one.</td></tr>
+<tr><td>arithmetic</td><td><code>A+B</code> <code>A-B</code> <code>A*B</code> <code>2*A</code> <code>A/2</code> <code>A^2</code> <code>A^-1</code> <code>A/B</code> (= A*inv(B)) <code>A'</code> (transpose). Entries can be complex or use suffixes: <code>[1k 2m; 3+4j 5]</code></td></tr>
+<tr><td>functions</td><td><code>det inv trans trace rank eye zeros ones</code> &nbsp; entry: <code>A(2,1)</code> = row 2, column 1. Solve A&middot;x = b with <code>inv(A)*b</code></td></tr>
+<tr><td>quadratic</td><td><code>x^2 - 3x + 2 = 0</code> or <code>2x^2 = 8</code> gives <code>x1</code> and <code>x2</code> by the quadratic formula (complex roots too). <code>quad(1,-3,2)</code> returns <code>[x1 x2]</code></td></tr></table>
 <h3>DISPLAY ANY RESULT IN A CHOSEN UNIT: <code>expr to directive</code> &nbsp;(<code>in</code> and <code>=&gt;</code> work too)</h3>
 <table><tr><td>suffixes</td><td><code>5MHz / 60us to M</code> shows the result forced into mega (<code>83.333e-3 M</code>). The stored value and <code>ans</code> stay unchanged. Any suffix letter works: <code>a f p n u m k M G T P meg</code>.</td></tr>
 <tr><td>display mode</td><td><code>... to eng</code> &nbsp; <code>... to sci</code> &nbsp; <code>... to fix</code> &mdash; override just for this result</td></tr>
-<tr><td>angles</td><td><code>pi in deg</code> &rarr; <code>180°</code> &nbsp; <code>90 in rad</code> (with DEG on) &rarr; <code>1.5708 rad</code>. The number is read in the current RAD/DEG unit and shown in the one you name.</td></tr>
+<tr><td>angles</td><td><code>pi in deg</code> &rarr; <code>180°</code> &nbsp; <code>90 in rad</code> &rarr; <code>1.5708 rad</code>. <code>X in deg</code> reads X as radians and <code>X in rad</code> reads X as degrees. It works inside expressions too: <code>sin(90 in rad)</code> = 1, <code>cos(60 in rad)</code> = 0.5, and tagged angles like <code>phase_deg(z)</code> are converted automatically.</td></tr>
 <tr><td>bases</td><td><code>255 to hex</code> &nbsp; <code>0xFF in bin</code> &nbsp; <code>0b1010 to dec</code> &nbsp; <code>... to oct</code></td></tr>
 <tr><td>with assignment</td><td><code>x = 10M to k</code> stores x = 1e7, displays <code>10000 k</code></td></tr>
 <tr><td>on complex</td><td><code>(1+2j)*1k to k</code> rescales both real and imaginary parts</td></tr></table>
@@ -1378,7 +1612,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3x + 2 = 0','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   b.appendChild(mkEl('p','','Type <b>help</b> for the full guide. Open <b style="color:var(--coral)">⚛ Constants</b> for Boltzmann, Planck, q, c, &hellip;'));
@@ -1388,7 +1622,7 @@ function banner(){
 /* ---- input handling ---- */
 function setInput(s){inp.value=s;inp.focus();inp.setSelectionRange(s.length,s.length);updateHint();updateGhost();}
 /* function/constant/variable buttons insert into the console prompt, or into the equations box on the Solver tab */
-function tgt(){if(curTab==='solver')return $('eqs');if(curTab==='conv')showTab('console');return inp;}
+function tgt(){if(curTab==='solver')return $('eqs');if(curTab==='conv'||curTab==='formulas')showTab('console');return inp;}
 function insertAtCaret(text,caretBack){
   const f=tgt(),s=f.selectionStart,e=f.selectionEnd,v=f.value;
   f.value=v.slice(0,s)+text+v.slice(e);
@@ -1419,7 +1653,7 @@ function runInput(){
 function wordBeforeCaret(){const m=/[A-Za-z_][A-Za-z0-9_]*$/.exec(inp.value.slice(0,inp.selectionStart));return m?m[0]:'';}
 function candidates(w){
   if(!w)return[];
-  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','help','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall']);
+  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','matrix','help','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall']);
   return [...all].filter(n=>n.startsWith(w)&&n!==w||n===w).sort((a,b)=>a.length-b.length||a.localeCompare(b));
 }
 function complete(){
@@ -1462,7 +1696,7 @@ $('keybar').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.p
 $('keybar').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const k=b.dataset.k;
-  if(keyActs[k])keyActs[k]();else insertAtCaret(k);
+  if(keyActs[k])keyActs[k]();else if(k==='[]')insertAtCaret('[]',1);else insertAtCaret(k);
 });
 inp.addEventListener('keydown',e=>{
   if(e.key==='Enter'){e.preventDefault();runInput();}
@@ -1565,12 +1799,10 @@ function openVars(on){$('vars').classList.toggle('open',on);if(on)$('funcs').cla
 
 /* ---- top bar ---- */
 function syncBar(){
-  document.querySelectorAll('#segAngle button').forEach(b=>b.classList.toggle('on',(b.dataset.a==='deg')===CFG.deg));
   document.querySelectorAll('#segMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===CFG.mode));
   $('dVal').textContent=CFG.digits;
   refreshVars();save();updateGhost();
 }
-document.querySelectorAll('#segAngle button').forEach(b=>b.onclick=()=>{CFG.deg=b.dataset.a==='deg';syncBar();inp.focus();});
 document.querySelectorAll('#segMode button').forEach(b=>b.onclick=()=>{CFG.mode=b.dataset.m;syncBar();inp.focus();});
 $('dMinus').onclick=()=>{CFG.digits=Math.max(3,CFG.digits-1);syncBar();inp.focus();};
 $('dPlus').onclick=()=>{CFG.digits=Math.min(15,CFG.digits+1);syncBar();inp.focus();};
@@ -1600,7 +1832,7 @@ function showTab(name){
   curTab=name;
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+name));
-  if(name==='console')inp.focus();else if(name==='solver')$('eqs').focus();else{convRender();$('c10').focus();}
+  if(name==='console')inp.focus();else if(name==='solver')$('eqs').focus();else if(name==='formulas')renderSeries();else{convRender();$('c10').focus();}
 }
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 
@@ -1628,6 +1860,7 @@ function doSolve(){
     });
     out.appendChild(tbl);
     out.appendChild(mkEl('div','alt',store?'Stored as variables — use them in the console, e.g. x + y.':'Not stored (tick "store as variables" to keep them).'));
+    if(r.note){out.appendChild(mkEl('div','alt',esc(r.note)));refreshVars();save();return;}
     const txt=r.A.map((row,i)=>row.map(v=>fmtValue(v).text.padStart(10)).join(' ')+'   |  '+fmtValue(r.b[i]).text.padStart(10)).join('\n');
     const det=mkEl('details','');
     det.innerHTML='<summary class="alt" style="cursor:pointer;padding:6px 0">coefficient matrix [A | b] &nbsp;(unknowns: '+esc(r.names.join(', '))+')</summary><pre class="mx">'+esc(txt)+'</pre>';
@@ -1640,6 +1873,112 @@ function initSolver(){
   document.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{$('eqs').value=EXAMPLES[b.dataset.ex];$('unk').value='';doSolve();});
   $('btnEqClear').onclick=()=>{$('eqs').value='';$('solout').innerHTML='';$('eqs').focus();};
   $('eqs').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doSolve();}});
+}
+
+/* ---- formulas tab: series explorer + reference tables ---- */
+const fact=n=>{let r=1;for(let i=2;i<=n;i++)r*=i;return r;};
+const sg=k=>k%2?'\u2212':'';
+const SUP='\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079';
+const sup=n=>String(n).split('').map(d=>SUP[+d]).join('');
+const xp=p=>p===1?'x':'x'+sup(p);
+const TAN_C=[[1,1],[1,3],[2,15],[17,315],[62,2835],[1382,155925],[21844,6081075],[929569,638512875]];
+const SER=[
+  {id:'sin',name:'sin x',exact:Math.sin,rad:Infinity,rtxt:'all x',term:k=>({lab:sg(k)+xp(2*k+1)+(k?'/'+(2*k+1)+'!':''),c:(k%2?-1:1)/fact(2*k+1),p:2*k+1})},
+  {id:'cos',name:'cos x',exact:Math.cos,rad:Infinity,rtxt:'all x',term:k=>({lab:sg(k)+(k?xp(2*k)+'/'+(2*k)+'!':'1'),c:(k%2?-1:1)/fact(2*k),p:2*k})},
+  {id:'exp',name:'e\u02e3',exact:Math.exp,rad:Infinity,rtxt:'all x',term:k=>({lab:k?xp(k)+(k>1?'/'+k+'!':''):'1',c:1/fact(k),p:k})},
+  {id:'sinh',name:'sinh x',exact:Math.sinh,rad:Infinity,rtxt:'all x',term:k=>({lab:xp(2*k+1)+(k?'/'+(2*k+1)+'!':''),c:1/fact(2*k+1),p:2*k+1})},
+  {id:'cosh',name:'cosh x',exact:Math.cosh,rad:Infinity,rtxt:'all x',term:k=>({lab:k?xp(2*k)+'/'+(2*k)+'!':'1',c:1/fact(2*k),p:2*k})},
+  {id:'tan',name:'tan x',exact:Math.tan,rad:Math.PI/2,rtxt:'|x| < \u03c0/2',max:8,term:k=>({lab:(TAN_C[k][0]>1?TAN_C[k][0]:'')+xp(2*k+1)+(TAN_C[k][1]>1?'/'+TAN_C[k][1]:''),c:TAN_C[k][0]/TAN_C[k][1],p:2*k+1})},
+  {id:'atan',name:'arctan x',exact:Math.atan,rad:1,rtxt:'|x| \u2264 1',term:k=>({lab:sg(k)+xp(2*k+1)+(k?'/'+(2*k+1):''),c:(k%2?-1:1)/(2*k+1),p:2*k+1})},
+  {id:'ln1p',name:'ln(1+x)',exact:Math.log1p,rad:1,rtxt:'\u22121 < x \u2264 1',term:k=>({lab:sg(k)+xp(k+1)+(k?'/'+(k+1):''),c:(k%2?-1:1)/(k+1),p:k+1})},
+  {id:'geo',name:'1/(1\u2212x)',exact:x=>1/(1-x),rad:1,rtxt:'|x| < 1',term:k=>({lab:k?xp(k):'1',c:1,p:k})},
+  {id:'geom',name:'1/(1+x)',exact:x=>1/(1+x),rad:1,rtxt:'|x| < 1',term:k=>({lab:sg(k)+(k?xp(k):'1'),c:k%2?-1:1,p:k})},
+  {id:'sqrt',name:'\u221a(1+x)',exact:x=>Math.sqrt(1+x),rad:1,rtxt:'|x| \u2264 1',term:k=>{let c=1;for(let i=1;i<=k;i++)c*=(0.5-(i-1))/i;return {lab:'C(\u00bd,'+k+')\u00b7'+(k?xp(k):'1'),c,p:k};}}
+];
+const REF=[
+  {t:'Gaussian & related integrals',rows:[
+    ['Gaussian integral','\u222b\u208b\u221e^\u221e e^(\u2212x\u00b2) dx = \u221a\u03c0 \u2248 1.77245',''],
+    ['with width a','\u222b\u208b\u221e^\u221e e^(\u2212a x\u00b2) dx = \u221a(\u03c0/a)','a > 0'],
+    ['half line','\u222b\u2080^\u221e e^(\u2212a x\u00b2) dx = \u00bd \u221a(\u03c0/a)',''],
+    ['second moment','\u222b\u208b\u221e^\u221e x\u00b2 e^(\u2212a x\u00b2) dx = \u221a\u03c0 / (2 a^(3/2))',''],
+    ['even moments','\u222b\u208b\u221e^\u221e x^(2n) e^(\u2212a x\u00b2) dx = (2n\u22121)!! \u221a\u03c0 / (2\u207f a^(n+1/2))','n = 0, 1, 2, \u2026'],
+    ['normal pdf','\u222b e^(\u2212(x\u2212\u03bc)\u00b2/(2\u03c3\u00b2)) / (\u03c3\u221a(2\u03c0)) dx = 1','area under the Gaussian'],
+    ['Fourier transform','\u222b\u208b\u221e^\u221e e^(\u2212a x\u00b2) cos(b x) dx = \u221a(\u03c0/a) e^(\u2212b\u00b2/(4a))','a Gaussian stays a Gaussian'],
+    ['Gamma function','\u222b\u2080^\u221e x\u207f e^(\u2212x) dx = \u0393(n+1) = n!','n = 0, 1, 2, \u2026'],
+    ['error / Q function','erf(x) = (2/\u221a\u03c0) \u222b\u2080\u02e3 e^(\u2212t\u00b2) dt;  Q(x) = \u00bd erfc(x/\u221a2)','in this calculator: erfc(), qfunc()']
+  ]},
+  {t:'Standard integrals',rows:[
+    ['exponentials','\u222b\u2080^\u221e e^(\u2212a x) dx = 1/a;  \u222b\u2080^\u221e x e^(\u2212a x) dx = 1/a\u00b2',''],
+    ['sinc','\u222b\u2080^\u221e sin(x)/x dx = \u03c0/2   (\u222b\u208b\u221e^\u221e = \u03c0)',''],
+    ['Lorentzian','\u222b\u208b\u221e^\u221e dx/(1+x\u00b2) = \u03c0',''],
+    ['one period','\u222b\u2080^(2\u03c0) sin\u00b2x dx = \u222b\u2080^(2\u03c0) cos\u00b2x dx = \u03c0;  mean of sin\u00b2 = \u00bd','RMS of a sine = peak/\u221a2'],
+    ['orthogonality','\u222b\u2080^(2\u03c0) sin(mx) sin(nx) dx = 0 for m \u2260 n, \u03c0 for m = n \u2265 1',''],
+    ['Planck-type','\u222b\u2080^\u221e x/(e\u02e3 \u2212 1) dx = \u03c0\u00b2/6',''],
+    ['logarithm','\u222b\u2080\u00b9 ln x dx = \u22121',''],
+    ['antiderivatives','\u222b e^(ax) dx = e^(ax)/a;  \u222b sin(ax) dx = \u2212cos(ax)/a;  \u222b cos(ax) dx = sin(ax)/a;  \u222b dx/x = ln|x|','+ C'],
+    ['by parts result','\u222b x e^(ax) dx = (ax \u2212 1) e^(ax) / a\u00b2;  \u222b sin\u00b2x dx = x/2 \u2212 sin(2x)/4','+ C'],
+    ['rational','\u222b dx/(x\u00b2+a\u00b2) = (1/a) arctan(x/a);  \u222b dx/\u221a(a\u00b2\u2212x\u00b2) = arcsin(x/a)','+ C']
+  ]},
+  {t:'Identities',rows:[
+    ['Euler','e^(j\u03b8) = cos \u03b8 + j sin \u03b8;  cos \u03b8 = (e^(j\u03b8)+e^(\u2212j\u03b8))/2;  sin \u03b8 = (e^(j\u03b8)\u2212e^(\u2212j\u03b8))/(2j)',''],
+    ['Pythagoras','sin\u00b2\u03b8 + cos\u00b2\u03b8 = 1;  1 + tan\u00b2\u03b8 = sec\u00b2\u03b8',''],
+    ['sum / difference','sin(a\u00b1b) = sin a cos b \u00b1 cos a sin b;  cos(a\u00b1b) = cos a cos b \u2213 sin a sin b',''],
+    ['double angle','sin 2\u03b8 = 2 sin \u03b8 cos \u03b8;  cos 2\u03b8 = cos\u00b2\u03b8 \u2212 sin\u00b2\u03b8 = 1 \u2212 2 sin\u00b2\u03b8 = 2 cos\u00b2\u03b8 \u2212 1',''],
+    ['products','sin a sin b = \u00bd[cos(a\u2212b) \u2212 cos(a+b)];  cos a cos b = \u00bd[cos(a\u2212b) + cos(a+b)];  sin a cos b = \u00bd[sin(a+b) + sin(a\u2212b)]','mixing, intermodulation'],
+    ['phasor form','A cos \u03c9t + B sin \u03c9t = R cos(\u03c9t \u2212 \u03c6),  R = \u221a(A\u00b2+B\u00b2),  \u03c6 = atan2(B, A)',''],
+    ['hyperbolic','cosh\u00b2x \u2212 sinh\u00b2x = 1;  sinh x = (e\u02e3\u2212e\u207b\u02e3)/2;  cosh x = (e\u02e3+e\u207b\u02e3)/2',''],
+    ['logs','ln(ab) = ln a + ln b;  log_b x = ln x / ln b',''],
+    ['decibels','dB = 20 log10(V2/V1) = 10 log10(P2/P1);  dBm = 10 log10(P / 1 mW)','3 dB = \u00d7\u221a2 in voltage, \u00d72 in power']
+  ]},
+  {t:'Sums & factorials',rows:[
+    ['geometric','\u03a3\u2096\u208c\u2080\u207f r\u1d4f = (1 \u2212 r\u207f\u207a\u00b9)/(1 \u2212 r);  \u03a3\u2096\u208c\u2080^\u221e r\u1d4f = 1/(1 \u2212 r)','|r| < 1 for the infinite sum'],
+    ['powers','\u03a3k = n(n+1)/2;  \u03a3k\u00b2 = n(n+1)(2n+1)/6;  \u03a3k\u00b3 = [n(n+1)/2]\u00b2','k = 1 \u2026 n'],
+    ['famous','\u03a3 1/k\u00b2 = \u03c0\u00b2/6;  \u03a3 (\u22121)^(k+1)/k = ln 2;  \u03a3 1/k! = e',''],
+    ['Stirling','n! \u2248 \u221a(2\u03c0n) (n/e)\u207f','good for n > 10'],
+    ['binomial','C(n,k) = n!/(k!(n\u2212k)!);  (a+b)\u207f = \u03a3 C(n,k) a\u207f\u207b\u1d4f b\u1d4f','']
+  ]},
+  {t:'Small-x approximations  (|x| \u226a 1, x in radians)',rows:[
+    ['trig','sin x \u2248 x \u2212 x\u00b3/6;  cos x \u2248 1 \u2212 x\u00b2/2;  tan x \u2248 x + x\u00b3/3;  arctan x \u2248 x \u2212 x\u00b3/3',''],
+    ['exp / log','e\u02e3 \u2248 1 + x + x\u00b2/2;  ln(1+x) \u2248 x \u2212 x\u00b2/2',''],
+    ['powers','(1+x)\u207f \u2248 1 + nx;  1/(1+x) \u2248 1 \u2212 x;  \u221a(1+x) \u2248 1 + x/2',''],
+    ['hyperbolic','sinh x \u2248 x;  cosh x \u2248 1 + x\u00b2/2;  tanh x \u2248 x',''],
+    ['in dB','20 log10(1+x) \u2248 8.686 x dB','tolerance \u2192 dB']
+  ]},
+  {t:'Engineering favourites',rows:[
+    ['RC circuit','\u03c4 = RC;  f\u208b\u2083dB = 1/(2\u03c0RC);  v(t) = V(1 \u2212 e^(\u2212t/RC));  10\u201390% rise \u2248 2.2 RC',''],
+    ['settling','settle to N bits: t \u2248 N ln2 \u00b7 RC \u2248 0.693 N RC','error < 2^\u2212N'],
+    ['LC / RLC','f\u2080 = 1/(2\u03c0\u221a(LC));  Q = \u03c9\u2080L/R = 1/(\u03c9\u2080RC)','series RLC'],
+    ['thermal noise','v\u00b2 = 4kTR\u0394f;  kT/C noise: v = \u221a(kT/C);  kT(300 K) \u2248 4.14\u00d710\u207b\u00b2\u00b9 J',''],
+    ['data converters','SQNR \u2248 6.02 N + 1.76 dB;  ENOB = (SINAD \u2212 1.76)/6.02',''],
+    ['RF','\u0393 = (Z\u2097 \u2212 Z\u2080)/(Z\u2097 + Z\u2080);  VSWR = (1+|\u0393|)/(1\u2212|\u0393|);  RL = \u221220 log10|\u0393|',''],
+    ['fields','skin depth \u03b4 = \u221a(\u03c1/(\u03c0 f \u03bc));  wavelength \u03bb = c/(f\u221a\u03b5r)','']
+  ]}
+];
+function renderSeries(){
+  const sd=SER.find(z=>z.id===$('fsel').value)||SER[0],box=$('fseries');
+  let x;
+  try{DEPTH=0;POSOFF=0;x=U(ev(parseExpr($('fx').value),null));if(typeof x!=='number'||!Number.isFinite(x))throw 0;}
+  catch(e){box.innerHTML='<div class="out err" style="padding-left:0">\u2716 Enter a real number for x, e.g. 0.5 or pi/6</div>';return;}
+  const n=Math.max(1,Math.min(sd.max||12,parseInt($('fn').value,10)||6));
+  const ex=sd.exact(x),exOk=Number.isFinite(ex),ft=v=>fmtValue(v).text,fx=v=>numParts(v,'fix',CFG.digits).m;
+  let sum=0,rows='';
+  for(let k=0;k<n;k++){
+    const t=sd.term(k),v=t.c*Math.pow(x,t.p);sum+=v;
+    rows+='<tr><td>'+(k+1)+'</td><td>'+esc(t.lab)+'</td><td>'+esc(fx(t.c))+'</td><td>'+esc(ft(v))+'</td><td>'+esc(ft(sum))+'</td><td>'+(exOk?esc(ft(sum-ex)):'\u2014')+'</td></tr>';
+  }
+  const out=Math.abs(x)>=sd.rad;
+  box.innerHTML='<div class="alt">'+esc(sd.name)+' at x = '+esc(ft(x))+(exOk?' &nbsp;&middot;&nbsp; exact = '+esc(ft(ex)):' &nbsp;&middot;&nbsp; outside the function\u2019s domain')+' &nbsp;&middot;&nbsp; converges for '+esc(sd.rtxt)+'</div>'
+    +(out?'<div class="warn">\u26a0 x is outside the convergence range, so the partial sums will not settle on the exact value.</div>':'')
+    +'<div class="fwrap"><table class="ftbl"><thead><tr><th>n</th><th>term</th><th>coefficient</th><th>term value</th><th>partial sum</th><th>error</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function initFormulas(){
+  $('fsel').innerHTML=SER.map(z=>'<option value="'+z.id+'">'+esc(z.name)+'</option>').join('');
+  ['fsel','fx','fn'].forEach(id=>{$(id).addEventListener('input',renderSeries);$(id).addEventListener('change',renderSeries);});
+  $('fref').innerHTML=REF.map(g=>'<div class="fgrp">'+esc(g.t)+'</div><div class="fwrap"><table class="ftbl fref"><tbody>'
+    +g.rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td><code data-t="'+esc(r[1])+'" title="Click to copy">'+esc(r[1])+'</code>'+(r[2]?' <span class="alt">'+esc(r[2])+'</span>':'')+'</td></tr>').join('')
+    +'</tbody></table></div>').join('');
+  $('fref').addEventListener('click',e=>{const c=e.target.closest('code[data-t]');if(c)copyText(c.dataset.t);});
+  renderSeries();
 }
 
 /* ---- base converter tab ---- */
@@ -1690,7 +2029,7 @@ function initConv(){
 }
 
 /* ---- init ---- */
-load();buildFuncs();buildConsts();refreshVars();syncBar();banner();initSolver();initConv();
+load();buildFuncs();buildConsts();refreshVars();syncBar();banner();initSolver();initConv();initFormulas();
 histPos=hist.length;inp.focus();
 window.__engcalc={runInput,execLine,showTab,doSolve,convRender};
 })();
