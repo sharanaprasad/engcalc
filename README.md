@@ -43,6 +43,7 @@ engcalc/
     │   ├── test_extended.js         1071 cases — identities on random
     │   │                            complex points, name rules, bases,
     │   │                            solver, unit parsing
+    │   ├── test_calculus.js         156 cases — diff / integ, checked numerically
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
     │   ├── test_audit.js            190 edge cases — parser, formatting,
     │   │                            precedence, implicit mult, bits, solver
@@ -53,10 +54,12 @@ engcalc/
         ├── test_ui_deep.js          22 cases — tab round-trips, converter,
         │                            persistence, ans history
         ├── test_ui_format.js        9 cases — "to / => directive" in the UI
-        └── test_ui_formulas.js      14 cases — Formulas tab and series explorer
+        ├── test_ui_formulas.js      14 cases — Formulas tab and series explorer
+        ├── test_ui_calculus.js      14 cases — diff / integ display, drawer, examples
+        └── test_ui_export.js        22 cases — clear wipes variables; Export-as-image dialog
 ```
 
-Total: ~1,600 tests across engine and UI.
+Total: ~1,900 tests across engine and UI.
 
 ## Running the tests
 

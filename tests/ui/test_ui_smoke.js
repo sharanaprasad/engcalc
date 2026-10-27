@@ -72,13 +72,16 @@ type('');
 // help, clear
 run('help');ok(log.textContent.includes('ENGINEERING SUFFIXES'),'help shows');
 run('clear');ok(log.children.length===0,'clear empties log');
+// clear also wipes variables; new state is persisted
+ok(!/"x"/.test(w.localStorage.getItem('engcalc.console.v1')||''),'clear removed stored variables');
+run('keep1=7');
 // persistence
 const saved=w.localStorage.getItem('engcalc.console.v1');
-ok(saved&&saved.includes('"x"'),'state saved to localStorage');
+ok(saved&&saved.includes('"keep1"'),'state saved to localStorage');
 // reload persistence
 const dom2=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/',
   beforeParse(w2){w2.localStorage.setItem('engcalc.console.v1',saved);}});
-ok(dom2.window.document.getElementById('varlist').textContent.includes('x'),'variables restored after reload');
+ok(dom2.window.document.getElementById('varlist').textContent.includes('keep1'),'variables restored after reload');
 ok(errors.length===0,'no window errors '+errors.join('|'));
 
 // ---- v1.1 additions ----

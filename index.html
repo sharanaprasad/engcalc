@@ -117,6 +117,13 @@ button{font-family:inherit;cursor:pointer}
 .ftbl code{cursor:pointer;color:var(--cyan)}
 .fwrap{overflow-x:auto}
 .fgrp{margin:18px 0 2px;color:var(--amber);font-size:13px;font-weight:700;letter-spacing:.5px}
+.vrowf input[type=number]{background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:8px;color:#fff;font-family:inherit;font-size:14px;padding:6px 9px;outline:0;width:64px}
+.expov{position:fixed;inset:0;z-index:60;background:rgba(3,5,12,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+.expov[hidden]{display:none}
+.expcard{width:min(760px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;background:rgba(13,18,38,.98);border:1px solid var(--line);border-radius:14px}
+.expbody{padding:10px 14px 14px}
+.expprev{margin:8px 0;border:1px solid var(--line);border-radius:10px;padding:8px;background:rgba(255,255,255,.04);overflow:auto;max-height:48vh;min-height:60px;text-align:center;color:var(--dim)}
+.expprev img{max-width:100%;height:auto;display:block;margin:0 auto}
 #chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
 .chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:3px 9px;font-size:12px}
 .chip:hover{color:#fff;border-color:var(--violet)}
@@ -228,8 +235,8 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
     <div class="seg" title="Significant digits"><button id="dMinus">−</button><span id="dVal">6</span><button id="dPlus">+</button></div>
     <button class="tb" id="btnConsts" title="Physical constants (Esc closes)">⚛ Constants</button>
     <button class="tb" id="btnHelp">? Help</button>
-    <button class="tb" id="btnExport" title="Download this session as text">⭳ Export</button>
-    <button class="tb" id="btnClear" title="Ctrl+L">⌫ Clear</button>
+    <button class="tb" id="btnExport" title="Export the last calculations as an image (PNG) for slides">⭳ Export</button>
+    <button class="tb" id="btnClear" title="Clear the screen and all variables (Ctrl+L)">⌫ Clear</button>
   </header>
   <main id="main">
     <aside id="vars" class="panel">
@@ -307,6 +314,25 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
     </aside>
   </main>
 </div>
+<div id="exp" class="expov" hidden>
+  <div class="expcard" role="dialog" aria-label="Export as image">
+    <div class="ph"><span>Export as image</span><button class="x" id="expClose" title="Close (Esc)">&#10005;</button></div>
+    <div class="expbody">
+      <div class="vrowf">
+        <label>Last <input type="number" id="expN" min="1" max="50" value="5"> calculations</label>
+        <label>Theme <select id="expTheme"><option value="light">Light (white slides)</option><option value="dark">Dark</option></select></label>
+        <label>Size <select id="expScale"><option value="1">1&times;</option><option value="2" selected>2&times; (sharp)</option><option value="3">3&times;</option></select></label>
+      </div>
+      <div id="expPrev" class="expprev"></div>
+      <div class="alt" id="expMsg" style="padding-left:0"></div>
+      <div class="vrowf">
+        <button class="tb pri" id="expPng">&#10515; Download PNG</button>
+        <button class="tb" id="expCopy">&#10697; Copy image</button>
+        <button class="tb" id="expTxt">&#10515; Text file (whole session)</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -329,9 +355,11 @@ const E=(msg,pos)=>new CalcError(msg,pos===undefined?undefined:pos+POSOFF);
 class Cx{constructor(re,im){this.re=re;this.im=im;}}
 class Disp{constructor(text,num,alt){this.text=text;this.num=num;this.alt=alt;}}
 class Mat{constructor(d){this.d=d;this.r=d.length;this.c=d[0].length;}}
+/* symbolic result of diff() / integ(): an expression tree; c = show "+ C" */
+class Sym{constructor(ast,c,note){this.ast=ast;this.c=!!c;this.note=note||'';}}
 const noMat=(v,w)=>{if(v instanceof Mat)throw new CalcError(w+" doesn't work on matrices");return v;};
 const isC=v=>v instanceof Cx;
-const U=v=>v instanceof Disp?v.num:v;
+const U=v=>v instanceof Disp?v.num:v instanceof Sym?U(symNum(v)):v;
 const mk=(re,im)=>im===0?re:new Cx(re,im);
 const Re=v=>isC(v)?v.re:v, Im=v=>isC(v)?v.im:0;
 const real=(v,nm)=>{if(isC(v))throw new CalcError(nm+' needs a real number');return v;};
@@ -645,6 +673,652 @@ function casinh(z){return isC(z)?cln(add(z,csqrt(add(mul(z,z),1)))):Math.asinh(z
 function cacosh(z){if(!isC(z)&&z>=1)return Math.acosh(z);return cln(add(z,mul(csqrt(add(z,1)),csqrt(sub(z,1)))));}
 function catanh(z){if(!isC(z)&&Math.abs(z)<1)return Math.atanh(z);return mul(.5,cln(div(add(1,z),sub(1,z))));}
 
+/* ---- symbolic calculus: diff / integ ---- */
+const SN=v=>({t:'num',v,pos:0});
+const SID=nm=>({t:'id',name:nm,pos:0});
+const SCALL=(nm,...a)=>({t:'call',name:nm,args:a,pos:0});
+function symEq(a,b){
+  if(a===b)return true;
+  if(a.t!==b.t)return false;
+  switch(a.t){
+    case 'num':return typeof a.v==='number'&&typeof b.v==='number'?a.v===b.v:(isC(a.v)&&isC(b.v)&&a.v.re===b.v.re&&a.v.im===b.v.im);
+    case 'id':return a.name===b.name;
+    case 'un':return a.op===b.op&&symEq(a.a,b.a);
+    case 'bin':return a.op===b.op&&symEq(a.a,b.a)&&symEq(a.b,b.b);
+    case 'call':return a.name===b.name&&a.args.length===b.args.length&&a.args.every((x,i)=>symEq(x,b.args[i]));
+  }
+  return false;
+}
+function symHas(n,x){
+  switch(n.t){
+    case 'num':return false;
+    case 'id':return n.name===x;
+    case 'un':return symHas(n.a,x);
+    case 'bin':return symHas(n.a,x)||symHas(n.b,x);
+    case 'call':return n.args.some(a=>symHas(a,x));
+  }
+  return true;
+}
+function symSubst(n,from,to){
+  if(symEq(n,from))return to;
+  switch(n.t){
+    case 'un':return {...n,a:symSubst(n.a,from,to)};
+    case 'bin':return {...n,a:symSubst(n.a,from,to),b:symSubst(n.b,from,to)};
+    case 'call':return {...n,args:n.args.map(a=>symSubst(a,from,to))};
+  }
+  return n;
+}
+const symRecurring=q=>{while(q%2===0)q/=2;while(q%5===0)q/=5;return q>1;};
+function symFrac(c){
+  if(!Number.isFinite(c)||Number.isInteger(c))return null;
+  const a=Math.abs(c);
+  for(let q=2;q<=1000;q++){const p=Math.round(a*q);if(p>0&&Math.abs(a-p/q)<=1e-11*Math.max(1,a))return [Math.sign(c)*p,q];}
+  return null;
+}
+const symNumTxt=v=>Number.isInteger(v)?String(v):String(Number(v.toPrecision(12)));
+
+/* printer: output is plain calculator syntax, so it can be typed or pasted back in */
+function symPr(n){
+  switch(n.t){
+    case 'num':{
+      const v=n.v;
+      if(typeof v!=='number')return {s:'('+symNumTxt(v.re)+(v.im<0?'-':'+')+symNumTxt(Math.abs(v.im))+'j)',p:9};
+      const neg=v<0,m=Math.abs(v),fr=symFrac(m);
+      if(fr&&symRecurring(fr[1]))return {s:(neg?'-':'')+fr[0]+'/'+fr[1],p:neg?1:2};
+      return {s:(neg?'-':'')+symNumTxt(m),p:neg?1:9};
+    }
+    case 'id':return {s:n.name,p:9};
+    case 'un':{const A=symPr(n.a);return {s:'-'+(A.p<2?'('+A.s+')':A.s),p:1};}
+    case 'bin':{
+      const L=symPr(n.a),R=symPr(n.b),w=(x,need)=>x.p<need?'('+x.s+')':x.s;
+      switch(n.op){
+        case '+':return {s:w(L,1)+' + '+w(R,1),p:1};
+        case '-':return {s:w(L,1)+' - '+w(R,2),p:1};
+        case '*':case '/':{const ln=n.a.t==='un'||(n.a.t==='num'&&typeof n.a.v==='number'&&n.a.v<0);return {s:(ln?L.s:w(L,2))+n.op+w(R,3),p:2};}
+        case '^':return {s:w(L,5)+'^'+w(R,4),p:4};
+      }
+      return {s:w(L,3)+' '+n.op+' '+w(R,3),p:1};
+    }
+    case 'call':return {s:n.name+'('+n.args.map(a=>symPr(a).s).join(', ')+')',p:9};
+  }
+  return {s:'?',p:9};
+}
+const symPrint=n=>symPr(n).s;
+
+/* simplifier: every product is kept as coefficient * factors^exponents, every sum as like terms */
+function symSplit(n){
+  if(n.t==='num'&&typeof n.v==='number')return {c:n.v,f:[]};
+  if(n.t==='un'&&n.op==='-'){const s=symSplit(n.a);return {c:-s.c,f:s.f};}
+  if(n.t==='bin'&&n.op==='*')return symMerge(symSplit(n.a),symSplit(n.b));
+  if(n.t==='bin'&&n.op==='/')return symMerge(symSplit(n.a),symInv(symSplit(n.b)));
+  if(n.t==='bin'&&n.op==='^'&&n.b.t==='num'&&typeof n.b.v==='number'){
+    const e=n.b.v,base=n.a;
+    if(Number.isInteger(e)){
+      if(base.t==='num'&&typeof base.v==='number')return {c:Math.pow(base.v,e),f:[]};
+      if(base.t==='un'||(base.t==='bin'&&(base.op==='*'||base.op==='/'))){const s=symSplit(base);return {c:Math.pow(s.c,e),f:s.f.map(([b,k])=>[b,k*e])};}
+      if(base.t==='bin'&&base.op==='^'&&base.b.t==='num'&&typeof base.b.v==='number')return symMerge({c:1,f:[]},{c:1,f:[[base.a,base.b.v*e]]});
+    }
+    return {c:1,f:[[base,e]]};
+  }
+  return {c:1,f:[[n,1]]};
+}
+function symMerge(a,b){
+  const f=a.f.map(x=>[x[0],x[1]]);
+  for(const [bb,e] of b.f){
+    const i=f.findIndex(x=>symEq(x[0],bb));
+    if(i>=0){f[i][1]+=e;if(f[i][1]===0)f.splice(i,1);}else f.push([bb,e]);
+  }
+  return {c:a.c*b.c,f};
+}
+const symInv=s=>{if(s.c===0)throw new CalcError('Division by zero');return {c:1/s.c,f:s.f.map(([b,e])=>[b,-e])};};
+function symBuild(c,f){
+  if(c===0)return SN(0);
+  const num=[],den=[];
+  for(const [b,e] of f){
+    if(e===0)continue;
+    if(b.t==='num'&&typeof b.v==='number'&&Number.isInteger(e)){c*=Math.pow(b.v,e);continue;}
+    (e>0?num:den).push([b,Math.abs(e)]);
+  }
+  if(c===0)return SN(0);
+  const fac=([b,e])=>e===1?b:{t:'bin',op:'^',a:b,b:SN(e),pos:0};
+  const chain=l=>l.reduce((acc,x)=>acc?{t:'bin',op:'*',a:acc,b:x,pos:0}:x,null);
+  const m=Math.abs(c),neg=c<0;
+  if(!num.length&&!den.length)return SN(c);
+  let p=m,q=1;
+  const fr=symFrac(m);
+  if(fr&&(symRecurring(fr[1])||fr[0]===1)){p=fr[0];q=fr[1];}
+  const nf=num.map(fac),df=den.map(fac);
+  const numer=chain(p===1&&nf.length?nf:[SN(p),...nf]);
+  const denom=(df.length||q>1)?chain(q===1?df:[SN(q),...df]):null;
+  const node=denom?{t:'bin',op:'/',a:numer,b:denom,pos:0}:numer;
+  return neg?{t:'un',op:'-',a:node,pos:0}:node;
+}
+const symIsSum=n=>(n.t==='bin'&&(n.op==='+'||n.op==='-'))||(n.t==='un'&&symIsSum(n.a));
+function symTerms(n,sign,out){
+  if(n.t==='bin'&&n.op==='+'){symTerms(n.a,sign,out);symTerms(n.b,sign,out);}
+  else if(n.t==='bin'&&n.op==='-'){symTerms(n.a,sign,out);symTerms(n.b,-sign,out);}
+  else if(n.t==='un'&&n.op==='-')symTerms(n.a,-sign,out);
+  else out.push([sign,n]);
+  return out;
+}
+function sMul(a,b){
+  const sa=symIsSum(a),sb=symIsSum(b);
+  if(sa!==sb){
+    const sum=sa?a:b,other=sa?b:a;
+    return sSum(symTerms(sum,1,[]).map(([sg,t])=>sMul(other,sg===1?t:sNeg(t))));
+  }
+  const s=symMerge(symSplit(a),symSplit(b));return symBuild(s.c,s.f);
+}
+function sDiv(a,b){
+  if(symIsSum(a)&&!symIsSum(b)&&symSplit(b).f.length===0)return sSum(symTerms(a,1,[]).map(([sg,t])=>sDiv(sg===1?t:sNeg(t),b)));
+  const s=symMerge(symSplit(a),symInv(symSplit(b)));return symBuild(s.c,s.f);
+}
+const sNeg=a=>sMul(SN(-1),a);
+function sPow(a,b){
+  if(b.t==='num'&&typeof b.v==='number'){
+    const e=b.v;
+    if(e===0)return SN(1);
+    if(e===1)return a;
+    const s=symSplit(a);
+    if(Number.isInteger(e))return symBuild(Math.pow(s.c,e),s.f.map(([bb,k])=>[bb,k*e]));
+    if(s.c===1&&s.f.length===1&&s.f[0][1]===1)return {t:'bin',op:'^',a:s.f[0][0],b,pos:0};
+    if(a.t==='num'&&typeof a.v==='number'&&Number.isInteger(Math.pow(a.v,e)))return SN(Math.pow(a.v,e));
+  }
+  if(a.t==='num'&&a.v===1)return SN(1);
+  return {t:'bin',op:'^',a,b,pos:0};
+}
+function sSum(items){
+  const groups=new Map(),order=[];
+  let konst=0,kmax=0;
+  const add=(n,sign)=>{
+    if(n.t==='bin'&&n.op==='+'){add(n.a,sign);add(n.b,sign);return;}
+    if(n.t==='bin'&&n.op==='-'){add(n.a,sign);add(n.b,-sign);return;}
+    if(n.t==='un'&&n.op==='-'){add(n.a,-sign);return;}
+    const s=symSplit(n);
+    if(!s.f.length){konst+=sign*s.c;kmax=Math.max(kmax,Math.abs(s.c));return;}
+    const key=symPrint(symBuild(1,s.f));
+    const g=groups.get(key);
+    if(g){g.c+=sign*s.c;g.m=Math.max(g.m,Math.abs(s.c));}
+    else{groups.set(key,{c:sign*s.c,f:s.f,m:Math.abs(s.c)});order.push(key);}
+  };
+  items.forEach(i=>add(i,1));
+  const terms=[];
+  order.forEach(k=>{const g=groups.get(k);if(Math.abs(g.c)>1e-12*g.m)terms.push([g.c,g.f]);});
+  if(Math.abs(konst)>1e-12*kmax&&konst!==0)terms.push([konst,[]]);
+  if(!terms.length)return SN(0);
+  let node=null;
+  terms.forEach(([c,f],i)=>{
+    const t=symBuild(Math.abs(c),f);
+    if(i===0)node=c<0?{t:'un',op:'-',a:t,pos:0}:t;
+    else node={t:'bin',op:c<0?'-':'+',a:node,b:t,pos:0};
+  });
+  return node;
+}
+const sAdd=(a,b)=>sSum([a,b]);
+const sSub=(a,b)=>sSum([a,sNeg(b)]);
+
+/* inline user functions and nested diff/integ so the rules only see built-in pieces */
+function symSubstMap(n,map){
+  switch(n.t){
+    case 'id':return map.has(n.name)?map.get(n.name):n;
+    case 'un':return {...n,a:symSubstMap(n.a,map)};
+    case 'bin':return {...n,a:symSubstMap(n.a,map),b:symSubstMap(n.b,map)};
+    case 'call':return {...n,args:n.args.map(a=>symSubstMap(a,map))};
+  }
+  return n;
+}
+function symPrep(n,d){
+  d=d||0;
+  if(d>40)throw new CalcError('Functions are nested too deeply to differentiate or integrate');
+  switch(n.t){
+    case 'call':{
+      const uf=STATE.funcs.get(n.name);
+      if(uf&&!has(FUNCS,n.name)){
+        if(n.args.length!==uf.params.length)throw new CalcError(n.name+'() takes '+uf.params.length+' argument(s)');
+        const map=new Map(uf.params.map((p,i)=>[p,symPrep(n.args[i],d+1)]));
+        return symPrep(symSubstMap(uf.ast,map),d+1);
+      }
+      if(has(FUNCS,n.name)&&FUNCS[n.name].symAst)return symPrep(FUNCS[n.name].symAst(n),d+1);
+      return {...n,args:n.args.map(a=>symPrep(a,d))};
+    }
+    case 'un':return {...n,a:symPrep(n.a,d)};
+    case 'bin':return {...n,a:symPrep(n.a,d),b:symPrep(n.b,d)};
+    case 'num':case 'id':return n;
+  }
+  throw new CalcError("Can't handle ! @ matrices or conversions inside diff / integ");
+}
+function symFree(n,acc){
+  switch(n.t){
+    case 'id':{const nm=n.name;if(nm!=='pi'&&nm!=='e'&&nm!=='j'&&nm!=='ans'&&nm!=='ans2'&&!has(CONSTS,nm))acc.add(nm);break;}
+    case 'un':symFree(n.a,acc);break;
+    case 'bin':symFree(n.a,acc);symFree(n.b,acc);break;
+    case 'call':n.args.forEach(a=>symFree(a,acc));break;
+  }
+  return acc;
+}
+
+/* ---- differentiation ---- */
+const SD_TABLE={
+  sin:u=>SCALL('cos',u),
+  cos:u=>sNeg(SCALL('sin',u)),
+  tan:u=>sDiv(SN(1),sPow(SCALL('cos',u),SN(2))),
+  sec:u=>sMul(SCALL('sec',u),SCALL('tan',u)),
+  csc:u=>sNeg(sMul(SCALL('csc',u),SCALL('cot',u))),
+  cot:u=>sNeg(sDiv(SN(1),sPow(SCALL('sin',u),SN(2)))),
+  asin:u=>sDiv(SN(1),SCALL('sqrt',sSub(SN(1),sPow(u,SN(2))))),
+  acos:u=>sNeg(sDiv(SN(1),SCALL('sqrt',sSub(SN(1),sPow(u,SN(2)))))),
+  atan:u=>sDiv(SN(1),sAdd(SN(1),sPow(u,SN(2)))),
+  sinh:u=>SCALL('cosh',u),
+  cosh:u=>SCALL('sinh',u),
+  tanh:u=>sDiv(SN(1),sPow(SCALL('cosh',u),SN(2))),
+  asinh:u=>sDiv(SN(1),SCALL('sqrt',sAdd(sPow(u,SN(2)),SN(1)))),
+  acosh:u=>sDiv(SN(1),SCALL('sqrt',sSub(sPow(u,SN(2)),SN(1)))),
+  atanh:u=>sDiv(SN(1),sSub(SN(1),sPow(u,SN(2)))),
+  exp:u=>SCALL('exp',u),
+  ln:u=>sDiv(SN(1),u),
+  log:u=>sDiv(SN(1),sMul(u,SCALL('ln',SN(10)))),
+  log10:u=>sDiv(SN(1),sMul(u,SCALL('ln',SN(10)))),
+  log2:u=>sDiv(SN(1),sMul(u,SCALL('ln',SN(2)))),
+  sqrt:u=>sDiv(SN(1),sMul(SN(2),SCALL('sqrt',u))),
+  cbrt:u=>sDiv(SN(1),sMul(SN(3),sPow(u,SN(2/3)))),
+  abs:u=>SCALL('sign',u)
+};
+function symD(n,x){
+  if(!symHas(n,x))return SN(0);
+  switch(n.t){
+    case 'id':return SN(1);
+    case 'un':return sNeg(symD(n.a,x));
+    case 'bin':{
+      const a=n.a,b=n.b;
+      switch(n.op){
+        case '+':return sAdd(symD(a,x),symD(b,x));
+        case '-':return sSub(symD(a,x),symD(b,x));
+        case '*':return sAdd(sMul(symD(a,x),b),sMul(a,symD(b,x)));
+        case '/':
+          if(!symHas(b,x))return sDiv(symD(a,x),b);
+          if(!symHas(a,x))return sNeg(sDiv(sMul(a,symD(b,x)),sPow(b,SN(2))));
+          return sDiv(sSub(sMul(symD(a,x),b),sMul(a,symD(b,x))),sPow(b,SN(2)));
+        case '^':
+          if(!symHas(b,x))return sMul(sMul(b,sPow(a,sSub(b,SN(1)))),symD(a,x));
+          if(!symHas(a,x)){
+            const base=(a.t==='id'&&a.name==='e')?sPow(a,b):sMul(sPow(a,b),SCALL('ln',a));
+            return sMul(base,symD(b,x));
+          }
+          return sMul(sPow(a,b),sAdd(sMul(symD(b,x),SCALL('ln',a)),sDiv(sMul(b,symD(a,x)),a)));
+      }
+      break;
+    }
+    case 'call':{
+      if(n.name==='pow'&&n.args.length===2)return symD({t:'bin',op:'^',a:n.args[0],b:n.args[1],pos:0},x);
+      if(n.name==='log'&&n.args.length===2)return symD(sDiv(SCALL('ln',n.args[0]),SCALL('ln',n.args[1])),x);
+      if(n.args.length===1&&has(SD_TABLE,n.name))return sMul(SD_TABLE[n.name](n.args[0]),symD(n.args[0],x));
+      throw new CalcError("diff doesn't know how to differentiate "+n.name+"() with respect to "+x);
+    }
+  }
+  throw new CalcError("diff can't handle this kind of expression");
+}
+
+/* ---- integration ---- */
+function symLin(u,x){
+  if(!symHas(u,x))return null;
+  if(u.t==='id')return {A:SN(1),B:SN(0)};
+  try{
+    const A=symD(u,x);if(symHas(A,x)||(A.t==='num'&&A.v===0))return null;
+    const B=sSub(u,sMul(A,SID(x)));if(symHas(B,x))return null;
+    return {A,B};
+  }catch(e){return null;}
+}
+/* numeric polynomial coefficients [c0,c1,...] of n in x, or null */
+function symPoly(n,x){
+  if(!symHas(n,x)){
+    try{DEPTH=0;POSOFF=0;const v=U(ev(n,null));return typeof v==='number'&&Number.isFinite(v)?[v]:null;}catch(e){return null;}
+  }
+  const addP=(a,b)=>{const r=Array(Math.max(a.length,b.length)).fill(0);a.forEach((v,i)=>{r[i]+=v;});b.forEach((v,i)=>{r[i]+=v;});return r;};
+  const mulP=(a,b)=>{const r=Array(a.length+b.length-1).fill(0);a.forEach((u,i)=>b.forEach((v,j)=>{r[i+j]+=u*v;}));return r;};
+  switch(n.t){
+    case 'id':return [0,1];
+    case 'un':{const a=symPoly(n.a,x);return a&&a.map(v=>-v);}
+    case 'bin':{
+      if(n.op==='^'){
+        if(n.b.t!=='num'||typeof n.b.v!=='number'||!Number.isInteger(n.b.v)||n.b.v<0||n.b.v>20)return null;
+        const a=symPoly(n.a,x);if(!a)return null;
+        let r=[1];for(let i=0;i<n.b.v;i++)r=mulP(r,a);return r;
+      }
+      const a=symPoly(n.a,x);if(!a)return null;
+      if(n.op==='/'){if(symHas(n.b,x))return null;const b=symPoly(n.b,x);return b&&b[0]!==0?a.map(v=>v/b[0]):null;}
+      const b=symPoly(n.b,x);if(!b)return null;
+      if(n.op==='+')return addP(a,b);
+      if(n.op==='-')return addP(a,b.map(v=>-v));
+      if(n.op==='*')return mulP(a,b);
+    }
+  }
+  return null;
+}
+function symPolyInt(p,x){
+  const terms=[];
+  p.forEach((c,k)=>{if(c!==0)terms.push(sMul(SN(c/(k+1)),sPow(SID(x),SN(k+1))));});
+  return terms.length?sSum(terms):SN(0);
+}
+const SI_ANTI={
+  sin:u=>sNeg(SCALL('cos',u)),
+  cos:u=>SCALL('sin',u),
+  tan:u=>sNeg(SCALL('ln',SCALL('abs',SCALL('cos',u)))),
+  sec:u=>SCALL('ln',SCALL('abs',sAdd(SCALL('sec',u),SCALL('tan',u)))),
+  exp:u=>SCALL('exp',u),
+  sinh:u=>SCALL('cosh',u),
+  cosh:u=>SCALL('sinh',u),
+  tanh:u=>SCALL('ln',SCALL('cosh',u)),
+  ln:u=>sSub(sMul(u,SCALL('ln',u)),u),
+  log10:u=>sDiv(sSub(sMul(u,SCALL('ln',u)),u),SCALL('ln',SN(10))),
+  log:u=>sDiv(sSub(sMul(u,SCALL('ln',u)),u),SCALL('ln',SN(10))),
+  log2:u=>sDiv(sSub(sMul(u,SCALL('ln',u)),u),SCALL('ln',SN(2))),
+  sqrt:u=>sMul(SN(2/3),sPow(u,SN(1.5))),
+  asin:u=>sAdd(sMul(u,SCALL('asin',u)),SCALL('sqrt',sSub(SN(1),sPow(u,SN(2))))),
+  acos:u=>sSub(sMul(u,SCALL('acos',u)),SCALL('sqrt',sSub(SN(1),sPow(u,SN(2))))),
+  atan:u=>sSub(sMul(u,SCALL('atan',u)),sDiv(SCALL('ln',sAdd(SN(1),sPow(u,SN(2)))),SN(2)))
+};
+const sOdd=(name,u)=>{const s=symSplit(u);return s.c<0?sNeg(SCALL(name,sNeg(u))):SCALL(name,u);};
+const SI_FAM={exp:{k:'exp',s:1},sin:{k:'cos',s:-1},cos:{k:'sin',s:1},sinh:{k:'cosh',s:1},cosh:{k:'sinh',s:1}};
+let SI_DEPTH=0;
+
+function symIntegrate(n,x){
+  if(!symHas(n,x))return sMul(n,SID(x));
+  switch(n.t){
+    case 'id':return sDiv(sPow(SID(x),SN(2)),SN(2));
+    case 'un':{const r=symIntegrate(n.a,x);return r&&sNeg(r);}
+    case 'bin':return symIBin(n,x);
+    case 'call':return symICall(n,x);
+  }
+  return null;
+}
+function symICall(n,x){
+  if(n.args.length!==1)return null;
+  const lin=symLin(n.args[0],x);
+  if(lin&&has(SI_ANTI,n.name))return sDiv(SI_ANTI[n.name](n.args[0]),lin.A);
+  return symUSub(n,x);
+}
+function symIBin(n,x){
+  const a=n.a,b=n.b;
+  switch(n.op){
+    case '+':case '-':{
+      const l=symIntegrate(a,x),r=l&&symIntegrate(b,x);
+      if(!l||!r)return symUSub(n,x);
+      return n.op==='+'?sAdd(l,r):sSub(l,r);
+    }
+    case '*':{
+      if(!symHas(a,x)){const r=symIntegrate(b,x);return r&&sMul(a,r);}
+      if(!symHas(b,x)){const r=symIntegrate(a,x);return r&&sMul(b,r);}
+      const pc=symPoly(n,x);if(pc)return symPolyInt(pc,x);
+      return symIProd(n,x)||symUSub(n,x);
+    }
+    case '/':{
+      if(!symHas(b,x)){const r=symIntegrate(a,x);return r&&sDiv(r,b);}
+      if(!symHas(a,x)){const r=symIRecip(b,x);if(r)return sMul(a,r);return symUSub(n,x);}
+      return symIRational(a,b,x)||symUSub(n,x);
+    }
+    case '^':return symIPow(n,x)||symUSub(n,x);
+  }
+  return null;
+}
+function symIPow(n,x){
+  const a=n.a,b=n.b;
+  if(!symHas(b,x)){
+    if(b.t==='num'&&typeof b.v==='number')return symIPowNode(a,b.v,x);
+    if(a.t==='id'&&a.name===x)return sDiv(sPow(a,sAdd(b,SN(1))),sAdd(b,SN(1)));
+    return null;
+  }
+  if(!symHas(a,x)){
+    const lin=symLin(b,x);if(!lin)return null;
+    if(a.t==='id'&&a.name==='e')return sDiv(SCALL('exp',b),lin.A);
+    return sDiv(sPow(a,b),sMul(lin.A,SCALL('ln',a)));
+  }
+  return null;
+}
+/* integral of base^m for a numeric exponent m */
+function symIPowNode(base,m,x){
+  if(m===0)return SID(x);
+  const lin=symLin(base,x);
+  if(lin){
+    if(m===-1)return sDiv(SCALL('ln',SCALL('abs',base)),lin.A);
+    return sDiv(sPow(base,SN(m+1)),sMul(lin.A,SN(m+1)));
+  }
+  if(base.t==='call'&&base.args.length===1){
+    const u=base.args[0],l=symLin(u,x);
+    if(l){
+      const A=l.A,nm=base.name;
+      const res=r=>sDiv(r,A);
+      if(m===2){
+        if(nm==='sin')return res(sSub(sDiv(u,SN(2)),sDiv(SCALL('sin',sMul(SN(2),u)),SN(4))));
+        if(nm==='cos')return res(sAdd(sDiv(u,SN(2)),sDiv(SCALL('sin',sMul(SN(2),u)),SN(4))));
+        if(nm==='tan')return res(sSub(SCALL('tan',u),u));
+        if(nm==='sec')return res(SCALL('tan',u));
+        if(nm==='csc')return res(sNeg(SCALL('cot',u)));
+        if(nm==='sinh')return res(sSub(sDiv(SCALL('sinh',sMul(SN(2),u)),SN(4)),sDiv(u,SN(2))));
+        if(nm==='cosh')return res(sAdd(sDiv(SCALL('sinh',sMul(SN(2),u)),SN(4)),sDiv(u,SN(2))));
+      }
+      if(m===-2){
+        if(nm==='cos')return res(SCALL('tan',u));
+        if(nm==='sin')return res(sNeg(SCALL('cot',u)));
+        if(nm==='cosh')return res(SCALL('tanh',u));
+      }
+      if(m===-1){
+        if(nm==='cos')return res(SCALL('ln',SCALL('abs',sAdd(SCALL('sec',u),SCALL('tan',u)))));
+        if(nm==='sin')return res(SCALL('ln',SCALL('abs',SCALL('tan',sDiv(u,SN(2))))));
+        if(nm==='exp')return res(sNeg(SCALL('exp',sNeg(u))));
+      }
+      if(nm==='exp'&&m!==0)return res(sDiv(SCALL('exp',sMul(SN(m),u)),SN(m)));
+    }
+  }
+  const q=symPoly(base,x);
+  if(q&&q.length===3&&q[2]!==0){
+    const [c0,c1,c2]=q,D=c1*c1-4*c2*c0,L=sAdd(sMul(SN(2*c2),SID(x)),SN(c1));
+    if(m===-1){
+      if(D<0){const s=Math.sqrt(-D);return sMul(SN(2/s),sOdd('atan',sDiv(L,SN(s))));}
+      if(D>0){const s=Math.sqrt(D),r1=(-c1+s)/(2*c2),r2=(-c1-s)/(2*c2);return sMul(SN(1/s),SCALL('ln',SCALL('abs',sDiv(sSub(SID(x),SN(r1)),sSub(SID(x),SN(r2))))));}
+      return sDiv(SN(-2),L);
+    }
+    if(m===-1/2){
+      const s2=Math.sqrt(c2>0?c2:-c2),R=SCALL('sqrt',base);
+      if(c2>0)return sMul(SN(1/s2),SCALL('ln',SCALL('abs',sAdd(L,sMul(SN(2*s2),R)))));
+      if(D>0)return sNeg(sMul(SN(1/s2),sOdd('asin',sDiv(L,SN(Math.sqrt(D))))));
+    }
+  }
+  return null;
+}
+function symIRecip(b,x){
+  if(b.t==='bin'&&b.op==='^'&&b.b.t==='num'&&typeof b.b.v==='number'&&!symHas(b.b,x))return symIPowNode(b.a,-b.b.v,x);
+  if(b.t==='call'&&b.name==='sqrt'&&b.args.length===1)return symIPowNode(b.args[0],-1/2,x);
+  if(b.t==='bin'&&b.op==='^'&&b.a.t==='id'&&b.a.name==='e'&&symLin(b.b,x))return symIPowNode(SCALL('exp',b.b),-1,x);
+  return symIPowNode(b,-1,x);
+}
+/* (p x + q) / (c2 x^2 + c1 x + c0) with numeric coefficients */
+function symIRational(a,b,x){
+  const p=symPoly(a,x),q=symPoly(b,x);
+  if(!p||!q||p.length>2||q.length!==3||q[2]===0)return null;
+  const [c0,c1,c2]=q,pp=p[1]||0,qq=p[0]||0;
+  const inv=symIPowNode(b,-1,x);if(!inv)return null;
+  if(pp===0)return sMul(SN(qq),inv);
+  const k=pp/(2*c2),rest=qq-k*c1;
+  const logPart=sMul(SN(k),SCALL('ln',SCALL('abs',b)));
+  return rest===0?logPart:sAdd(logPart,sMul(SN(rest),inv));
+}
+/* products: constant * x^n * (exp|sin|cos|sinh|cosh of a linear argument)  [by parts, tabular],  x^n ln x */
+function symIProd(n,x){
+  const s=symSplit(n);
+  let cst=[],pw=0,fam=null,lnf=null;
+  for(const [b,e] of s.f){
+    if(!symHas(b,x)){cst.push([b,e]);continue;}
+    if(b.t==='id'&&b.name===x&&Number.isInteger(e)){pw+=e;continue;}
+    if(e!==1)return null;
+    if(b.t==='call'&&b.args.length===1&&b.name==='ln'&&b.args[0].t==='id'&&b.args[0].name===x&&!lnf){lnf=b;continue;}
+    let kind=null,u=null;
+    if(b.t==='call'&&b.args.length===1&&has(SI_FAM,b.name)){kind=b.name;u=b.args[0];}
+    else if(b.t==='bin'&&b.op==='^'&&b.a.t==='id'&&b.a.name==='e'){kind='exp';u=b.b;}
+    if(!kind||fam)return null;
+    fam={kind,u};
+  }
+  const K=symBuild(s.c,cst);
+  if(lnf&&!fam){
+    if(pw===-1)return sMul(K,sDiv(sPow(SCALL('ln',SID(x)),SN(2)),SN(2)));
+    const m=pw+1;
+    return sMul(K,sMul(sPow(SID(x),SN(m)),sSub(sDiv(SCALL('ln',SID(x)),SN(m)),sDiv(SN(1),SN(m*m)))));
+  }
+  if(!fam||lnf||pw<0||pw>12)return null;
+  const lin=symLin(fam.u,x);if(!lin)return null;
+  const A=lin.A,u=fam.u;
+  const mk=(kind)=>kind==='exp'?SCALL('exp',u):SCALL(kind,u);
+  const J=(m,kind,sc)=>{
+    const an=SI_FAM[kind],c2=sMul(sc,SN(an.s)),G=sDiv(sMul(c2,mk(an.k)),A);
+    if(m===0)return G;
+    return sSub(sMul(sPow(SID(x),SN(m)),G),sMul(SN(m),J(m-1,an.k,sDiv(c2,A))));
+  };
+  return sMul(K,J(pw,fam.kind,SN(1)));
+}
+/* u-substitution: find a composite u so that integrand/u' depends on u only */
+function symUSub(n,x){
+  if(SI_DEPTH>3)return null;
+  const cands=[];
+  const addC=u=>{if(symHas(u,x)&&!(u.t==='id')&&!symLin(u,x)&&!cands.some(c=>symEq(c,u)))cands.push(u);};
+  const walk=m=>{
+    switch(m.t){
+      case 'call':addC(m);m.args.forEach(a=>{addC(a);walk(a);});break;
+      case 'bin':
+        if(m.op==='^'){addC(m.a);if(symHas(m.b,x))addC(m.b);}
+        if(m.op==='/')addC(m.b);
+        walk(m.a);walk(m.b);break;
+      case 'un':walk(m.a);break;
+    }
+  };
+  walk(n);
+  SI_DEPTH++;
+  try{
+    for(const u of cands.slice(0,10)){
+      let du;try{du=symD(u,x);}catch(e){continue;}
+      if(du.t==='num'&&du.v===0)continue;
+      let qd;try{qd=sDiv(n,du);}catch(e){continue;}
+      const w=SID('__w'),qs=symSubst(qd,u,w);
+      if(symHas(qs,x))continue;
+      const F=symIntegrate(qs,'__w');
+      if(F)return symSubst(F,w,u);
+    }
+  }finally{SI_DEPTH--;}
+  return null;
+}
+
+/* ---- numeric integration: adaptive Gauss-Kronrod (7,15), open nodes, handles infinite limits ---- */
+const GK_X=[0.991455371120813,0.949107912342759,0.864864423359769,0.741531185599394,0.586087235467691,0.405845151377397,0.207784955007898,0];
+const GK_WK=[0.022935322010529,0.063092092629979,0.104790010322250,0.140653259715525,0.169004726639267,0.190350578064785,0.204432940075298,0.209482141084728];
+const GK_WG=[0,0.129484966168870,0,0.279705391489277,0,0.381830050505119,0,0.417959183673469];
+function numIntegrate(f,a,b){
+  const ev2=t=>{const v=f(t);const re=Re(v),im=Im(v);if(!Number.isFinite(re)||!Number.isFinite(im))throw new CalcError('The integrand is not finite inside the interval (a singularity?)');return [re,im];};
+  const gk=(g,lo,hi)=>{
+    const c=(lo+hi)/2,h=(hi-lo)/2;let K=[0,0],G=[0,0];
+    for(let i=0;i<8;i++){
+      const pts=i===7?[c]:[c-h*GK_X[i],c+h*GK_X[i]];
+      for(const t of pts){const v=g(t);K[0]+=GK_WK[i]*v[0]*h;K[1]+=GK_WK[i]*v[1]*h;if(GK_WG[i]){G[0]+=GK_WG[i]*v[0]*h;G[1]+=GK_WG[i]*v[1]*h;}}
+    }
+    return {K,err:Math.hypot(K[0]-G[0],K[1]-G[1])};
+  };
+  const adapt=(g,lo,hi,tol,depth)=>{
+    const r=gk(g,lo,hi);
+    if(r.err<=tol||depth>=40)return {v:r.K,e:r.err};
+    const m=(lo+hi)/2,l=adapt(g,lo,m,tol/2,depth+1),rr=adapt(g,m,hi,tol/2,depth+1);
+    return {v:[l.v[0]+rr.v[0],l.v[1]+rr.v[1]],e:l.e+rr.e};
+  };
+  const run=(g,lo,hi)=>{const r0=gk(g,lo,hi);const tol=1e-11*Math.max(1,Math.hypot(r0.K[0],r0.K[1]));return adapt(g,lo,hi,tol,0);};
+  let total=[0,0];
+  const addp=r=>{total[0]+=r.v[0];total[1]+=r.v[1];};
+  if(a===b)return mk(0,0);
+  let sign=1;if(a>b){const t=a;a=b;b=t;sign=-1;}
+  if(Number.isFinite(a)&&Number.isFinite(b))addp(run(ev2,a,b));
+  else if(Number.isFinite(a)){addp(run(t=>{const d=1-t,x=a+t/d,v=ev2(x),k=1/(d*d);return [v[0]*k,v[1]*k];},0,1));}
+  else if(Number.isFinite(b)){addp(run(t=>{const d=1-t,x=b-t/d,v=ev2(x),k=1/(d*d);return [v[0]*k,v[1]*k];},0,1));}
+  else{
+    addp(run(t=>{const d=1-t,x=t/d,v=ev2(x),k=1/(d*d);return [v[0]*k,v[1]*k];},0,1));
+    addp(run(t=>{const d=1-t,x=-t/d,v=ev2(x),k=1/(d*d);return [v[0]*k,v[1]*k];},0,1));
+  }
+  return mk(sign*total[0],sign*total[1]);
+}
+
+/* ---- the diff() / integ() entry points: they receive the parsed (unevaluated) arguments ---- */
+function symVarName(a){
+  if(!a||a.t!=='id'||has(FUNCS,a.name)||STATE.funcs.has(a.name))throw new CalcError('The variable must be a plain name, e.g.  diff(x^2, x)');
+  return a.name;
+}
+function symPickVar(expr,fname,explicit){
+  if(explicit)return explicit;
+  const free=[...symFree(expr,new Set())];
+  if(free.length>1)throw new CalcError(fname+'() found several variables ('+free.join(', ')+') — say which one:  '+fname+'(expr, '+free[0]+')');
+  return free.length?free[0]:null;
+}
+function symLimit(a,sc){
+  const inf=m=>m.t==='id'&&m.name==='inf'&&!STATE.vars.has('inf')&&!(sc&&sc.has('inf'));
+  if(inf(a))return Infinity;
+  if(a.t==='un'&&a.op==='-'&&inf(a.a))return -Infinity;
+  const v=U(ev(a,sc));
+  if(typeof v!=='number'||Number.isNaN(v))throw new CalcError('Integration limits must be real numbers (use inf for infinity)');
+  return v;
+}
+function symDiffAst(args,sc){
+  const expr=symPrep(args[0]);
+  const x=symPickVar(expr,'diff',args.length>=2?symVarName(args[1]):null);
+  if(x===null)return {ast:SN(0),x:null,order:1};
+  let order=1;
+  if(args.length===3){order=U(ev(args[2],sc));if(!Number.isInteger(order)||order<1||order>10)throw new CalcError('diff order must be a whole number from 1 to 10');}
+  let d=expr;for(let i=0;i<order;i++)d=symD(d,x);
+  return {ast:d,x,order};
+}
+function symIntegAst(args,sc){
+  let a=args.slice();
+  let expr=symPrep(a[0]),explicit=null,lims=null;
+  if(a.length===2)explicit=symVarName(a[1]);
+  else if(a.length===3)lims=[a[1],a[2]];
+  else if(a.length===4){explicit=symVarName(a[1]);lims=[a[2],a[3]];}
+  const free=[...symFree(expr,new Set())];
+  const x=explicit||(free.length>1?symPickVar(expr,'integ',null):(free[0]||'x'));
+  return {expr,x,lims};
+}
+function evalSymIn(ast,sc){DEPTH=0;return U(ev(ast,sc));}
+/* inside a user function (sc set) a symbolic result is evaluated at the function's own values when possible */
+function symResult(sym,sc){
+  if(sc){try{return evalSymIn(sym.ast,sc);}catch(e){if(!(e instanceof CalcError))throw e;}}
+  return sym;
+}
+function symIntegCall(n,sc,wantAst){
+  const {expr,x,lims}=symIntegAst(n.args,sc);
+  if(!lims){
+    let F=null;try{F=symIntegrate(expr,x);}catch(e){if(!(e instanceof CalcError))throw e;F=null;}
+    if(!F)throw new CalcError('integ: no closed form found for '+symPrint(expr)+' with the built-in rules. Give limits for a numeric answer, e.g.  integ('+symPrint(expr)+', '+x+', 0, 1)');
+    return wantAst?F:symResult(new Sym(F,true,'antiderivative with respect to '+x+' (C = constant of integration)'),sc);
+  }
+  const lo=symLimit(lims[0],sc),hi=symLimit(lims[1],sc);
+  const f=t=>{const m=new Map(sc||[]);m.set(x,t);DEPTH=0;const v=U(ev(expr,m));if(typeof v!=='number'&&!isC(v))throw new CalcError('The integrand must evaluate to a number');return v;};
+  const num=numIntegrate(f,lo,hi);
+  let F=null;try{F=symIntegrate(expr,x);}catch(e){F=null;}
+  let out=num,note='numeric integration (adaptive Gauss-Kronrod)';
+  if(F&&Number.isFinite(lo)&&Number.isFinite(hi)){
+    try{
+      const at=t=>{const m=new Map(sc||[]);m.set(x,t);DEPTH=0;return U(ev(F,m));};
+      const ex=sub(at(hi),at(lo));
+      const tol=1e-6*Math.max(1e-300,cabs(num),cabs(ex));
+      if(cabs(sub(ex,num))<=tol){out=ex;note=null;}
+    }catch(e){}
+  }
+  out=cleanC(out);
+  if(wantAst)return SN(out);
+  return note?new Disp(fmtValue(out).text,out,note):out;
+}
+function symDiffCall(n,sc,wantAst){
+  const r=symDiffAst(n.args,sc);
+  if(wantAst)return r.ast;
+  const note=r.x?(r.order>1?'derivative of order '+r.order+' with respect to '+r.x:'derivative with respect to '+r.x):'derivative of a constant';
+  return symResult(new Sym(r.ast,false,note),sc);
+}
+function symNum(s){
+  try{DEPTH=0;return ev(s.ast,null);}
+  catch(e){if(e instanceof CalcError)throw new CalcError("Can't evaluate the symbolic result "+symPrint(s.ast)+" — "+e.message);throw e;}
+}
+
 /* ---- angle handling: everything is radians; sind/cosd/tand switch to degrees internally (exact multiples of 90) ---- */
 function sinA(x){
   if(CFG.deg){if(x%90===0){return [0,1,0,-1][((x/90)%4+4)%4];}x=x*Math.PI/180;}
@@ -825,6 +1499,17 @@ def('Matrix','eye','eye(n)','n-by-n identity matrix','eye(3)',1,1,n=>matEye(dimA
 def('Matrix','zeros','zeros(r, c)','Matrix of zeros (c defaults to r)','zeros(2, 3)',1,2,(r,c)=>{r=dimArg(r,'zeros');c=c===undefined?r:dimArg(c,'zeros');return new Mat(Array.from({length:r},()=>Array(c).fill(0)));});
 def('Matrix','ones','ones(r, c)','Matrix of ones (c defaults to r)','ones(2, 3)',1,2,(r,c)=>{r=dimArg(r,'ones');c=c===undefined?r:dimArg(c,'ones');return new Mat(Array.from({length:r},()=>Array(c).fill(1)));});
 def('Algebra','quad','quad(a, b, c)','Roots of a\u00b7x\u00b2 + b\u00b7x + c = 0 from the quadratic formula, as the matrix [x1 x2] (complex roots too)','quad(1, -3, 2)',3,3,(a,b,c)=>new Mat([quadFormula(a,b,c).r]));
+const symDef=(name,sig,desc,ex,min,max,call)=>{
+  def('Calculus',name,sig,desc,ex,min,max,()=>{throw new CalcError(name+'() works on an expression, not a value');});
+  FUNCS[name].sym=(n,sc)=>{
+    if(n.args.length<min||n.args.length>max)throw E(name+'() takes '+min+'–'+max+' argument(s):  '+sig,n.pos);
+    try{return call(n,sc,false);}catch(e){if(e instanceof CalcError&&e.pos===undefined)throw E(e.message,n.pos);throw e;}
+  };
+  FUNCS[name].symAst=n=>call(n,null,true);
+};
+symDef('diff','diff(expr, x, n)','Symbolic derivative. x is optional when there is one variable; n = order. Example: diff(x^2*sin(x))','diff(x^2*sin(x))',1,3,symDiffCall);
+symDef('integ','integ(expr, x, a, b)','Integral. Without limits: closed-form antiderivative + C. With limits (a, b, use inf for infinity): exact if possible, else numeric','integ(x*exp(x))',1,4,symIntegCall);
+symDef('integrate','integrate(expr, x, a, b)','Same as integ','integrate(1/(x^2+1), 0, inf)',1,4,symIntegCall);
 def('Complex','mag','mag(z)','Magnitude |z|','mag(3+4j)',1,1,cabs);
 def('Complex','phase','phase(z)','Phase angle of z in radians (phase_deg for degrees)','phase(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
 def('Complex','ph','ph(z)','Short for phase(z): angle of z in radians','ph(1+j)',1,1,z=>angOut(Math.atan2(Im(z),Re(z)),'cur'));
@@ -988,6 +1673,7 @@ function ev(n,sc){
     }
     case 'call':{
       const f=has(FUNCS,n.name)?FUNCS[n.name]:null;
+      if(f&&f.sym)return f.sym(n,sc);
       if(f){
         /* trig inputs tagged with a unit (e.g. 90 in rad, phase_deg(z)) are converted to the unit the function expects */
         const tgt=f.angIn==='cur'?(CFG.deg?'deg':'rad'):f.angIn;
@@ -1067,6 +1753,7 @@ function cleanC(z){
   return z;
 }
 function fmtValue(v){
+  if(v instanceof Sym){const t=symPrint(v.ast);return {html:'<span class="disp">'+esc(t+(v.c?' + C':''))+'</span>',text:t,alt:v.note};}
   if(v instanceof Mat){
     const cells=v.d.map(r=>r.map(x=>fmtValue(x)));
     let alt=matDims(v)+' matrix';
@@ -1192,7 +1879,7 @@ function execStatement(sIn,base){
     const name=m[1],op=m[2];POSOFF=base;
     let w=validateName(name,'var',0);
     POSOFF=base+(s.length-m[3].length);
-    let v=U(ev(parseExpr(m[3]),null));
+    let v=ev(parseExpr(m[3]),null);v=v instanceof Sym?v:U(v);
     if(v instanceof Mat)w=w.filter(x=>!/also reads as a unit/.test(x));
     if(op){
       let old=STATE.vars.has(name)?STATE.vars.get(name):(has(CONSTS,name)?CONSTS[name].v:undefined);
@@ -1207,13 +1894,15 @@ function execStatement(sIn,base){
   const raw=ev(ast,null);
   /* bare "ans" / "ans2" is a reference, not a new result: don't push a duplicate history entry */
   const bare=ast.t==='id'&&(ast.name==='ans'||ast.name==='ans2');
-  if(!bare){STATE.ans2=STATE.ans;STATE.ans=U(raw);}
+  if(!bare){STATE.ans2=STATE.ans;STATE.ans=raw instanceof Sym?raw:U(raw);}
   return {kind:'val',v:fmt?applyFormat(raw,fmt):raw};
 }
 
 function varsItem(){
   return {kind:'vars',list:[...STATE.vars.keys()].sort().map(k=>({name:k,v:STATE.vars.get(k)})),funcs:[...STATE.funcs.entries()].map(([k,f])=>({name:k,params:f.params,body:f.src.slice(f.src.indexOf('=')+1)}))};
 }
+/* variables, functions, solved flags and ans */
+function wipeState(){STATE.vars.clear();STATE.funcs.clear();STATE.solved.clear();STATE.ans=STATE.ans2=undefined;}
 function runCommand(t,items,ui){
   const parts=t.split(/\s+/),c=parts[0].toLowerCase();
   if(!COMMANDS.has(c)) return false;
@@ -1221,7 +1910,7 @@ function runCommand(t,items,ui){
   const info=h=>items.push({kind:'info',html:h});
   switch(c){
     case 'help':case '?':if(argc)return false;ui.push({cmd:'help'});return true;
-    case 'clear':case 'cls':if(argc)return false;ui.push({cmd:'clear'});return true;
+    case 'clear':case 'cls':{if(argc)return false;const n=STATE.vars.size+STATE.funcs.size;wipeState();ui.push({cmd:'clear',n});return true;}
     case 'vars':if(argc)return false;items.push(varsItem());return true;
     case 'consts':case 'constants':if(argc)return false;ui.push({cmd:'consts'});return true;
     case 'funcs':{if(argc)return false;
@@ -1260,7 +1949,7 @@ function runCommand(t,items,ui){
         else out.push('<span class="err">'+esc(nme)+' is not defined</span>');
       }
       info(out.join('<br>'));return true;}
-    case 'delall':case 'reset':{if(argc)return false;STATE.vars.clear();STATE.funcs.clear();STATE.solved.clear();STATE.ans=STATE.ans2=undefined;info('All variables, functions and ans cleared.');return true;}
+    case 'delall':case 'reset':{if(argc)return false;wipeState();info('All variables, functions and ans cleared.');return true;}
   }
   return false;
 }
@@ -1308,6 +1997,7 @@ function peek(text){
     if(COMMANDS.has(body.split(/\s+/)[0].toLowerCase())) return null;
     DEPTH=0;POSOFF=0;
     const v=ev(parseExpr(body),null);
+    if(v instanceof Sym)return null;
     if(!(typeof U(v)==='number'||isC(U(v))))return null;
     return fmt?applyFormat(v,fmt):v;
   }catch(e){return null;}
@@ -1452,8 +2142,8 @@ function parseBig(str,base){
   return neg2?-r:r;
 }
 
-const sv=v=>v instanceof Mat?'M'+JSON.stringify(v.d.map(r=>r.map(sv))):isC(v)?v.re+','+v.im:String(v);
-const dv=s=>{if(String(s)[0]==='M')return new Mat(JSON.parse(s.slice(1)).map(r=>r.map(dv)));const p=String(s).split(',').map(Number);return p.length>1&&p[1]!==0?new Cx(p[0],p[1]):p[0];};
+const sv=v=>v instanceof Sym?'S'+JSON.stringify([symPrint(v.ast),v.c?1:0,v.note]):v instanceof Mat?'M'+JSON.stringify(v.d.map(r=>r.map(sv))):isC(v)?v.re+','+v.im:String(v);
+const dv=s=>{if(String(s)[0]==='S'){const a=JSON.parse(s.slice(1));return new Sym(parseExpr(a[0]),!!a[1],a[2]);}if(String(s)[0]==='M')return new Mat(JSON.parse(s.slice(1)).map(r=>r.map(dv)));const p=String(s).split(',').map(Number);return p.length>1&&p[1]!==0?new Cx(p[0],p[1]):p[0];};
 function serializeState(){
   const vars={};STATE.vars.forEach((v,k)=>{vars[k]=sv(v);});
   return {vars,funcs:[...STATE.funcs.values()].map(f=>f.src),solved:[...STATE.solved],ans:STATE.ans===undefined?null:sv(STATE.ans)};
@@ -1473,8 +2163,8 @@ const LS_KEY='engcalc.console.v1';
 const logEl=$('log'),inp=$('inp'),hintEl=$('hint'),ghost=$('ghost');
 let hist=[],histPos=0,draft='';
 const sessionText=[];
-const CAT_ORDER=['Trig','Hyperbolic','Log / Exp / Roots','Rounding','Complex','Engineering / RF','Noise / ADC / SerDes','Stats','Number / Bits','Matrix','Algebra'];
-const CAT_RGB={'Trig':'34,211,238','Hyperbolic':'45,212,191','Log / Exp / Roots':'74,222,128','Rounding':'250,204,21','Complex':'232,121,249','Engineering / RF':'251,191,36','Noise / ADC / SerDes':'251,146,60','Stats':'96,165,250','Number / Bits':'167,139,250','Matrix':'244,114,182','Algebra':'52,211,153','Symbols':'148,163,184'};
+const CAT_ORDER=['Trig','Hyperbolic','Log / Exp / Roots','Rounding','Complex','Engineering / RF','Noise / ADC / SerDes','Stats','Number / Bits','Matrix','Algebra','Calculus'];
+const CAT_RGB={'Trig':'34,211,238','Hyperbolic':'45,212,191','Log / Exp / Roots':'74,222,128','Rounding':'250,204,21','Complex':'232,121,249','Engineering / RF':'251,191,36','Noise / ADC / SerDes':'251,146,60','Stats':'96,165,250','Number / Bits':'167,139,250','Matrix':'244,114,182','Algebra':'52,211,153','Calculus':'250,204,21','Symbols':'148,163,184'};
 const SYMS=[
   {ins:'j',d:'Imaginary unit. 3+4j or 4j both work'},{ins:'ans',d:'Previous result (ans2 = the one before)'},{ins:'pi',d:'3.14159\u2026'},{ins:'e',d:"Euler's number (2e3 is still scientific notation)"},
   {ins:'^',d:'Power (also **)'},{ins:'!',d:'Factorial'},{ins:'@',d:'Polar form: 5@(pi/6) (angle in radians)'},{ins:'%',d:'Remainder'},
@@ -1566,9 +2256,11 @@ function helpHtml(){
 <h3>VARIABLES &amp; FUNCTIONS</h3>
 <table><tr><td><code>x = 1</code></td><td>define. <code>x=1; y=2; x+y</code> runs left to right, prints the last result. <code>x += 1</code> works.</td></tr>
 <tr><td><code>2x</code> <code>3(4+1)</code></td><td>implicit multiplication. <code>2pi</code> = 2·π</td></tr>
-<tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code></td></tr>
+<tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code> (variables only), <code>clear</code> (screen + variables)</td></tr>
+<tr><td>Export</td><td>the <b>&#10515; Export</b> button saves the last N calculations as a PNG picture (light or dark theme) or copies it to the clipboard, ready to paste into PowerPoint.</td></tr>
 <tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2x = 4</code> gives <code>x = 2</code>, <code>2x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
+<tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
@@ -1595,7 +2287,7 @@ function helpHtml(){
 <h3>OTHER</h3>
 <table><tr><td>operators</td><td><code>+ - * / % ^ **</code> &nbsp;<code>!</code> &nbsp;<code>&amp; | ~ &lt;&lt; &gt;&gt;</code> &nbsp; <code>0xFF 0b1010 0o17</code> &nbsp; <code>hex() bin() oct()</code></td></tr>
 <tr><td>commands</td><td><code>mode eng|sci|fix</code> <code>digits 8</code> <code>deg</code> <code>rad</code> <code>consts</code> <code>clear</code></td></tr>
-<tr><td>keys</td><td>↑↓ history · Tab autocomplete · Ctrl+L clear · Ctrl+K search functions · Esc closes constants · click a result to copy it · click an old input to reuse it</td></tr>
+<tr><td>keys</td><td>↑↓ history · Tab autocomplete · Ctrl+L / <code>clear</code> clears the screen <b>and</b> all variables ·  Ctrl+K search functions · Esc closes constants · click a result to copy it · click an old input to reuse it</td></tr>
 <tr><td>panel</td><td>click a function button to insert it · select text first to wrap it · Shift+click wraps the whole line</td></tr></table></div>`;
 }
 function addEntry(text,res){
@@ -1612,11 +2304,18 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3x + 2 = 0','solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','solve x,y,z: 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   b.appendChild(mkEl('p','','Type <b>help</b> for the full guide. Open <b style="color:var(--coral)">⚛ Constants</b> for Boltzmann, Planck, q, c, &hellip;'));
   logEl.appendChild(b);
+}
+
+/* clear = the screen AND every stored variable, function and ans (same as the 'clear' command) */
+function clearAll(){
+  const n=STATE.vars.size+STATE.funcs.size;
+  wipeState();logEl.innerHTML='';sessionText.length=0;refreshVars();save();updateGhost();
+  toast(n?'Cleared the screen and '+n+' variable'+(n>1?'s/functions':''):'Screen cleared');
 }
 
 /* ---- input handling ---- */
@@ -1644,7 +2343,7 @@ function runInput(){
   const isClear=res.ui.some(u=>u.cmd==='clear');
   if(!isClear)addEntry(res.text,res);
   res.ui.forEach(u=>{
-    if(u.cmd==='clear'){logEl.innerHTML='';sessionText.length=0;}
+    if(u.cmd==='clear'){logEl.innerHTML='';sessionText.length=0;refreshVars();save();toast(u.n?'Cleared the screen and '+u.n+' variable'+(u.n>1?'s/functions':'')+'':'Screen cleared');}
     if(u.cmd==='consts')toggleConsts(true);
     if(u.cmd==='sync')syncBar();
   });
@@ -1704,7 +2403,7 @@ inp.addEventListener('keydown',e=>{
   else if(e.key==='ArrowDown'){e.preventDefault();histDown();}
   else if(e.key==='Tab'){e.preventDefault();complete();}
   else if(e.key==='Escape'){if($('consts').classList.contains('open'))toggleConsts(false);else{inp.value='';updateHint();updateGhost();}}
-  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='l'){e.preventDefault();logEl.innerHTML='';sessionText.length=0;}
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='l'){e.preventDefault();clearAll();}
 });
 document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openFuncs(true);$('fsearch').focus();$('fsearch').select();}
@@ -1809,16 +2508,86 @@ $('dPlus').onclick=()=>{CFG.digits=Math.min(15,CFG.digits+1);syncBar();inp.focus
 $('btnConsts').onclick=()=>toggleConsts();
 $('cclose').onclick=()=>toggleConsts(false);
 $('btnHelp').onclick=()=>{inp.value='help';runInput();};
-$('btnClear').onclick=()=>{logEl.innerHTML='';sessionText.length=0;inp.focus();};
+$('btnClear').onclick=()=>{clearAll();inp.focus();};
 $('btnVars').onclick=()=>openVars(!$('vars').classList.contains('open'));
 $('btnFuncs').onclick=()=>openFuncs(!$('funcs').classList.contains('open'));
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{$(b.dataset.close).classList.remove('open');});
-$('btnExport').onclick=()=>{
+/* ---- export the last n calculations as a PNG: the real log markup is drawn through an SVG so it looks exactly like the screen ---- */
+const EXP_LIGHT=':root{--bg:#ffffff;--txt:#0f172a;--dim:#64748b;--cyan:#0e7490;--amber:#b45309;--coral:#be123c;--mag:#a21caf;--green:#15803d;--violet:#6d28d9;--blue:#1d4ed8;--orange:#c2410c;--line:rgba(15,23,42,.22)}.n,.u,.disp,.vn,.fnn,.res{text-shadow:none!important}';
+const EXP_DARK=':root{--bg:#0b1020}.n,.u,.disp,.vn,.fnn,.res{text-shadow:none!important}';
+const EXP_BASE='display:inline-block;max-width:920px;min-width:420px;padding:14px 20px;background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:14px;line-height:1.45;box-sizing:border-box';
+let expBlob=null,expTimer=0,expSeq=0;
+const expEntries=n=>[...logEl.querySelectorAll('.entry')].filter(e=>!e.querySelector('.helpbox')).slice(-n);
+function expBuild(n,theme){
+  const ents=expEntries(n);
+  if(!ents.length)throw new Error('Nothing to export yet \u2014 run a calculation first.');
+  const holder=mkEl('div','exproot');
+  ents.forEach(e=>holder.appendChild(e.cloneNode(true)));
+  holder.setAttribute('style',EXP_BASE+';position:fixed;left:-20000px;top:0');
+  document.body.appendChild(holder);
+  const r=holder.getBoundingClientRect(),w=Math.ceil(r.width)+1,h=Math.ceil(r.height)+1;
+  holder.setAttribute('style',EXP_BASE);
+  const xhtml=new XMLSerializer().serializeToString(holder);
+  document.body.removeChild(holder);
+  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\n').replace(/\]\]>/g,']]]]><![CDATA[>');
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><foreignObject x="0" y="0" width="'+w+'" height="'+h+'"><div xmlns="http://www.w3.org/1999/xhtml"><style><![CDATA['+css+(theme==='light'?EXP_LIGHT:EXP_DARK)+']]></style>'+xhtml+'</div></foreignObject></svg>';
+  return {svg,w,h,count:ents.length};
+}
+function expRender(n,theme,scale){
+  return new Promise((resolve,reject)=>{
+    let b;try{b=expBuild(n,theme);}catch(e){reject(e);return;}
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const c=document.createElement('canvas');c.width=Math.round(b.w*scale);c.height=Math.round(b.h*scale);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        c.toBlob(blob=>blob?resolve({blob,w:c.width,h:c.height,count:b.count}):reject(new Error('Could not create the image')),'image/png');
+      }catch(e){reject(new Error('This browser blocked the image export. Try Chrome, Edge or Firefox, or use a screenshot.'));}
+    };
+    img.onerror=()=>reject(new Error('This browser could not draw the image. Try Chrome, Edge or Firefox.'));
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(b.svg);
+  });
+}
+const expEl=$('exp'),expPrev=$('expPrev'),expMsg=$('expMsg');
+function expSave(){try{localStorage.setItem('engcalc.export',JSON.stringify({n:$('expN').value,theme:$('expTheme').value,scale:$('expScale').value}));}catch(e){}}
+function expLoad(){try{const o=JSON.parse(localStorage.getItem('engcalc.export')||'null');if(o){if(+o.n>0)$('expN').value=o.n;if(['light','dark'].includes(o.theme))$('expTheme').value=o.theme;if(['1','2','3'].includes(String(o.scale)))$('expScale').value=o.scale;}}catch(e){}}
+function expUpdate(){
+  clearTimeout(expTimer);
+  expTimer=setTimeout(async()=>{
+    const my=++expSeq,n=Math.max(1,Math.min(50,parseInt($('expN').value,10)||5));
+    expMsg.textContent='Rendering\u2026';expSave();
+    try{
+      const r=await expRender(n,$('expTheme').value,Number($('expScale').value));
+      if(my!==expSeq)return;
+      expBlob=r.blob;
+      const old=expPrev.querySelector('img');if(old)URL.revokeObjectURL(old.src);
+      const im=new Image();im.src=URL.createObjectURL(r.blob);im.alt='Preview of the exported image';expPrev.replaceChildren(im);
+      expMsg.textContent=r.count+' calculation'+(r.count>1?'s':'')+' \u00b7 '+r.w+' \u00d7 '+r.h+' px';
+    }catch(e){if(my!==expSeq)return;expBlob=null;expPrev.textContent='';expMsg.textContent=e.message;}
+  },120);
+}
+function expStamp(){const t=new Date(),p=v=>String(v).padStart(2,'0');return t.getFullYear()+p(t.getMonth()+1)+p(t.getDate())+'_'+p(t.getHours())+p(t.getMinutes())+p(t.getSeconds());}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+$('btnExport').onclick=()=>{expLoad();expEl.hidden=false;expUpdate();};
+$('expClose').onclick=()=>{expEl.hidden=true;inp.focus();};
+expEl.addEventListener('mousedown',e=>{if(e.target===expEl)expEl.hidden=true;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!expEl.hidden){expEl.hidden=true;inp.focus();}});
+['expN','expTheme','expScale'].forEach(id=>{$(id).addEventListener('input',expUpdate);$(id).addEventListener('change',expUpdate);});
+$('expPng').onclick=()=>{
+  if(!expBlob){toast('Nothing to download yet');return;}
+  download(expBlob,'engcalc_'+expStamp()+'.png');toast('Saved as PNG');
+};
+$('expCopy').onclick=async()=>{
+  if(!expBlob){toast('Nothing to copy yet');return;}
   try{
-    const blob=new Blob([sessionText.join('\n')+'\n'],{type:'text/plain'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='engcalc_session.txt';
-    document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),500);
-  }catch(e){toast('Export not available');}
+    if(!(navigator.clipboard&&window.ClipboardItem))throw new Error('unsupported');
+    await navigator.clipboard.write([new ClipboardItem({'image/png':expBlob})]);
+    toast('Image copied \u2014 paste it into PowerPoint (Ctrl+V)');
+  }catch(e){toast('Copy is not available here \u2014 use Download PNG');}
+};
+$('expTxt').onclick=()=>{
+  try{download(new Blob([sessionText.join('\n')+'\n'],{type:'text/plain'}),'engcalc_session.txt');}
+  catch(e){toast('Export not available');}
 };
 
 /* ---- chips ---- */
