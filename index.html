@@ -962,8 +962,12 @@ const add=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return mat
 const sub=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('-',a,b);return(isC(a)||isC(b))?mk(Re(a)-Re(b),Im(a)-Im(b)):a-b;};
 const mul=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('*',a,b);if(!isC(a)&&!isC(b))return a*b;return mk(Re(a)*Re(b)-Im(a)*Im(b),Re(a)*Im(b)+Im(a)*Re(b));};
 const div=(a,b)=>{a=U(a);b=U(b);if(a instanceof Mat||b instanceof Mat)return matBin('/',a,b);if(!isC(a)&&!isC(b))return a/b;
-  const d=Re(b)*Re(b)+Im(b)*Im(b);if(d===0)return NaN;
-  return mk((Re(a)*Re(b)+Im(a)*Im(b))/d,(Im(a)*Re(b)-Re(a)*Im(b))/d);};
+  /* a real divisor divides each part; a complex one uses Smith's method so large or tiny values do not overflow */
+  if(!isC(b))return mk(Re(a)/b,Im(a)/b);
+  const c=b.re,e=b.im,ar=Re(a),ai=Im(a);
+  if(c===0&&e===0)return NaN;
+  if(Math.abs(c)>=Math.abs(e)){const r=e/c,dd=c+e*r;return mk((ar+ai*r)/dd,(ai-ar*r)/dd);}
+  const r=c/e,dd=c*r+e;return mk((ar*r+ai)/dd,(ai*r-ar)/dd);};
 const cabs=a=>isC(a)?Math.hypot(a.re,a.im):Math.abs(a);
 function cexp(z){return isC(z)?mk(Math.exp(z.re)*Math.cos(z.im),Math.exp(z.re)*Math.sin(z.im)):Math.exp(z);}
 function cln(z){
@@ -1651,22 +1655,36 @@ const GK_X=[0.991455371120813,0.949107912342759,0.864864423359769,0.741531185599
 const GK_WK=[0.022935322010529,0.063092092629979,0.104790010322250,0.140653259715525,0.169004726639267,0.190350578064785,0.204432940075298,0.209482141084728];
 const GK_WG=[0,0.129484966168870,0,0.279705391489277,0,0.381830050505119,0,0.417959183673469];
 function numIntegrate(f,a,b){
-  const ev2=t=>{const v=f(t);const re=Re(v),im=Im(v);if(!Number.isFinite(re)||!Number.isFinite(im))throw new CalcError('The integrand is not finite inside the interval (a singularity?)');return [re,im];};
+  const infRange=!Number.isFinite(a)||!Number.isFinite(b);
+  const ev2=t=>{const v=f(t);const re=Re(v),im=Im(v);if(!Number.isFinite(re)||!Number.isFinite(im))throw new CalcError(infRange?'The integral does not settle on a value — it may diverge or keep oscillating (like sin(x) up to inf)':'The integrand is not finite inside the interval (a singularity?)');return [re,im];};
   const gk=(g,lo,hi)=>{
     const c=(lo+hi)/2,h=(hi-lo)/2;let K=[0,0],G=[0,0];
     for(let i=0;i<8;i++){
       const pts=i===7?[c]:[c-h*GK_X[i],c+h*GK_X[i]];
-      for(const t of pts){const v=g(t);K[0]+=GK_WK[i]*v[0]*h;K[1]+=GK_WK[i]*v[1]*h;if(GK_WG[i]){G[0]+=GK_WG[i]*v[0]*h;G[1]+=GK_WG[i]*v[1]*h;}}
+      for(const t of pts){const v=g(t);if(!Number.isFinite(v[0])||!Number.isFinite(v[1]))throw new CalcError(infRange?'The integral does not settle on a value — it may diverge or keep oscillating (like sin(x) up to inf)':'The integrand is not finite inside the interval (a singularity?)');K[0]+=GK_WK[i]*v[0]*h;K[1]+=GK_WK[i]*v[1]*h;if(GK_WG[i]){G[0]+=GK_WG[i]*v[0]*h;G[1]+=GK_WG[i]*v[1]*h;}}
     }
     return {K,err:Math.hypot(K[0]-G[0],K[1]-G[1])};
   };
-  const adapt=(g,lo,hi,tol,depth)=>{
-    const r=gk(g,lo,hi);
-    if(r.err<=tol||depth>=40)return {v:r.K,e:r.err};
-    const m=(lo+hi)/2,l=adapt(g,lo,m,tol/2,depth+1),rr=adapt(g,m,hi,tol/2,depth+1);
-    return {v:[l.v[0]+rr.v[0],l.v[1]+rr.v[1]],e:l.e+rr.e};
+  /* globally adaptive: always split the piece with the largest error estimate, with a cap on the number of pieces.
+     An integral that has not settled when the cap is reached (sin(x) up to inf) is reported instead of freezing the page. */
+  const run=(g,lo,hi)=>{
+    const segs=[];
+    const push=(l,h)=>{const r=gk(g,l,h);segs.push({l,h,K:r.K,err:r.err});};
+    push(lo,hi);
+    for(;;){
+      let t0=0,t1=0,err=0,wi=0;
+      segs.forEach((s,i)=>{t0+=s.K[0];t1+=s.K[1];err+=s.err;if(s.err>segs[wi].err)wi=i;});
+      const mag=Math.hypot(t0,t1);
+      if(err<=Math.max(1e-11*mag,1e-15)||segs[wi].err===0)return {v:[t0,t1],e:err};
+      if(segs.length>=1500){
+        if(err<=1e-7*mag)return {v:[t0,t1],e:err};
+        throw new CalcError('The integral does not settle on a value — it may diverge or keep oscillating (like sin(x) up to inf)');
+      }
+      const s=segs[wi],m=(s.l+s.h)/2;
+      if(!(m>s.l&&m<s.h)){s.err=0;continue;}
+      segs.splice(wi,1);push(s.l,m);push(m,s.h);
+    }
   };
-  const run=(g,lo,hi)=>{const r0=gk(g,lo,hi);const tol=1e-11*Math.max(1,Math.hypot(r0.K[0],r0.K[1]));return adapt(g,lo,hi,tol,0);};
   let total=[0,0];
   const addp=r=>{total[0]+=r.v[0];total[1]+=r.v[1];};
   if(a===b)return mk(0,0);
@@ -2518,6 +2536,7 @@ function toBig(x,name){x=U(x);if(isC(x)||!Number.isFinite(x)||!Number.isInteger(
 function bigOp(a,b,op){
   const A=toBig(a,op),B=toBig(b,op);let r;
   if((op==='<<'||op==='>>')&&B<0n) throw new CalcError('negative shift count');
+  if((op==='<<'||op==='>>')&&B>4096n) throw new CalcError('shift count too large (max 4096)');
   switch(op){case '&':r=A&B;break;case '|':r=A|B;break;case '<<':r=A<<B;break;case '>>':r=A>>B;break;default:r=A^B;}
   return Number(r);
 }
@@ -2940,6 +2959,7 @@ function fmtValue(v){
     return {html:'<span class="disp">'+esc(v.text)+'</span>',text:v.text,alt:v.alt!==undefined?v.alt:('= '+(Number.isInteger(v.num)&&Math.abs(v.num)<1e21?BigInt(v.num).toString():p.m+p.s)+' (decimal)')};
   }
   if(isC(v)){
+    if(Number.isNaN(v.re)||Number.isNaN(v.im))return fmtValue(NaN);
     const z=cleanC(v);
     if(!isC(z)) return fmtValue(z);
     const rp=numParts(z.re,CFG.mode,CFG.digits),ip=numParts(Math.abs(z.im),CFG.mode,CFG.digits);
