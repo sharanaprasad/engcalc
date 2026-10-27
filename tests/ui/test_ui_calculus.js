@@ -3,7 +3,14 @@ const fs=require('fs');
 const html=fs.readFileSync(require('path').join(__dirname,'..','..','index.html'),'utf8');
 const errors=[];
 const dom=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/',
-  beforeParse(w){w.addEventListener('error',e=>errors.push('window error: '+e.message));}});
+  beforeParse(w){
+    w.addEventListener('error',e=>errors.push('window error: '+e.message));
+    /* jsdom has no canvas: a minimal stand-in lets the plot previews render */
+    const ctx={measureText:t=>({width:String(t).length*6})};
+    ['setTransform','beginPath','moveTo','lineTo','stroke','fillRect','strokeRect','fill','arc','clip','rect','save','restore','translate','rotate','setLineDash','scale','closePath','fillText'].forEach(n=>{ctx[n]=()=>{};});
+    w.HTMLCanvasElement.prototype.getContext=function(){return ctx;};
+    w.HTMLCanvasElement.prototype.toDataURL=function(){return 'data:image/png;base64,AAAA';};
+  }});
 const w=dom.window,d=w.document;
 let fail=0;
 const ok=(c,m)=>{if(!c){fail++;console.log('FAIL',m);}else console.log('ok  ',m);};

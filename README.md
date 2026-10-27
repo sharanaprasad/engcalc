@@ -45,6 +45,7 @@ engcalc/
     │   │                            solver, unit parsing
     │   ├── test_calculus.js         156 cases — diff / integ, checked numerically
     │   ├── test_laplace.js          128 cases — LT / ILT / poles / zeros, checked numerically
+    │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
     │   ├── test_audit.js            190 edge cases — parser, formatting,
     │   │                            precedence, implicit mult, bits, solver
@@ -58,10 +59,11 @@ engcalc/
         ├── test_ui_formulas.js      14 cases — Formulas tab and series explorer
         ├── test_ui_calculus.js      14 cases — diff / integ display, drawer, examples
         ├── test_ui_export.js        22 cases — clear wipes variables; Export-as-image dialog
-        └── test_ui_guide.js         33 cases — illustrated guide, live examples, navigation
+        ├── test_ui_guide.js         33 cases — illustrated guide, live examples, navigation
+        └── test_ui_plot.js          36 cases — Plot tab, markers, export, console previews
 ```
 
-Total: ~2,000 tests across engine and UI.
+Total: ~2,100 tests across engine and UI.
 
 ## Running the tests
 

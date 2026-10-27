@@ -62,7 +62,7 @@ ok(/=\s*1\.4985/.test(run('par(R1, R2)'))||/1\.4985/.test(run('par(R1, R2)')),'a
 
 // ---- navigation inside the guide
 help.click();
-ok(guide.querySelectorAll('.g-toc a').length===14&&guide.querySelectorAll('.g-sec').length===14,'14 sections with a matching contents list');
+ok(guide.querySelectorAll('.g-toc a').length===15&&guide.querySelectorAll('.g-sec').length===15,'15 sections with a matching contents list');
 guide.querySelector('.g-toc a[href="#g-calculus"]').click();
 // the contents list follows the scroll position
 {const sec=guide.querySelector('#g-matrices');sec.getBoundingClientRect=()=>({top:0});guide.scrollTop=1;guide.dispatchEvent(new w.Event('scroll'));await new Promise(r=>setTimeout(r,60));ok(!!guide.querySelector('.g-toc a.on'),'the current section is highlighted in the contents list');}
