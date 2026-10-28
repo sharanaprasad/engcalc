@@ -301,6 +301,18 @@ details.grp>summary .cnt{margin-left:auto;color:var(--dim);font-size:11px}
 #eqs:focus,.cf input:focus,.vrowf input[type=text]:focus,.vrowf select:focus,.cf select:focus{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(34,211,238,.3),0 0 18px rgba(34,211,238,.22)}
 .vrowf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--dim)}
 .vrowf input[type=text],.vrowf select,.cf input,.cf select{background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:8px;color:#fff;font-family:inherit;font-size:14px;padding:6px 9px;outline:0}
+#txIn{width:100%;min-height:96px;background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:10px;color:#fff;font-family:inherit;font-size:15px;line-height:1.6;padding:10px 12px;outline:0;resize:vertical;caret-color:var(--cyan)}
+#txIn:focus{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(34,211,238,.3),0 0 18px rgba(34,211,238,.22)}
+.txout{margin:4px 0;padding:10px 12px;background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:10px;color:var(--amber);font-family:var(--mono);font-size:13px;white-space:pre-wrap;word-break:break-all;min-height:20px;cursor:pointer}
+#txMsg{font-size:12px;color:var(--dim);min-height:16px}
+#txMsg.bad{color:var(--coral)}
+.txlbl{font-size:11px;color:var(--dim);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.08em}
+.txprev{background:#fff;color:#111;border-radius:10px;padding:14px 16px;min-height:48px;overflow-x:auto;font-size:15px}
+.txprev .alt{color:#555;padding:0}
+.texbox{margin:2px 0 2px 2ch;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(4,7,18,.55);color:var(--amber);font-family:var(--mono);font-size:12.5px;white-space:pre-wrap;word-break:break-all;cursor:pointer}
+.texprev{margin:4px 0 2px 2ch;background:#fff;color:#111;border-radius:8px;padding:8px 12px;overflow-x:auto;display:inline-block;max-width:calc(100% - 2ch)}
+.texprev:empty{display:none}
+.tb.mini{padding:1px 7px;font-size:11px;margin-left:8px;vertical-align:middle}
 .pri{border-color:var(--cyan)!important;color:var(--cyan)!important;font-weight:700}
 .soltbl{margin:6px 0 2px}
 .solrow{display:flex;gap:10px;align-items:baseline;padding:3px 2px;flex-wrap:wrap}
@@ -367,7 +379,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <div id="varlist"></div>
     </aside>
     <section id="console" class="panel">
-      <nav id="tabs"><button data-tab="console" class="on">Console</button><button data-tab="solver">Solver</button><button data-tab="conv">Base converter</button><button data-tab="formulas">Formulas</button><button data-tab="plot">Plot</button></nav>
+      <nav id="tabs"><button data-tab="console" class="on">Console</button><button data-tab="solver">Solver</button><button data-tab="conv">Base converter</button><button data-tab="formulas">Formulas</button><button data-tab="plot">Plot</button><button data-tab="latex">LaTeX</button></nav>
       <div id="view-console" class="view on">
       <div id="log" aria-live="polite"></div>
       <div id="hint"></div>
@@ -465,6 +477,24 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
             </div></details>
           </div>
         </div>
+      </div></div>
+      <div id="view-latex" class="view"><div class="vpad">
+        <div class="vtitle">LaTeX<span class="vsub">type calculator syntax &middot; copy LaTeX for reports and PowerPoint (Insert &rarr; Equation &rarr; LaTeX)</span></div>
+        <textarea id="txIn" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="(s+1)/(s^2+3*s+2)&#10;H(s) = 1/(R*C*s + 1)&#10;diff(x^2*sin(x))"></textarea>
+        <div class="vrowf">
+          <label>multiply <select id="txMul"><option value="smart">smart (3s, RC)</option><option value="cdot">a &middot; b</option><option value="times">a &times; b</option></select></label>
+          <label>wrap <select id="txWrap"><option value="none">none (PowerPoint)</option><option value="inline">$ &hellip; $</option><option value="display">\[ &hellip; \]</option><option value="equation">equation</option></select></label>
+          <label><input type="checkbox" id="txRes" checked> add results of diff / integ / LT / ILT</label>
+        </div>
+        <div class="vrowf">
+          <button class="tb pri" id="txCopy">&#10697; Copy LaTeX</button>
+          <span>examples:</span>
+          <button class="chip" data-tx="(s+1)/(s^2+3*s+2)">transfer fn</button><button class="chip" data-tx="f0 = 1/(2*pi*sqrt(L*C))">resonance</button><button class="chip" data-tx="diff(x^2*sin(x))">diff</button><button class="chip" data-tx="integ(exp(-x^2), -inf, inf)">integral</button><button class="chip" data-tx="ILT(1/(s^2+3*s+2))">ILT</button><button class="chip" data-tx="2*x + y - z = 8&#10;-3*x - y + 2*z = -11&#10;-2*x + y + 2*z = -3">system</button><button class="chip" data-tx="A = [1 2; 3 4]">matrix</button><button class="chip" id="txClr">clear</button>
+        </div>
+        <pre id="txOut" class="txout" title="Click to copy"></pre>
+        <div id="txMsg"></div>
+        <div class="txlbl">Preview</div>
+        <div id="txPrev" class="txprev"></div>
       </div></div>
       <div id="view-formulas" class="view"><div class="vpad">
         <div class="vtitle">Formulas<span class="vsub">series explorer &middot; integrals &middot; identities &middot; click a formula to copy it</span></div>
@@ -680,6 +710,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Base converter</h3><p>Type in decimal, hex, binary, octal or any base; click individual bits; see two&rsquo;s complement.</p><button class="g-link" data-tab="conv">Open converter &#9656;</button></div>
           <div class="g-card"><h3>Plot</h3><p>Plots with log axes, two y axes, stacked Bode panels, markers you place yourself, and PNG / CSV export.</p><button class="g-link" data-tab="plot">Open Plot &#9656;</button></div>
           <div class="g-card"><h3>Formulas</h3><p>A series explorer (watch sin x build up term by term, with the error) plus reference tables: integrals, identities, Laplace pairs, small-x approximations and RF/analog formulas.</p><button class="g-link" data-tab="formulas">Open Formulas &#9656;</button></div>
+          <div class="g-card"><h3>LaTeX</h3><p>Type calculator syntax, copy LaTeX for reports and PowerPoint, with a live preview. Several lines become an aligned block.</p><button class="g-link" data-tab="latex">Open LaTeX &#9656;</button></div>
           <div class="g-card"><h3>&#9883; Constants</h3><p>Boltzmann, Planck, electron charge, speed of light and more. Click one to insert it.</p><button class="g-link" data-act="consts">Open constants &#9656;</button></div>
           <div class="g-card"><h3>&fnof; Functions</h3><p>Every built-in function, grouped, with a search box (<kbd>Ctrl</kbd>+<kbd>K</kbd>). Hover for the signature and an example.</p><button class="g-link" data-act="funcs">Open functions &#9656;</button></div>
         </div>
@@ -695,6 +726,10 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <li><b>Copy image</b> and paste straight into PowerPoint, or <b>Download PNG</b>.</li>
         </ol>
         <p><button class="g-link" data-act="export">Open the export dialog &#9656;</button> &nbsp; A plain-text copy of the whole session is there too.</p>
+        <p><b>Equations as LaTeX.</b> <code>latex(...)</code> turns any expression into LaTeX for a report or for PowerPoint (<i>Insert &rarr; Equation &rarr; LaTeX</i>). For <code>diff</code>, <code>integ</code>, <code>LT</code> and <code>ILT</code> the result is added too. Symbolic answers get a small <b>TeX</b> button that copies them as LaTeX.</p>
+        <div class="gx" data-ex="latex((s+1)/(s^2+3*s+2))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="latex x^2 - 3*x + 2 = 0"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p>The <button class="g-link" data-tab="latex">LaTeX tab</button> converts several lines at once (a system of equations becomes an aligned block), shows a preview, and lets you choose <code>\cdot</code> or <code>\times</code> for multiplication and the <code>$&hellip;$</code> wrapping.</p>
       </section>
 
       <section class="g-sec" id="g-phone" style="--ac:var(--violet)">
@@ -735,6 +770,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code></div>
           <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code></div>
           <div class="g-card"><h3>Plot</h3><code>plot(f, x, a, b)</code> <code>bode(H, w1, w2)</code> <code>bode(H, f1, f2, hz)</code> <code>right(f)</code></div>
+          <div class="g-card"><h3>LaTeX</h3><code>latex(f)</code> <code>latex a = b</code> <code>TeX</code> button &middot; LaTeX tab</div>
           <div class="g-card"><h3>RF &amp; analog</h3><code>par(a,b)</code> <code>dBm(x)</code> <code>f0(L,C)</code> <code>vswr</code> <code>enob</code></div>
           <div class="g-card"><h3>Keys</h3><kbd>Enter</kbd> run &middot; <kbd>&uarr;</kbd> history &middot; <kbd>Tab</kbd> complete &middot; <kbd>Ctrl</kbd>+<kbd>K</kbd> functions &middot; <kbd>Ctrl</kbd>+<kbd>L</kbd> clear &middot; <kbd>F1</kbd> this guide</div>
         </div>
@@ -792,9 +828,11 @@ class Disp{constructor(text,num,alt){this.text=text;this.num=num;this.alt=alt;}}
 class Mat{constructor(d){this.d=d;this.r=d.length;this.c=d[0].length;}}
 /* symbolic result of diff() / integ(): an expression tree; c = show "+ C" */
 class Sym{constructor(ast,c,note){this.ast=ast;this.c=!!c;this.note=note||'';}}
+/* result of latex(): LaTeX source text, shown in the console, never used as a number */
+class TexOut{constructor(tex){this.tex=tex;}}
 const noMat=(v,w)=>{if(v instanceof Mat)throw new CalcError(w+" doesn't work on matrices");return v;};
 const isC=v=>v instanceof Cx;
-const U=v=>v instanceof Disp?v.num:v instanceof Sym?U(symNum(v)):v;
+const U=v=>{if(v instanceof TexOut)throw new CalcError('latex() gives LaTeX text, not a number');return v instanceof Disp?v.num:v instanceof Sym?U(symNum(v)):v;};
 const mk=(re,im)=>im===0?re:new Cx(re,im);
 const Re=v=>isC(v)?v.re:v, Im=v=>isC(v)?v.im:0;
 const real=(v,nm)=>{if(isC(v))throw new CalcError(nm+' needs a real number');return v;};
@@ -3093,7 +3131,7 @@ function execStatement(sIn,base){
     const name=m[1],op=m[2];POSOFF=base;
     let w=validateName(name,'var',0);
     POSOFF=base+(s.length-m[3].length);
-    let v=ev(parseExpr(m[3]),null);v=v instanceof Sym?v:U(v);
+    TEXSRC=m[3];let v=ev(parseExpr(m[3]),null);v=v instanceof Sym?v:U(v);
     if(v instanceof Mat)w=w.filter(x=>!/also reads as a unit/.test(x));
     if(op){
       let old=STATE.vars.has(name)?STATE.vars.get(name):(has(CONSTS,name)?CONSTS[name].v:undefined);
@@ -3104,9 +3142,10 @@ function execStatement(sIn,base){
     return {kind:'assign',name,v:fmt?applyFormat(v,fmt):v,warns:w};
   }
   POSOFF=base;
-  const ast=parseExpr(s);
+  TEXSRC=s;const ast=parseExpr(s);
   const raw=ev(ast,null);
   if(raw instanceof PlotSpec)return {kind:'plot',spec:raw};
+  if(raw instanceof TexOut)return {kind:'tex',tex:raw.tex};
   if(!fmt&&raw instanceof Mat&&raw.pz&&ast.t==='call'){
     const rows=raw.d[0].map((v,i)=>({name:raw.pz.names[i],v}));
     rows.forEach(r=>{STATE.vars.set(r.name,r.v);STATE.solved.add(r.name);});
@@ -3190,6 +3229,8 @@ function execLine(line){
   const items=[],ui=[],t=line.trim();
   if(!t) return {items,ui,text:t};
   DEPTH=0;POSOFF=0;
+  const lx=latexLineArg(t);
+  if(lx!==null){try{items.push({kind:'tex',tex:latexText(lx)});}catch(e){items.push({kind:'err',msg:(e&&e.message)||String(e)});}return {items,ui,text:t};}
   if(runCommand(t,items,ui)) return {items,ui,text:t};
   let last=null;
   try{
@@ -3378,6 +3419,264 @@ function loadState(o){
   if(o.ans!==null&&o.ans!==undefined){try{STATE.ans=dv(o.ans);}catch(e){}}
 }
 
+/* ============================ LaTeX ============================
+   Calculator syntax (or a symbolic result) -> LaTeX source.
+   Numbers keep the way they were typed (2.2k -> 2.2\,\mathrm{k}) because the parser records where each token starts. */
+const TEX_GREEK=new Set(['alpha','beta','gamma','delta','epsilon','varepsilon','zeta','eta','theta','vartheta','iota','kappa','lambda','mu','nu','xi','pi','rho','sigma','tau','upsilon','phi','varphi','chi','psi','omega',
+  'Gamma','Delta','Theta','Lambda','Xi','Pi','Sigma','Upsilon','Phi','Psi','Omega']);
+const TEX_FN={sin:'\\sin',cos:'\\cos',tan:'\\tan',cot:'\\cot',sec:'\\sec',csc:'\\csc',sinh:'\\sinh',cosh:'\\cosh',tanh:'\\tanh',coth:'\\coth',
+  asin:'\\arcsin',acos:'\\arccos',atan:'\\arctan',ln:'\\ln',log:'\\log',max:'\\max',min:'\\min',gcd:'\\gcd'};
+const TEX_POWFN=new Set(['sin','cos','tan','cot','sec','csc','sinh','cosh','tanh','coth']);
+const TEX_NUMRE=/^(0[xXbBoO][0-9a-fA-F_]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)([A-Za-z\u00b5\u03bc\u03a9\u2126]*)/;
+const TEX_SYMFN=new Set(['diff','integ','integrate','LT','laplace','ILT','ilaplace']);
+let TEXSRC=null;   /* source text of the statement being evaluated, so latex() inside a line can recover typed numbers */
+
+const texTall=s=>/\\frac|\\int|\\sum|matrix|\\sqrt|\\left/.test(s);
+const texP=s=>texTall(s)?'\\left('+s+'\\right)':'('+s+')';
+function texPart(s){
+  if(TEX_GREEK.has(s))return '\\'+s;
+  if(s==='eps')return '\\varepsilon';
+  if(s.length===1||/^\d+$/.test(s))return s;
+  return '\\mathrm{'+s+'}';
+}
+function texName(name){
+  if(name==='inf')return '\\infty';
+  if(name==='pi')return '\\pi';
+  let base=name,sub='';
+  const u=name.indexOf('_');
+  if(u>0){base=name.slice(0,u);sub=name.slice(u+1).split('_').filter(Boolean).map(texPart).join(',');}
+  else{const m=/^([A-Za-z]+?)(\d+)$/.exec(name);if(m){base=m[1];sub=m[2];}}
+  const b=texPart(base);
+  return sub?b+'_{'+sub+'}':b;
+}
+function texUnit(suf){
+  let pre='',rest=suf;
+  if(rest.startsWith('meg')){pre='\\mathrm{M}';rest=rest.slice(3);}
+  else if(/^[u\u00b5\u03bc]/.test(rest)){pre='\\mu';rest=rest.slice(1);}
+  rest=rest.replace(/ohms?$/,'\u03a9');
+  const body=rest.split(/([\u03a9\u2126])/).filter(Boolean).map(x=>/[\u03a9\u2126]/.test(x)?'\\Omega':'\\mathrm{'+x+'}').join('');
+  return pre+(pre==='\\mu'&&body?' ':'')+body;
+}
+function texNumText(num,suf){
+  if(/^0[xXbBoO]/.test(num))return '\\mathtt{'+num.replace(/_/g,'\\_')+'}';
+  const m=/^([^eE]+)(?:[eE]([+-]?\d+))?$/.exec(num);
+  const mant=m[1].replace(/^\./,'0.').replace(/\.$/,'');
+  let s=m[2]!==undefined?(mant==='1'?'10^{'+Number(m[2])+'}':mant+' \\times 10^{'+Number(m[2])+'}'):mant;
+  let im=false;
+  if(suf.endsWith('j')){im=true;suf=suf.slice(0,-1);}
+  if(suf)s+='\\,'+texUnit(suf);
+  if(im)s+=(suf?'\\,':'')+'j';
+  return s;
+}
+function texReal(x,digits){
+  if(Number.isNaN(x))return '\\mathrm{undefined}';
+  if(!Number.isFinite(x))return x<0?'-\\infty':'\\infty';
+  if(Number.isInteger(x)&&Math.abs(x)<1e15)return String(x);
+  const neg=x<0?'-':'',a=Math.abs(x);
+  const fr=symFrac(a);if(fr&&symRecurring(fr[1]))return neg+'\\frac{'+fr[0]+'}{'+fr[1]+'}';
+  if(a>=1e5||a<1e-3){const pr=a.toExponential(Math.max(0,digits-1)).split('e');const mm=String(Number(pr[0]));return neg+(mm==='1'?'':mm+' \\times ')+'10^{'+Number(pr[1])+'}';}
+  return neg+String(Number(a.toPrecision(digits)));
+}
+/* a value (number, complex, matrix, symbolic result) as LaTeX: {s, p} with p = precedence (1 sum, 2 product, 3 fraction, 4 power, 9 atom) */
+function texVal(v,digits){
+  digits=digits||CFG.digits;
+  if(v instanceof Sym){const r=texNode(v.ast,{src:null,mul:'smart',digits:12});return v.c?{s:r.s+' + C',p:1}:r;}
+  if(v instanceof Mat)return {s:'\\begin{bmatrix}'+v.d.map(r=>r.map(x=>texVal(x,digits).s).join(' & ')).join(' \\\\ ')+'\\end{bmatrix}',p:9};
+  if(v instanceof Disp)v=v.num;
+  if(isC(v)){
+    const ims=texReal(Math.abs(v.im),digits),imp=(ims==='1'?'':ims)+'j';
+    if(v.re===0)return {s:(v.im<0?'-':'')+imp,p:v.im<0?1:9,neg:v.im<0};
+    return {s:texReal(v.re,digits)+(v.im<0?' - ':' + ')+imp,p:1};
+  }
+  if(typeof v==='number'){const s=texReal(v,digits);return {s,p:s[0]==='-'?1:9,neg:s[0]==='-'};}
+  return {s:'?',p:9};
+}
+function texMul(A,B,mode){
+  if(mode==='cdot')return A.s+' \\cdot '+B.s;
+  if(mode==='times')return A.s+' \\times '+B.s;
+  /* smart: 3s, 2\pi, R_1 C_1; a dot where juxtaposition would misread (2 \cdot 3, 2\frac{..} would look like a mixed number, 2.2\,k \cdot R) */
+  if(/^[0-9.\-]/.test(B.s)||A.unit||B.neg||(/\d$/.test(A.s)&&/^\\frac/.test(B.s)))return A.s+' \\cdot '+B.s;
+  if(/\d$/.test(A.s)||(/(\)|\\right\))$/.test(A.s)&&/^(\(|\\left\()/.test(B.s)))return A.s+B.s;
+  return A.s+' '+B.s;
+}
+function texFree(n){const acc=new Set();try{symFree(n,acc);}catch(e){}return [...acc];}
+function texVarOf(f,given){
+  if(given&&given.t==='id')return given.name;
+  const fr=texFree(f);
+  return fr.length===1?fr[0]:fr.includes('x')?'x':fr.includes('t')?'t':fr.includes('s')?'s':fr[0]||'x';
+}
+function texCall(n,c){
+  const nm=n.name,A=n.args,a=i=>texNode(A[i],c),one=A.length===1;
+  const args=()=>A.map(x=>texNode(x,c).s).join(', ');
+  if(STATE.funcs.has(nm)&&!has(FUNCS,nm))return {s:texName(nm)+texP(args()),p:9};
+  switch(nm){
+    case 'sqrt':if(one)return {s:'\\sqrt{'+a(0).s+'}',p:9};break;
+    case 'cbrt':if(one)return {s:'\\sqrt[3]{'+a(0).s+'}',p:9};break;
+    case 'exp':if(one)return {s:'e^{'+a(0).s+'}',p:4};break;
+    case 'abs':case 'mag':if(one)return {s:'\\left|'+a(0).s+'\\right|',p:9};break;
+    case 'conj':if(one)return {s:'\\overline{'+a(0).s+'}',p:9};break;
+    case 'floor':if(one)return {s:'\\left\\lfloor '+a(0).s+'\\right\\rfloor',p:9};break;
+    case 'ceil':if(one)return {s:'\\left\\lceil '+a(0).s+'\\right\\rceil',p:9};break;
+    case 'log':if(A.length===2)return {s:'\\log_{'+a(1).s+'}'+texP(a(0).s),p:9};break;
+    case 'log10':if(one)return {s:'\\log_{10}'+texP(a(0).s),p:9};break;
+    case 'log2':if(one)return {s:'\\log_{2}'+texP(a(0).s),p:9};break;
+    case 'pow':if(A.length===2)return texNode({t:'bin',op:'^',a:A[0],b:A[1],pos:n.pos},c);break;
+    case 'fact':if(one)return texNode({t:'fact',a:A[0],pos:n.pos},c);break;
+    case 'par':if(A.length>=2)return {s:A.map(x=>{const r=texNode(x,c);return r.p<2?texP(r.s):r.s;}).join(' \\parallel '),p:1};break;
+    case 'right':case 'left':if(one)return a(0);break;
+    case 'delta':if(one)return {s:'\\delta'+texP(a(0).s),p:9};break;
+    case 'u':if(one)return {s:'u'+texP(a(0).s),p:9};break;
+    case 're':if(one)return {s:'\\operatorname{Re}\\left\\{'+a(0).s+'\\right\\}',p:9};break;
+    case 'im':if(one)return {s:'\\operatorname{Im}\\left\\{'+a(0).s+'\\right\\}',p:9};break;
+    case 'phase':case 'ph':if(one)return {s:'\\angle '+(a(0).p<9?texP(a(0).s):a(0).s),p:9};break;
+    case 'sind':case 'cosd':case 'tand':if(one){const x=a(0);return {s:TEX_FN[nm.slice(0,3)]+texP((x.p<9?texP(x.s):x.s)+'^{\\circ}'),p:9};}break;
+    case 'LT':case 'laplace':return {s:'\\mathcal{L}\\left\\{'+a(0).s+'\\right\\}',p:9};
+    case 'ILT':case 'ilaplace':return {s:'\\mathcal{L}^{-1}\\left\\{'+a(0).s+'\\right\\}',p:9};
+    case 'diff':{
+      const v=texName(texVarOf(A[0],A[1])),F=a(0);
+      const ord=A[2]?texNode(A[2],c).s:'1';
+      const op=ord==='1'?'\\frac{d}{d'+v+'}':'\\frac{d^{'+ord+'}}{d'+v+'^{'+ord+'}}';
+      return {s:op+' '+(F.p<4?'\\left('+F.s+'\\right)':F.s),p:2};
+    }
+    case 'integ':case 'integrate':{
+      let xv=null,lo=null,hi=null;
+      if(A.length===2)xv=A[1];else if(A.length===3){lo=A[1];hi=A[2];}else if(A.length>=4){xv=A[1];lo=A[2];hi=A[3];}
+      const v=texName(texVarOf(A[0],xv)),F=a(0);
+      const lim=lo?'_{'+texNode(lo,c).s+'}^{'+texNode(hi,c).s+'}':'';
+      return {s:'\\int'+lim+' '+(F.p<2?texP(F.s):F.s)+' \\, d'+v,p:2};
+    }
+  }
+  if(has(TEX_FN,nm))return {s:TEX_FN[nm]+texP(args()),p:9};
+  return {s:(has(FUNCS,nm)?'\\operatorname{'+nm.replace(/_/g,'\\_')+'}':texName(nm))+texP(args()),p:9};
+}
+/* c = {src: typed text the positions refer to (or null for symbolic results), mul: 'smart'|'cdot'|'times', digits} */
+function texNode(n,c){
+  switch(n.t){
+    case 'num':{
+      if(c.src!=null&&typeof n.pos==='number'){
+        const m=TEX_NUMRE.exec(c.src.slice(n.pos));
+        if(m&&m[1])return {s:texNumText(m[1],m[2]),p:9,unit:!!m[2].replace(/j$/,'')};
+      }
+      return texVal(n.v,c.digits||12);
+    }
+    case 'id':return {s:texName(n.name),p:9};
+    case 'un':{
+      const A=texNode(n.a,c);
+      if(n.op==='-')return {s:'-'+(A.p<2?texP(A.s):A.s),p:1,neg:true};
+      return {s:'\\sim '+(A.p<9?texP(A.s):A.s),p:3};
+    }
+    case 'fact':{const A=texNode(n.a,c);return {s:(A.p<9||A.neg?texP(A.s):A.s)+'!',p:9};}
+    case 'tr':{const A=texNode(n.a,c);return {s:(A.p<9?texP(A.s):A.s)+'^{\\mathsf{T}}',p:4};}
+    case 'polar':{const A=texNode(n.a,c),B=texNode(n.b,c);return {s:(A.p<2?texP(A.s):A.s)+' \\angle '+(B.p<3?texP(B.s):B.s),p:2};}
+    case 'fmt':{
+      const A=texNode(n.a,c);
+      if(n.fmt==='rad')return {s:(A.p<9||A.neg?texP(A.s):A.s)+'^{\\circ}',p:4};
+      return {s:A.s+'\\ \\mathrm{in\\ deg}',p:1};
+    }
+    case 'mat':return {s:'\\begin{bmatrix}'+n.rows.map(r=>r.map(x=>texNode(x,c).s).join(' & ')).join(' \\\\ ')+'\\end{bmatrix}',p:9};
+    case 'call':return texCall(n,c);
+    case 'bin':{
+      if(n.op==='^'&&n.a.t==='call'&&TEX_POWFN.has(n.a.name)&&n.a.args.length===1&&n.b.t==='num'&&Number.isInteger(n.b.v)&&n.b.v>0){
+        return {s:TEX_FN[n.a.name]+'^{'+texNode(n.b,c).s+'}'+texP(texNode(n.a.args[0],c).s),p:9};
+      }
+      const A=texNode(n.a,c),B=texNode(n.b,c);
+      switch(n.op){
+        case '+':return {s:B.neg?A.s+' - '+B.s.slice(1):A.s+' + '+B.s,p:1};
+        case '-':return {s:A.s+' - '+(B.p<2?texP(B.s):B.s),p:1};
+        case '*':{
+          const L=A.p<2&&!A.neg?{s:texP(A.s)}:A,R=B.p<2?{s:texP(B.s)}:B;
+          return {s:texMul({s:L.s,unit:A.unit},{s:R.s,neg:B.neg},c.mul||'smart'),p:2,unit:B.unit};
+        }
+        case '/':return A.neg&&n.a.t==='un'?{s:'-\\frac{'+A.s.slice(1)+'}{'+B.s+'}',p:1,neg:true}:{s:'\\frac{'+A.s+'}{'+B.s+'}',p:3};
+        case '%':return {s:(A.p<2?texP(A.s):A.s)+' \\bmod '+(B.p<3?texP(B.s):B.s),p:2};
+        case '^':return {s:(A.p<9||A.neg?texP(A.s):A.s)+'^{'+B.s+'}',p:4};
+        case '&':case '|':case '<<':case '>>':{
+          const op={'&':' \\mathbin{\\&} ','|':' \\mathbin{|} ','<<':' \\ll ','>>':' \\gg '}[n.op];
+          return {s:(A.p<2?texP(A.s):A.s)+op+(B.p<2?texP(B.s):B.s),p:1};
+        }
+      }
+    }
+  }
+  return {s:'?',p:9};
+}
+/* LaTeX of a parsed expression; with res, also "= result" for diff / integ / LT / ILT, a symbolic variable or a user function */
+function texAst(ast,src,o,res){
+  const c={src,mul:o.mul,digits:12};
+  if(ast.t==='id'&&(ast.name==='ans'||ast.name==='ans2')){const v=ast.name==='ans'?STATE.ans:STATE.ans2;if(v===undefined)throw new CalcError('No previous result yet');return {l:texVal(v).s,tail:''};}
+  const l=texNode(ast,c).s;
+  if(!res||!o.res)return {l,tail:''};
+  if(ast.t==='id'){
+    const uf=STATE.funcs.get(ast.name);
+    if(uf&&!STATE.vars.has(ast.name)){const body=uf.src.slice(uf.src.indexOf('=')+1);return {l:texName(ast.name)+texP(uf.params.map(texName).join(', ')),tail:'= '+texNode(parseExpr(body),{src:body,mul:o.mul,digits:12}).s};}
+    if(STATE.vars.has(ast.name))return {l,tail:'= '+texVal(STATE.vars.get(ast.name)).s};
+    return {l,tail:''};
+  }
+  if(ast.t==='call'&&TEX_SYMFN.has(ast.name)){
+    try{
+      DEPTH=0;const v=ev(ast,null);
+      if(v instanceof Sym)return {l,tail:'= '+texVal(v).s};
+      const u=U(v);
+      if(typeof u==='number'||isC(u))return {l,tail:(typeof u==='number'&&Number.isInteger(u)?'= ':'\\approx ')+texVal(u).s};
+    }catch(e){}
+  }
+  return {l,tail:''};
+}
+function texStatement(s,o){
+  const body=stripFormat(s)[0].trim();
+  POSOFF=0;DEPTH=0;
+  let m;
+  if((m=FUNDEF.exec(body))){
+    const params=m[2].trim()?m[2].split(',').map(x=>x.trim()):[];
+    return {l:texName(m[1])+texP(params.map(texName).join(', ')),tail:'= '+texAst(parseExpr(m[3]),m[3],o,true).l};
+  }
+  if((m=ASSIGN.exec(body))){
+    const r=texAst(parseExpr(m[3]),m[3],o,true);
+    return {l:texName(m[1]),tail:(m[2]?'\\mathrel{'+m[2]+'}=':'=')+' '+r.l+(r.tail?' '+r.tail:'')};
+  }
+  const k=body.indexOf('=');
+  if(k>=0){
+    const lhs=body.slice(0,k),rhs=body.slice(k+1);
+    if(rhs.includes('='))throw new CalcError("Only one '=' per equation");
+    if(!lhs.trim()||!rhs.trim())throw new CalcError("Something is missing on one side of '='");
+    return {l:texAst(parseExpr(lhs),lhs,o,false).l,tail:'= '+texAst(parseExpr(rhs),rhs,o,false).l};
+  }
+  return texAst(parseExpr(body),body,o,true);
+}
+/* text (one or more lines / ;-separated statements) -> LaTeX. Several statements become an aligned block. */
+function latexText(text,o){
+  o=Object.assign({mul:'smart',res:true},o||{});
+  const rows=[];
+  String(text).split('\n').forEach((ln,i)=>{
+    let t=ln.trim();if(!t)return;
+    t=t.replace(/^solve\b(\s+[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*\s*:)?/,'').trim();
+    for(const part of splitStmts(t)){const s=part.trim();if(!s)continue;
+      try{rows.push(texStatement(s,o));}
+      catch(e){throw new CalcError((e&&e.message||String(e))+(rows.length||i?'  (in: '+s+')':''));}}
+  });
+  if(!rows.length)throw new CalcError('Nothing to convert');
+  if(rows.length===1)return rows[0].l+(rows[0].tail?' '+rows[0].tail:'');
+  return '\\begin{aligned}\n'+rows.map(r=>r.tail?r.l+' &'+r.tail:'& '+r.l).join(' \\\\\n')+'\n\\end{aligned}';
+}
+function texWrap(tex,w){
+  if(w==='inline')return '$'+tex+'$';
+  if(w==='display')return '\\[\n'+tex+'\n\\]';
+  if(w==='equation')return '\\begin{equation}\n'+tex+'\n\\end{equation}';
+  return tex;
+}
+/* "latex(...)" or "latex ..." as a whole console line; null when the line is something else */
+function latexLineArg(t){
+  let m=/^latex\s*\(([\s\S]*)\)\s*$/.exec(t);
+  if(m){let d=0,ok=true;for(const ch of m[1]){if(ch==='(')d++;else if(ch===')'&&--d<0){ok=false;break;}}if(ok&&d===0)return m[1];}
+  m=/^latex\s+([\s\S]+)$/.exec(t);
+  return m?m[1]:null;
+}
+symDef('latex','latex(expr)   or   latex x^2 - 3*x + 2 = 0','LaTeX code for an expression or equation, ready for reports and PowerPoint (Insert > Equation > LaTeX). diff / integ / LT / ILT also show their result. The LaTeX tab does the same with options','latex(diff(x^2*sin(x)))',1,1,
+  n=>new TexOut(texAst(n.args[0],TEXSRC,{mul:'smart',res:true},true).l),true,'LaTeX');
+FUNCS.latex.sym=(n)=>{
+  if(n.args.length!==1)throw E('latex() takes one expression; for equations write:  latex x^2 - 3*x + 2 = 0',n.pos);
+  const r=texAst(n.args[0],TEXSRC,{mul:'smart',res:true},true);return new TexOut(r.l+(r.tail?' '+r.tail:''));
+};
+
 /* ============================ UI ============================ */
 if(typeof document!=='undefined'&&document.getElementById('inp')){
 (function UI(){
@@ -3434,6 +3733,7 @@ function itemText(it){
     case 'vars':return it.list.map(x=>x.name+' = '+fmtValue(x.v).text).join('\n');
     case 'plot':return 'plot: '+it.spec.traces.filter(t=>t.expr).map(t=>t.expr).join('  |  ')+'   ('+it.spec.xvar+' from '+plotFmt(it.spec.xmin,4)+' to '+plotFmt(it.spec.xmax,4)+')';
     case 'solve':return (it.title||'solution')+': '+it.rows.map(x=>x.name+' = '+fmtValue(x.v).text).join(', ');
+    case 'tex':return 'LaTeX: '+it.tex;
     default:return (it.html||'').replace(/<br>/g,'\n').replace(/<[^>]+>/g,'');
   }
 }
@@ -3445,12 +3745,42 @@ function valueRow(prefixHtml,v){
   if(f.alt)wrap.appendChild(mkEl('div','alt',esc(f.alt)));
   return wrap;
 }
+/* KaTeX (for previews only) is loaded from the CDN on first use; offline, previews are skipped and the LaTeX text still works */
+let katexP=null;
+function loadKatex(){
+  if(window.katex)return Promise.resolve(window.katex);
+  if(katexP)return katexP;
+  katexP=new Promise((res,rej)=>{
+    const base='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/';
+    const l=document.createElement('link');l.rel='stylesheet';l.href=base+'katex.min.css';document.head.appendChild(l);
+    const sc=document.createElement('script');sc.src=base+'katex.min.js';
+    sc.onload=()=>window.katex?res(window.katex):(katexP=null,rej(new Error('KaTeX did not load')));
+    sc.onerror=()=>{katexP=null;rej(new Error('offline'));};
+    document.head.appendChild(sc);
+  });
+  return katexP;
+}
+function texPreview(el,tex,explain){
+  loadKatex().then(k=>{el.innerHTML='';try{k.render(tex,el,{displayMode:true,throwOnError:false});}catch(e){el.textContent='';}})
+    .catch(()=>{el.innerHTML=explain?'<span class="alt">The preview needs an internet connection (it uses KaTeX). The LaTeX code above works anyway.</span>':'';});
+}
+/* small "TeX" button under a symbolic result: copies the result as LaTeX */
+function texButton(box,v){
+  const bt=mkEl('button','tb mini','TeX');bt.title='Copy this result as LaTeX';
+  bt.onclick=()=>{try{copyText(texVal(v).s);}catch(e){toast('Could not convert to LaTeX');}};
+  const out=box.querySelector('.out');(out||box).appendChild(bt);
+}
 function renderItem(it){
   const box=mkEl('div');
   if(it.warns)it.warns.forEach(w=>box.appendChild(mkEl('div','warn','\u26a0 '+esc(w))));
   switch(it.kind){
-    case 'val':box.appendChild(valueRow('<span class="eq">=</span>',it.v));break;
-    case 'assign':box.appendChild(valueRow('<span class="vn">'+esc(it.name)+'</span><span class="eq">\u2190</span>',it.v));break;
+    case 'val':box.appendChild(valueRow('<span class="eq">=</span>',it.v));if(it.v instanceof Sym)texButton(box,it.v);break;
+    case 'assign':box.appendChild(valueRow('<span class="vn">'+esc(it.name)+'</span><span class="eq">\u2190</span>',it.v));if(it.v instanceof Sym)texButton(box,it.v);break;
+    case 'tex':{
+      const code=mkEl('div','texbox',esc(it.tex));code.title='Click to copy the LaTeX';code.onclick=()=>copyText(it.tex);box.appendChild(code);
+      const pv=mkEl('div','texprev');box.appendChild(pv);texPreview(pv,it.tex,false);
+      const bt=mkEl('button','tb mini','&#10697; Copy LaTeX');bt.onclick=()=>copyText(it.tex);box.appendChild(bt);
+      break;}
     case 'def':box.appendChild(mkEl('div','out','<span class="fnn">\u0192</span> <span class="fnn">'+esc(it.name)+'</span>('+esc(it.params.join(', '))+') <span class="eq">=</span> '+hl(it.body)));break;
     case 'err':{
       if(it.pos!==undefined&&it.pos>=0)box.appendChild(mkEl('pre','caret',' '.repeat(it.pos+2)+'\u2191'));
@@ -3500,6 +3830,7 @@ function helpHtml(){
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>
+<tr><td>LaTeX</td><td><code>latex((s+1)/(s^2+3*s+2))</code> gives <code>\\frac{s + 1}{s^{2} + 3s + 2}</code>; <code>latex x^2 - 3*x + 2 = 0</code> works for equations; <code>latex(diff(...))</code>, <code>integ</code>, <code>LT</code>, <code>ILT</code> add <code>= result</code>. Typed numbers keep their suffix (<code>2.2k</code> &rarr; <code>2.2\\,\\mathrm{k}</code>), names get subscripts (<code>R1</code> &rarr; <code>R_{1}</code>), Greek names become symbols (<code>omega</code> &rarr; &omega;). Symbolic results have a <b>TeX</b> button. The <b>LaTeX tab</b> converts several lines with a preview. Paste into PowerPoint via Insert &rarr; Equation &rarr; LaTeX.</td></tr>
 <tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros as <code>p1</code>, <code>p2</code>, &hellip; and <code>z1</code>, <code>z2</code>, &hellip; (stored as variables), and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine (write <code>2*a1</code>). Names must start with a letter and use only letters, digits and <code>_</code>. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
@@ -3544,7 +3875,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','latex(diff(x^2*sin(x)))','solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   if(!guideSeen)b.appendChild(mkEl('p','ginvite','<button class="tb pulse" data-guide>&#128214; New here? Take the 5-minute guide</button>'));
@@ -3839,7 +4170,7 @@ function expBuild(n,theme){
   const ents=expEntries(n);
   if(!ents.length)throw new Error('Nothing to export yet \u2014 run a calculation first.');
   const holder=mkEl('div','exproot');
-  ents.forEach(e=>{const c=e.cloneNode(true);c.querySelectorAll('button').forEach(b=>b.remove());holder.appendChild(c);});
+  ents.forEach(e=>{const c=e.cloneNode(true);c.querySelectorAll('button,.texprev').forEach(b=>b.remove());holder.appendChild(c);});
   holder.setAttribute('style',EXP_BASE+';position:fixed;left:-20000px;top:0');
   document.body.appendChild(holder);
   const r=holder.getBoundingClientRect(),w=Math.ceil(r.width)+1,h=Math.ceil(r.height)+1;
@@ -3918,9 +4249,36 @@ function showTab(name){
   curTab=name;
   document.querySelectorAll('#tabs button').forEach(b=>{b.classList.toggle('on',b.dataset.tab===name);if(b.dataset.tab===name&&b.scrollIntoView)b.scrollIntoView({block:'nearest',inline:'nearest'});});
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+name));
-  if(name==='console')inp.focus();else if(name==='solver')$('eqs').focus();else if(name==='formulas')renderSeries();else if(name==='plot')plPaint();else{convRender();$('c10').focus();}
+  if(name==='console')inp.focus();else if(name==='solver')$('eqs').focus();else if(name==='formulas')renderSeries();else if(name==='plot')plPaint();
+  else if(name==='latex'){txRender();$('txIn').focus();}
+  else{convRender();$('c10').focus();}
 }
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+/* ---- LaTeX tab ---- */
+let txLastTex='',txTimer=0;
+function txOpts(){return {mul:$('txMul').value,res:$('txRes').checked};}
+function txRender(){
+  const src=$('txIn').value,msg=$('txMsg'),out=$('txOut'),pv=$('txPrev');
+  try{localStorage.setItem('engcalc.latex',JSON.stringify({src,mul:$('txMul').value,wrap:$('txWrap').value,res:$('txRes').checked}));}catch(e){}
+  if(!src.trim()){out.textContent='';txLastTex='';msg.textContent='Type an expression or equation above, one per line.';msg.classList.remove('bad');pv.innerHTML='';return;}
+  try{
+    const tex=latexText(src,txOpts());
+    txLastTex=texWrap(tex,$('txWrap').value);
+    out.textContent=txLastTex;msg.textContent='';msg.classList.remove('bad');
+    texPreview(pv,tex,true);
+  }catch(e){
+    out.textContent='';txLastTex='';msg.textContent='✖ '+((e&&e.message)||String(e));msg.classList.add('bad');
+  }
+}
+function txCopy(){if(txLastTex)copyText(txLastTex);else toast('Nothing to copy yet');}
+$('txIn').addEventListener('input',()=>{clearTimeout(txTimer);txTimer=setTimeout(txRender,200);});
+['txMul','txWrap','txRes'].forEach(id=>$(id).addEventListener('change',txRender));
+$('txCopy').onclick=txCopy;$('txOut').onclick=txCopy;
+$('txClr').onclick=()=>{$('txIn').value='';txRender();$('txIn').focus();};
+document.querySelectorAll('[data-tx]').forEach(b=>b.onclick=()=>{$('txIn').value=b.dataset.tx;txRender();});
+try{const o=JSON.parse(localStorage.getItem('engcalc.latex')||'null');
+  if(o){$('txIn').value=o.src||'';if(o.mul)$('txMul').value=o.mul;if(o.wrap)$('txWrap').value=o.wrap;$('txRes').checked=o.res!==false;}}catch(e){}
 
 /* ---- solver tab ---- */
 const EXAMPLES={

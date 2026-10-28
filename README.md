@@ -18,6 +18,9 @@ or a phone. No install, no network required.
 - **Variables and user functions**: `x = 1; y = 2; x + y`, `f1(x) = x^2 + 1`
 - **Linear-system solver**: 3, 4 or more unknowns, with engineering and
   complex coefficients (`solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3`)
+- **LaTeX tab and latex()**: calculator syntax to LaTeX for reports and
+  PowerPoint (Insert > Equation > LaTeX), with a live preview (KaTeX, online
+  only); symbolic results have a TeX copy button
 - **Base converter tab**: live dec / hex / bin / oct / base-N with bit
   grid, two's complement
 - **115+ functions** including trig, hyperbolic, dB/dBm, RF (reflection
@@ -48,6 +51,7 @@ engcalc/
     │   ├── test_calculus.js         156 cases — diff / integ, checked numerically
     │   ├── test_laplace.js          139 cases — LT / ILT / poles / zeros, checked numerically
     │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
+    │   ├── test_latex.js            107 cases — LaTeX conversion, latex() in the console
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
     │   ├── test_audit.js            191 edge cases — parser, formatting,
     │   │                            precedence, explicit *, bits, solver
@@ -59,6 +63,7 @@ engcalc/
         │                            persistence, ans history
         ├── test_ui_format.js        9 cases — "to / => directive" in the UI
         ├── test_ui_formulas.js      14 cases — Formulas tab and series explorer
+        ├── test_ui_latex.js         22 cases — LaTeX tab, console latex(), TeX button
         ├── test_ui_calculus.js      14 cases — diff / integ display, drawer, examples
         ├── test_ui_export.js        22 cases — clear wipes variables; Export-as-image dialog
         ├── test_ui_guide.js         33 cases — illustrated guide, live examples, navigation
