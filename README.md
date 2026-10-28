@@ -54,12 +54,12 @@ engcalc/
     │   ├── test_calculus.js         156 cases — diff / integ, checked numerically
     │   ├── test_laplace.js          139 cases — LT / ILT / poles / zeros, checked numerically
     │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
-    │   ├── test_latex.js            109 cases — LaTeX conversion, latex() in the console
+    │   ├── test_latex.js            110 cases — LaTeX conversion, latex() in the console
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
     │   ├── test_audit.js            191 edge cases — parser, formatting,
     │   │                            precedence, explicit *, bits, solver
     │   ├── test_regression.js       48 cases — bugs that have been fixed
-    │   └── test_solve.js            72 cases — roots, polynomial / numeric / nonlinear solving
+    │   └── test_solve.js            86 cases — roots, polynomial / numeric / nonlinear solving, eq:
     └── ui/                          jsdom-based DOM / UI tests
         ├── test_ui_smoke.js         77 cases — tabs, drawers, buttons,
         │                            keyboard shortcuts

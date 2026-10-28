@@ -108,6 +108,7 @@ L('ILT(1/(s^2+3*s+2))','\\mathcal{L}^{-1}\\left\\{\\frac{1}{s^{2} + 3s + 2}\\rig
 L('diff(x^2*sin(x))','\\frac{d}{dx} \\left(x^{2} \\sin(x)\\right)',{res:false});
 L('cos(x) = x','\\cos(x) = x');   // a built-in on the left is an equation, not a definition
 L('solve(x*exp(x) = 2, x, 0, 5)','x e^{x} = 2');
+L('eq: x^2 + y^2 = 1; x = y','\\begin{aligned}\nx^{2} + y^{2} &= 1 \\\\\nx &= y\n\\end{aligned}');
 // ---- errors
 L('2x',/ERR: '2x': multiplication must be written with \*/);
 L('',/ERR: Nothing to convert/);

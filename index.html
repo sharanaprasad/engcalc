@@ -635,6 +635,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="g-num">6</div>
         <h2>Solving equations</h2>
         <p>Any <code>=</code> that isn&rsquo;t a plain assignment is treated as an equation to solve. Solutions are stored as variables so you can keep using them.</p>
+        <div class="g-note"><b>Equation or assignment?</b> A plain name on the left is always an <b>assignment</b>: <code>x = 5</code>, <code>x = y</code>. Anything else on the left makes an <b>equation</b>: <code>2*x = 4</code>, <code>cos(x) = x</code>. To solve something like <code>x = y</code>, start the line with <code>eq:</code> &mdash; then every part of the line is an equation. <code>eq x,y: &hellip;</code> also says which names are the unknowns.</div>
         <div class="gx" data-ex="2*x = 4"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="x+y=5; x-y=1"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="x^2 - 3*x + 2 = 0"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
@@ -648,6 +649,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="gx" data-ex="solve(sin(x) = 0.5, x, 0, 10)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <p><b>Nonlinear systems</b> use Newton&rsquo;s method from many starting points and list each distinct solution (<code>x1, y1</code>, <code>x2, y2</code>, &hellip;):</p>
         <div class="gx" data-ex="x^2 + y^2 = 4; x*y = 1"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="eq: x^2 + y^2 = 1; x = y"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <p>The <button class="g-link" data-tab="solver">Solver tab</button> gives you a bigger box for larger systems.</p>
       </section>
 
@@ -774,7 +776,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Numbers</h3><code>2.2k</code> <code>10pF</code> <code>5MHz</code> <code>3+4j</code> <code>0xFF</code> <code>1e-9</code></div>
           <div class="g-card"><h3>Convert</h3><code>x to M</code> <code>x to hex</code> <code>x in deg</code> <code>x to sci</code></div>
           <div class="g-card"><h3>Store</h3><code>R1 = 2.2k</code> <code>f1(x) = x^2</code> <code>del R1</code> <code>clear</code></div>
-          <div class="g-card"><h3>Solve</h3><code>2*x = 4</code> <code>x+y=5; x-y=1</code> <code>x^2-3*x+2=0</code> <code>cos(x) = x</code> <code>solve(f = g, x, a, b)</code> <code>roots(p)</code></div>
+          <div class="g-card"><h3>Solve</h3><code>2*x = 4</code> <code>x+y=5; x-y=1</code> <code>x^2-3*x+2=0</code> <code>cos(x) = x</code> <code>eq: x = y</code> <code>solve(f = g, x, a, b)</code> <code>roots(p)</code></div>
           <div class="g-card"><h3>Matrix</h3><code>[1 2; 3 4]</code> <code>det</code> <code>inv</code> <code>A'</code> <code>A(2,1)</code></div>
           <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code></div>
           <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code></div>
@@ -3280,6 +3282,13 @@ function execLine(line){
   const items=[],ui=[],t=line.trim();
   if(!t) return {items,ui,text:t};
   DEPTH=0;POSOFF=0;
+  /* "eq: ..." or "eq x,y: ...": every statement on the line is an equation (same as solve) */
+  const eqm=EQ_PREFIX.exec(t);
+  if(eqm){
+    const unk=(eqm[1]||'').trim(),body=eqm[2].trim();
+    if(!body){items.push({kind:'err',msg:'Usage:  eq: x = y   or   eq x,y: x^2 + y^2 = 1; x = y'});return {items,ui,text:t};}
+    runCommand('solve '+(unk?unk+': ':'')+body,items,ui);return {items,ui,text:t};
+  }
   const sx=solveCallArgs(t);
   if(sx!==null){try{const r=solveCall(sx);items.push({kind:'solve',rows:r.rows,warns:r.warns,note:r.note});}catch(e){items.push({kind:'err',msg:(e&&e.message)||String(e)});}return {items,ui,text:t};}
   const lx=latexLineArg(t);
@@ -3296,17 +3305,20 @@ function execLine(line){
       const fd=FUNDEF.exec(s);if(fd)return has(FUNCS,fd[1]);
       return !ASSIGN.test(s);
     };
-    const anyEq=parts.some(p=>isEq(p.trim()));
-    /* next to other equations, "x = y" with an undefined name on the right is an equation as well */
-    const assignIsEq=s=>{
-      const m=ASSIGN.exec(s);if(!anyEq||!m||m[2])return false;
-      const seen=new Set();try{collectIds(parseExpr(stripFormat(m[3])[0]),seen);}catch(e){return false;}
-      return [...seen].some(n=>!STATE.vars.has(n)&&!has(CONSTS,n)&&!STATE.funcs.has(n)&&!has(FUNCS,n)&&n!=='ans'&&n!=='ans2'||n===m[1]);
-    };
+    /* "name = ..." is always an assignment; to solve it as an equation, start the line with  eq:  */
     for(const part of parts){
       const lead=part.length-part.trimStart().length,s=part.trim();
-      if(s&&(isEq(s)||assignIsEq(s))){eqs.push(s);}
-      else if(s) last=execStatement(s,off+lead);
+      const em=/^eq\s*:\s*([\s\S]*)$/.exec(s);
+      if(em){if(em[1].trim())eqs.push(em[1].trim());}
+      else if(s&&isEq(s)){eqs.push(s);}
+      else if(s){
+        try{last=execStatement(s,off+lead);}
+        catch(e){
+          const am=ASSIGN.exec(s);
+          if(am&&!am[2]&&e instanceof CalcError&&/^Unknown name/.test(e.message))throw new CalcError(e.message+'. To solve it as an equation instead, start the line with  eq:   e.g.  eq: '+t,e.pos);
+          throw e;
+        }
+      }
       off+=part.length+1;
     }
     if(eqs.length){const r=solveEquations(eqs,null,true);last={kind:'solve',rows:r.rows,warns:r.warns,note:r.note};}
@@ -3587,7 +3599,8 @@ function solveEquations(lines,unkNames,store,opt){
     if(!/^[A-Za-z_][A-Za-z0-9_]*$/.test(nm))throw new CalcError("Bad unknown name '"+nm+"'");
     validateName(nm,'var',0).forEach(w=>warns.push(w));
   });
-  if(eqs.length!==names.length)throw new CalcError(`${eqs.length} equation(s) but ${names.length} unknown(s) (${names.join(', ')}). You need the same number of each.`+(!(unkNames&&unkNames.length)&&names.length<eqs.length?'  If some unknowns are already variables, list them explicitly:  solve x,y,z: ...':''));
+  if(eqs.length!==names.length)throw new CalcError(`${eqs.length} equation(s) but ${names.length} unknown(s) (${names.join(', ')}). You need the same number of each.`+(!(unkNames&&unkNames.length)&&names.length<eqs.length?'  If some unknowns are already variables, list them explicitly:  solve x,y,z: ...':'')
+      +(!(unkNames&&unkNames.length)&&names.length>eqs.length?'  Say which to solve for, e.g.  eq '+names.slice(0,eqs.length).join(',')+': ...':''));
   const unk=new Set(names),A=[],b=[];
   let quad=null,nonlin=null;
   const done=(rows,note)=>{
@@ -3873,7 +3886,7 @@ function texAst(ast,src,o,res){
   return {l,tail:''};
 }
 function texStatement(s,o){
-  const body=stripFormat(s)[0].trim();
+  const body=stripFormat(s.replace(/^eq\s*:\s*/,''))[0].trim();
   POSOFF=0;DEPTH=0;
   let m;
   if((m=FUNDEF.exec(body))&&!has(FUNCS,m[1])){
@@ -3900,6 +3913,7 @@ function latexText(text,o){
   String(text).split('\n').forEach((ln,i)=>{
     let t=ln.trim();if(!t)return;
     const sa=solveCallArgs(t);if(sa!==null)t=splitTopCommas(sa)[0];
+    const em=EQ_PREFIX.exec(t);if(em)t=em[2].trim();
     t=t.replace(/^solve\b(\s+[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*\s*:)?/,'').trim();
     for(const part of splitStmts(t)){const s=part.trim();if(!s)continue;
       try{rows.push(texStatement(s,o));}
@@ -3915,6 +3929,7 @@ function texWrap(tex,w){
   if(w==='equation')return '\\begin{equation}\n'+tex+'\n\\end{equation}';
   return tex;
 }
+const EQ_PREFIX=/^eq(?:\s+([A-Za-z][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z][A-Za-z0-9_]*)*))?\s*:\s*([\s\S]*)$/;
 /* split on top-level commas (not inside ( ) or [ ]) */
 function splitTopCommas(s){
   const out=[];let d=0,st=0;
@@ -4112,7 +4127,7 @@ function helpHtml(){
 <tr><td><code>2*x</code> <code>3*(4+1)</code></td><td>multiplication is always written with <code>*</code>. <code>2x</code>, <code>2pi</code>, <code>3(4+1)</code> and <code>R1(2)</code> are errors with a hint.</td></tr>
 <tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code> (variables only), <code>clear</code> (screen + variables)</td></tr>
 <tr><td>Export</td><td>the <b>&#10515; Export</b> button saves the last N calculations as a PNG picture (light or dark theme) or copies it to the clipboard, ready to paste into PowerPoint.</td></tr>
-<tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2*x = 4</code> gives <code>x = 2</code>, <code>2*x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
+<tr><td>equations</td><td>a plain name on the left (<code>x = 5</code>, <code>x = y</code>) is always an assignment. Start a line with <code>eq:</code> to make every part of it an equation: <code>eq: x^2 + y^2 = 1; x = y</code> (<code>eq x,y: &hellip;</code> names the unknowns). Any other <code>=</code> is solved directly: <code>2*x = 4</code> gives <code>x = 2</code>, <code>2*x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>

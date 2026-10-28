@@ -87,7 +87,20 @@ t('solve 2*x+y=5; x-y=1','x=2, y=1');                     // command form unchan
 // ---- nonlinear systems
 reset();
 t('x^2 + y^2 = 4; x*y = 1','x1=-1.93185, y1=-517.638m, x2=-517.638m, y2=-1.93185, x3=517.638m, y3=1.93185, x4=1.93185, y4=517.638m');
-t('x^2+y^2 = 1; x = y','x1=-707.107m, y1=-707.107m, x2=707.107m, y2=707.107m');   // "x = y" next to an equation is an equation
+t('x^2+y^2 = 1; x = y',/ERR: Unknown name 'y'.*start the line with  eq:/);   // a plain name on the left is always an assignment
+t('eq: x^2+y^2 = 1; x = y','x1=-707.107m, y1=-707.107m, x2=707.107m, y2=707.107m');
+t('eq x,y: x^2+y^2 = 1; x = y','x1=-707.107m, y1=-707.107m, x2=707.107m, y2=707.107m');
+t('x = y',/ERR: Unknown name 'y'.*eq: x = y/);
+t('eq: x = y',/ERR: 1 equation\(s\) but 2 unknown.*eq x: \.\.\./);
+t('y = 3','3');t('x = y','3');                             // y defined: assignment
+t('eq x: x = y + 1','x=4');
+t('x = 5; eq: x = 2*x - 3','x=3');
+t('eq: cos(x) = x','x=739.085m');
+t('eq:',/ERR: Usage:  eq: x = y/);
+t('eq: 2*x',/needs exactly one '='/);
+t('eq1 = 4','4');t('eq1*2','8');                          // names starting with eq still work
+t('k1 = 2; eq: z1 = k1 + 1','z1=3');                        // eq: on one statement of a line
+reset();
 t('solve x,y: x^2 + y = 3; x - y^2 = 1','x1=1.51155, y1=715.225m, x2=2, y2=-1');
 t('sin(x)+y = 1; x - y = 0','x=510.973m, y=510.973m');
 t('exp(x)+y=0; x+y=5',/ERR: No real solution found with Newton/);
