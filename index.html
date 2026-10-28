@@ -78,6 +78,8 @@ button{font-family:inherit;cursor:pointer}
 .out{padding-left:2ch;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .out .eq{color:var(--dim)}
 .res{cursor:copy;font-size:17px;font-weight:600;border-radius:6px;padding:0 4px;margin-left:-4px;transition:background .15s}
+.res:has(.mtx){display:block;min-width:0;max-width:100%;overflow-x:auto}
+.out:has(.mtx){flex-wrap:nowrap;min-width:0}
 .res:hover{background:rgba(34,211,238,.12)}
 .alt{padding-left:2ch;color:var(--dim);font-size:12px;margin-top:1px}
 .n{color:var(--cyan);text-shadow:0 0 10px rgba(34,211,238,.35)}
@@ -244,6 +246,7 @@ button{font-family:inherit;cursor:pointer}
 .pl-mk .x{font-size:14px}
 .plimg{display:block;max-width:min(100%,760px);height:auto;border:1px solid var(--line);border-radius:10px;margin:6px 0}
 #chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
+@media (max-width:640px){#chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#chips::-webkit-scrollbar{display:none}#chips .chip{flex:none}#tabs button{padding:7px 10px}#fseries .ftbl th:nth-child(3),#fseries .ftbl td:nth-child(3),#fseries .ftbl th:nth-child(4),#fseries .ftbl td:nth-child(4){display:none}#fseries .ftbl{font-size:11px}#fseries .ftbl td,#fseries .ftbl th{padding:3px 5px}}
 .chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;color:var(--dim);padding:3px 9px;font-size:12px}
 .chip:hover{color:#fff;border-color:var(--violet)}
 .banner{padding:4px 0 10px}
@@ -284,8 +287,9 @@ details.grp>summary .cnt{margin-left:auto;color:var(--dim);font-size:11px}
   box-shadow:-10px 0 40px rgba(0,0,0,.55),0 0 30px rgba(251,113,133,.18);border-color:rgba(251,113,133,.35);background:rgba(10,13,30,.94)}
 .drawer.open{transform:none}
 .drawer .ph{color:var(--coral)}
-#tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--line);flex:none}
-#tabs button{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--dim);padding:7px 14px;font-size:12px;letter-spacing:.8px;text-transform:uppercase}
+#tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--line);flex:none;overflow-x:auto;scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+#tabs button{flex:none;white-space:nowrap;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--dim);padding:7px 14px;font-size:12px;letter-spacing:.8px;text-transform:uppercase}
 #tabs button:hover{color:#fff}
 #tabs button.on{color:#fff;border-bottom-color:var(--cyan);text-shadow:0 0 10px rgba(34,211,238,.6)}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
@@ -3820,7 +3824,7 @@ function expBuild(n,theme){
   const ents=expEntries(n);
   if(!ents.length)throw new Error('Nothing to export yet \u2014 run a calculation first.');
   const holder=mkEl('div','exproot');
-  ents.forEach(e=>holder.appendChild(e.cloneNode(true)));
+  ents.forEach(e=>{const c=e.cloneNode(true);c.querySelectorAll('button').forEach(b=>b.remove());holder.appendChild(c);});
   holder.setAttribute('style',EXP_BASE+';position:fixed;left:-20000px;top:0');
   document.body.appendChild(holder);
   const r=holder.getBoundingClientRect(),w=Math.ceil(r.width)+1,h=Math.ceil(r.height)+1;
@@ -3897,7 +3901,7 @@ $('expTxt').onclick=()=>{
 let curTab='console';
 function showTab(name){
   curTab=name;
-  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  document.querySelectorAll('#tabs button').forEach(b=>{b.classList.toggle('on',b.dataset.tab===name);if(b.dataset.tab===name&&b.scrollIntoView)b.scrollIntoView({block:'nearest',inline:'nearest'});});
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+name));
   if(name==='console')inp.focus();else if(name==='solver')$('eqs').focus();else if(name==='formulas')renderSeries();else if(name==='plot')plPaint();else{convRender();$('c10').focus();}
 }
