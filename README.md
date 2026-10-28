@@ -11,11 +11,13 @@ or a phone. No install, no network required.
 
 - **Engineering notation**, case-sensitive: `10p`, `2.2k`, `5MHz`
   (`m` is milli, `M` is mega)
+- **Explicit multiplication**: always write `*` (`2*x`, `3*(4+1)`, `2*pi`).
+  `2x` is an error with a hint, and names must start with a letter
 - **Complex numbers**: `3+4j`, `(1+2j)*(3-4j)`, `mag()`, `phase()`,
   `phase_deg()`, `phase_rad()`, polar form `5@30`
 - **Variables and user functions**: `x = 1; y = 2; x + y`, `f1(x) = x^2 + 1`
 - **Linear-system solver**: 3, 4 or more unknowns, with engineering and
-  complex coefficients (`solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3`)
+  complex coefficients (`solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3`)
 - **Base converter tab**: live dec / hex / bin / oct / base-N with bit
   grid, two's complement
 - **115+ functions** including trig, hyperbolic, dB/dBm, RF (reflection
@@ -38,17 +40,17 @@ engcalc/
 └── tests/
     ├── run_all.sh                   runs every test suite
     ├── engine/                      Node tests of the calculation engine
-    │   ├── test_core.js             161 cases — basic parsing, suffixes,
+    │   ├── test_core.js             176 cases — basic parsing, suffixes,
     │   │                            variables, complex, bases
-    │   ├── test_extended.js         1071 cases — identities on random
+    │   ├── test_extended.js         1072 cases — identities on random
     │   │                            complex points, name rules, bases,
     │   │                            solver, unit parsing
     │   ├── test_calculus.js         156 cases — diff / integ, checked numerically
-    │   ├── test_laplace.js          128 cases — LT / ILT / poles / zeros, checked numerically
+    │   ├── test_laplace.js          139 cases — LT / ILT / poles / zeros, checked numerically
     │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
-    │   ├── test_audit.js            190 edge cases — parser, formatting,
-    │   │                            precedence, implicit mult, bits, solver
+    │   ├── test_audit.js            191 edge cases — parser, formatting,
+    │   │                            precedence, explicit *, bits, solver
     │   └── test_regression.js       48 cases — bugs that have been fixed
     └── ui/                          jsdom-based DOM / UI tests
         ├── test_ui_smoke.js         77 cases — tabs, drawers, buttons,

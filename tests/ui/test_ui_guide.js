@@ -30,7 +30,7 @@ const bad=exs.filter(e=>!e.querySelector('.gout').textContent.trim()||e.querySel
 ok(bad.length===0,'every example computes a result: '+bad.join(' | '));
 const out=ex=>{const e=exs.find(x=>x.dataset.ex===ex);return e?e.querySelector('.gout').textContent:'(missing)';};
 ok(out('2.2k * 3')==='= 6.6k','2.2k * 3 = 6.6k: '+out('2.2k * 3'));
-ok(out('x^2 - 3x + 2 = 0').includes('x1 = 2'),'quadratic example: '+out('x^2 - 3x + 2 = 0'));
+ok(out('x^2 - 3*x + 2 = 0').includes('x1 = 2'),'quadratic example: '+out('x^2 - 3*x + 2 = 0'));
 ok(out('integ(exp(-x^2), -inf, inf)').includes('1.77245'),'Gaussian integral example: '+out('integ(exp(-x^2), -inf, inf)'));
 ok(out('integ(x*exp(x))').includes('+ C'),'integ example shows + C: '+out('integ(x*exp(x))'));
 ok(out('ILT(1/(s^2+3*s+2))').includes('exp(-t) - exp(-2*t)'),'ILT example: '+out('ILT(1/(s^2+3*s+2))'));

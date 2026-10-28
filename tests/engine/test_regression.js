@@ -54,7 +54,7 @@ t('0+3j','3j');
 
 // Core regression
 t('10p * 2.5k','25n');
-t('4k7',/Unknown name 'k7'/);
+t('4k7',/Write 4\*k7/);   // explicit-*
 t('phase(1+j)','0.785398 rad');
 t('phase_deg(1+j)','45°');
 t('sind(30)','500m');
@@ -62,7 +62,7 @@ t('2^10','1.024k');
 
 // Solver still works
 reset();
-t('solve 2x+y=5; x-y=1','x=2, y=1');
+t('solve 2*x+y=5; x-y=1','x=2, y=1');
 t('solve x+y+z=6; x-y+z=2; x+y-z=0','x=1, y=2, z=3');
 run('x=5');
 t('solve x=10','x=10');

@@ -15,7 +15,7 @@ function t(line,exp){total++;const got=run(line);const ok=exp instanceof RegExp?
   if(!ok){fail++;console.log('FAIL',JSON.stringify(line),'=>',JSON.stringify(got),'expected',String(exp));}}
 t('10p * 2.5k','25n');
 t('1.2G / 3m','400G');
-t('4k7',/Unknown name 'k7'/);   // resistor notation was removed
+t('4k7',/must be written with \*\. Write 4\*k7/);   // explicit-*
 t('10pF','10p');
 t('5MHz','5M');
 t('5meg','5M');
@@ -29,10 +29,10 @@ t('x=1','1');
 t('y=1','1');
 t('x+y','2');
 t('a1=3; b1=4; a1*b1','12');
-t('2x','2');
-t('x=5; 2x','10');
-t('3(4+1)','15');
-t('2pi','6.28319');
+t('2x',/must be written with \*\. Write 2\*x/);t('2*x','2');   // explicit-*
+t('x=5; 2x',/Write 2\*x/);t('2 x',/Missing operator before 'x'/);t('2*x','10');   // explicit-*
+t('3(4+1)',/Missing operator before '\('/);t('(1+2)(3)',/Missing operator/);t('sin(1)cos(1)',/Missing operator before 'cos'/);t('3*(4+1)','15');   // explicit-*
+t('2pi',/Write 2\*pi/);t('2π',/Write 2\*pi/);t('2*pi','6.28319');   // explicit-*
 t('2^10','1.024k');
 t('2**3**2','512');
 t('-2^2','-4');
@@ -48,7 +48,7 @@ t('pi=3',/ERR/);
 t('sin=3','3');t('sin(0)','0');t('del sin','INFO');
 t('g(x)=x^2+1','DEF g');
 t('g(3)','10');
-t('p_x=2; 3p_x','6');
+t('p_x=2; 3*p_x','6');t('3p_x',/Write 3\*p_x/);t('_q=1',/must start with a letter/);t('µx=1',/must start with a letter/);t('g2(_a)=1',/Bad parameter name/);t('x(2)',/value, not a function.*x\*\(/);   // explicit-*
 t('V=5','5');
 t('5V',/ERR: '5V' is ambiguous/);
 t('del V','INFO');
@@ -58,9 +58,9 @@ t('10pF',/ERR.*ambiguous/);
 t('del pF','INFO');
 t('10pF','10p');
 t('p1=7','7');
-t('2p1','14');
+t('2p1',/Write 2\*p1/);t('2*p1','14');   // explicit-*
 t('del p1','INFO');
-t('2p1',/Unknown name 'p1'/);   // a number followed by a name is always a product
+t('2p1',/Write 2\*p1/);   // explicit-*
 t('3+4j','3 + 4j');
 t('mag(3+4j)','5');
 t('phase_deg(1+j)','45°');
@@ -160,7 +160,7 @@ t('999999.9999','1M');
 t('0.1+0.2','300m');
 t('5 % 3','2');
 t('2e3','2k');
-t('2e','5.43656');
+t('2e',/Write 2\*e/);t('2*e','5.43656');   // explicit-*
 t('1/3','333.333m');
 t('log(1k)','3');
 t('log2(1024)','10');

@@ -89,7 +89,7 @@ t('1e+5','100k');
 t('1e-5','10µ');
 
 // Suffix / resistor
-t('4k7',/Unknown name 'k7'/);
+t('4k7',/Write 4\*k7/);   // explicit-*
 t('2.2u','2.2µ');
 t('100p','100p');
 t('5MHz','5M');
@@ -104,12 +104,12 @@ run('x=5'); run('y=3');
 t('x+y','8');
 t('x*y','15');
 t('x/y','1.66667');
-t('2x+3y','19');
-t('x(y)','15'); // implicit multiplication
+t('2*x+3*y','19');
+t('x(y)',/x\*\(/); t('x*(y)','15');   // explicit-*
 run('r1=1k; r2=2.2k');
 t('par(r1,r2)','687.5');
 t('r1+r2','3.2k');
-t('2r1','2k');
+t('2*r1','2k');
 
 // User functions
 reset();
@@ -209,10 +209,10 @@ if(b4!==65535n){fail++;total++;console.log('BUG parseBig underscores');}else{tot
 // Solver
 reset();
 t('solve x=5','x=5');
-t('solve 2x+y=5; x-y=1','x=2, y=1');
+t('solve 2*x+y=5; x-y=1','x=2, y=1');
 t('solve x+y+z=6; x-y+z=2; x+y-z=0','x=1, y=2, z=3');
 t('solve x+y+z+w=10; x-y+z-w=-2; x+y-z-w=-4; x-y-z+w=0','x=1, y=2, z=3, w=4');
-t('solve x,y,z: x+y+z=6; 2x+y-z=1; x-y+z=2','x=1, y=2, z=3');
+t('solve x,y,z: x+y+z=6; 2*x+y-z=1; x-y+z=2','x=1, y=2, z=3');
 t('solve (1k)*i1 + (2k)*(i1-i2) = 5; (2k)*(i2-i1) + (3k)*i2 = 0',/i1=.*m, i2=/);
 t('solve x+y=3; x+y=4',/No unique/);
 t('solve x*y=1',/unknown|not linear/i);
@@ -273,7 +273,7 @@ t('sin(0)','0');
 // Const name shadowing
 reset();
 t('c=5','5');
-t('2c','10');  // c is now a var not a constant
+t('2*c','10');  // c is now a var not a constant
 run('del c');
 t('c','299.792M');  // speed of light restored
 

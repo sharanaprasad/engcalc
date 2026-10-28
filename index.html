@@ -389,7 +389,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       </div>
       <div id="view-solver" class="view"><div class="vpad">
         <div class="vtitle">Solve linear equations<span class="vsub">3, 4 or more unknowns &middot; engineering notation &amp; complex numbers work</span></div>
-        <textarea id="eqs" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2x + y - z = 8&#10;-3x - y + 2z = -11&#10;-2x + y + 2z = -3"></textarea>
+        <textarea id="eqs" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="2*x + y - z = 8&#10;-3*x - y + 2*z = -11&#10;-2*x + y + 2*z = -3"></textarea>
         <div class="vrowf">
           <label>Unknowns <input type="text" id="unk" size="16" placeholder="auto (x, y, z)"></label>
           <label><input type="checkbox" id="storeSol" checked> store as variables</label>
@@ -582,7 +582,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <h2>Variables &amp; your own functions</h2>
         <p>Use <code>=</code> to store a value. Stored names appear in the <b>Variables</b> panel on the left; click one to drop it into your input.</p>
         <div class="gx" data-ex="R1 = 2.2k&#10;R2 = 4.7k&#10;par(R1, R2)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
-        <p>Define a function with parentheses on the left. Multiplication can be implicit: <code>2x</code>, <code>3(4+1)</code>, <code>2pi</code>.</p>
+        <p>Define a function with parentheses on the left. Always write multiplication with <code>*</code>: <code>2*x</code>, <code>3*(4+1)</code>, <code>2*pi</code>. Typing <code>2x</code> gives a message telling you to add the <code>*</code>.</p>
         <div class="gx" data-ex="g1(x) = x^2 + 1&#10;g1(3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="g-warn"><b>Name rules.</b> The multiplier letters <code>a f p n u m k M G T P</code> can&rsquo;t be names, because <code>2p</code> must always mean pico. Use names like <code>R1</code>, <code>C_load</code>, <code>x1</code>. Names can&rsquo;t start with a digit.</div>
         <p>Tidy up with <code>del x</code> (one name), <code>delall</code> (all variables) or <code>clear</code> (the screen <i>and</i> all variables).</p>
@@ -605,10 +605,10 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="g-num">6</div>
         <h2>Solving equations</h2>
         <p>Any <code>=</code> that isn&rsquo;t a plain assignment is treated as an equation to solve. Solutions are stored as variables so you can keep using them.</p>
-        <div class="gx" data-ex="2x = 4"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="2*x = 4"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="x+y=5; x-y=1"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
-        <div class="gx" data-ex="x^2 - 3x + 2 = 0"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
-        <div class="gx" data-ex="solve x,y,z: 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="x^2 - 3*x + 2 = 0"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <p>Linear systems of any size work, including complex coefficients; single quadratics use the quadratic formula (complex roots too). The <button class="g-link" data-tab="solver">Solver tab</button> gives you a bigger box for larger systems.</p>
       </section>
 
@@ -715,7 +715,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="g-faq">
           <details><summary>Why did <code>5m</code> and <code>5M</code> give different answers?</summary><p>Multiplier letters are case-sensitive: <code>m</code> = milli, <code>M</code> = mega. This follows SI, so <code>5mV</code> and <code>5MV</code> mean what you expect.</p></details>
           <details><summary>Why is <code>sin(90)</code> not 1?</summary><p>Angles are radians. Use <code>sind(90)</code>, or <code>sin(90 in rad)</code> to convert from degrees first.</p></details>
-          <details><summary>What does <code>3s</code> mean?</summary><p><code>3*s</code>. A bare <b>s</b> is just a name (handy for Laplace work). <code>ms</code>, <code>us</code> and <code>ns</code> still work as time units.</p></details>
+          <details><summary>Why is <code>2x</code> an error?</summary><p>Multiplication is always written with <code>*</code>, so there is never any doubt about what you meant: write <code>2*x</code>, <code>3*s</code>, <code>2*pi</code>, <code>2*(x+1)</code>. A letter glued to a number is only allowed when it is a multiplier or unit: <code>2.2k</code>, <code>10pF</code>, <code>5ms</code>, <code>4j</code>. Names must start with a letter (<code>x1</code>, <code>R_load</code>).</p></details>
           <details><summary>My result looks like a formula, not a number.</summary><p>Results of <code>diff</code>, <code>integ</code> and <code>LT</code> are symbolic. Give the variable a value (<code>x = 2</code>) and use the result in arithmetic to get a number.</p></details>
           <details><summary>What does <code>clear</code> clear?</summary><p>The screen <i>and</i> every stored variable, function and <code>ans</code>. Use <code>del x</code> or <code>delall</code> to remove variables without clearing the screen.</p></details>
           <details><summary>Is my work saved?</summary><p>Variables, functions and your settings are kept in this browser, on this device only. Nothing is sent anywhere.</p></details>
@@ -730,7 +730,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Numbers</h3><code>2.2k</code> <code>10pF</code> <code>5MHz</code> <code>3+4j</code> <code>0xFF</code> <code>1e-9</code></div>
           <div class="g-card"><h3>Convert</h3><code>x to M</code> <code>x to hex</code> <code>x in deg</code> <code>x to sci</code></div>
           <div class="g-card"><h3>Store</h3><code>R1 = 2.2k</code> <code>f1(x) = x^2</code> <code>del R1</code> <code>clear</code></div>
-          <div class="g-card"><h3>Solve</h3><code>2x = 4</code> <code>x+y=5; x-y=1</code> <code>x^2-3x+2=0</code></div>
+          <div class="g-card"><h3>Solve</h3><code>2*x = 4</code> <code>x+y=5; x-y=1</code> <code>x^2-3*x+2=0</code></div>
           <div class="g-card"><h3>Matrix</h3><code>[1 2; 3 4]</code> <code>det</code> <code>inv</code> <code>A'</code> <code>A(2,1)</code></div>
           <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code></div>
           <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code></div>
@@ -811,7 +811,7 @@ function decompose(s){
   if(s.startsWith('meg')){exp=6;rest=s.slice(3);pref=true;}
   else if(has(SUFEXP,s[0])){exp=SUFEXP[s[0]];rest=s.slice(1);pref=true;}
   if(rest==='') return pref?{exp,imag}:null;
-  /* a bare "s" is not treated as the unit seconds: 3s means 3*s (the Laplace variable); ms, us, ns still work */
+  /* a bare "s" is not treated as the unit seconds (3s is an error: write 3*s); ms, us, ns still work */
   if((UNITS.has(rest)&&!(rest==='s'&&!pref))||(pref&&rest==='m')) return {exp,imag};
   return null;
 }
@@ -823,6 +823,10 @@ function scaleNum(str,exp){
 }
 function ambiguous(num,ident,pos){
   return E(`'${num}${ident}' is ambiguous: '${ident}' is a unit/suffix but you also defined '${ident}'. Write ${num}*${ident}, or remove it with: del ${ident}`,pos);
+}
+/* a number glued to a name (2x, 3s, 2pi) is not allowed: multiplication is always written with * */
+function noJuxt(num,ident,pos){
+  return E(`'${num}${ident}': multiplication must be written with *. Write ${num}*${ident}. Names can't start with a digit.`,pos);
 }
 
 /* ---- tokenizer ---- */
@@ -849,15 +853,17 @@ function tokenize(src){
       let val=Number(numStr);
       if(ident){
         const d=decompose(ident);
-        if(d){
-          if(isDeclared(ident)) throw ambiguous(numStr,ident,start);
-          i=j;val=scaleNum(numStr,d.exp);
-          if(d.imag) val=new Cx(0,val);
-        }
+        if(!d) throw noJuxt(numStr,ident,start);
+        if(isDeclared(ident)) throw ambiguous(numStr,ident,start);
+        i=j;val=scaleNum(numStr,d.exp);
+        if(d.imag) val=new Cx(0,val);
       }
+      if(src[i]==='π') throw E(`'${numStr}π': multiplication must be written with *. Write ${numStr}*pi.`,start);
       push('num',val,start);continue;
     }
-    if(ID_START.test(ch)){let j=i+1;while(j<n&&ID_CHAR.test(src[j]))j++;push('id',src.slice(i,j),start);i=j;continue;}
+    if(ID_START.test(ch)){let j=i+1;while(j<n&&ID_CHAR.test(src[j]))j++;const id=src.slice(i,j);
+      if(!/^[A-Za-z]/.test(id)&&!decompose(id)) throw E(`'${id}': names must start with a letter (A–Z or a–z), e.g. x1, R_load`,start);
+      push('id',id,start);i=j;continue;}
     if(ch==='\u03c0'){push('id','pi',start);i++;continue;}
     if(rest.startsWith('**')){push('op','^',start);i+=2;continue;}
     if(rest.startsWith('<<')||rest.startsWith('>>')){push('op',rest.slice(0,2),start);i+=2;continue;}
@@ -897,7 +903,13 @@ function parseExpr(src){
     for(;;){
       const t=toks[p];if(!t)break;
       if(t.t==='op'&&(t.v==='*'||t.v==='/'||t.v==='%')){p++;a={t:'bin',op:t.v,a,b:atx(),pos:t.pos};}
-      else if((t.t==='id'||t.t==='lp')&&!(inMat&&t.sp)&&!isConv()){a={t:'bin',op:'*',a,b:atx(),pos:t.pos};}
+      else if((t.t==='id'||t.t==='lp'||t.t==='num'||t.t==='lb')&&!(inMat&&t.sp)&&!isConv()){
+        /* no implicit multiplication: 2 x, (1+2)(3+4), sin(x)cos(x) all need an explicit * */
+        if(t.t==='id'&&toks[p-1].t==='num'&&decompose(t.v)&&!isDeclared(t.v)) throw E(`Write the unit or multiplier '${t.v}' right after the number, with no space: ${src.slice(toks[p-1].pos,t.pos).trim()}${t.v}`,t.pos);
+        const pt=toks[p-1],nx=t.t==='id'?t.v:t.t==='num'?src.slice(t.pos).match(/^[^\s*\/+\-^()\[\],;]+/)[0]:t.t==='lp'?'(…)':'[…]';
+        const pv=pt.t==='rp'?'(…)':pt.t==='rb'?'[…]':(pt.t==='num'||pt.t==='id')?src.slice(pt.pos,t.pos).trim():'a';
+        throw E(`Missing operator before '${src[t.pos]==='('?'(':nx}'. Multiplication must be written with *: ${pv.length<16?pv:'a'}*${nx}`,t.pos);
+      }
       else break;
     }
     return a;
@@ -1966,7 +1978,7 @@ function symRat(n,x){
 const plFlat=rs=>{const o=[];rs.forEach(r=>{for(let i=0;i<r.m;i++)o.push(r.z);});return o;};
 function symPoleZero(F,x){
   const r=symRat(F,x);
-  if(!r)throw new CalcError('poles / zeros need a rational function with numeric coefficients, e.g. (s+1)/(s^2+3s+2). Variables with values (R1 = 2.2k) are fine; unknown symbols are not.');
+  if(!r)throw new CalcError('poles / zeros need a rational function with numeric coefficients, e.g. (s+1)/(s^2+3*s+2). Variables with values (R1 = 2.2k) are fine; unknown symbols are not.');
   const N=plTrim(r.N),D=plTrim(r.D);
   const zr=plFlat(plRoots(N)),pr=plFlat(plRoots(D));
   const zs=zr.slice(),ps=pr.slice();
@@ -2821,6 +2833,8 @@ const COMMANDS=new Set(['guide','help','?','clear','cls','vars','funcs','consts'
 const isReserved=n=>has(FUNCS,n)||COMMANDS.has(n)||n==='ans'||n==='ans2'||n==='pi'||n==='e'||n==='j';
 function validateName(name,kind,pos){
   const what=kind==='func'?'Function':'Variable';
+  if(!/^[A-Za-z][A-Za-z0-9_]*$/.test(name))
+    throw E(`'${name}' isn't a valid name. ${what} names must start with a letter and use only letters, digits and _ (e.g. x1, R_load).`,pos);
   if(has(SUFEXP,name)||name==='meg')
     throw E(`'${name}' is the engineering suffix ${SUFNAME[name]}, so "2${name}" must always mean exactly that. ${what} names can't be suffix letters \u2014 try ${name}_x instead.`,pos);
   const reservedNonFn=COMMANDS.has(name)||name==='ans'||name==='ans2'||name==='pi'||name==='e'||name==='j';
@@ -2908,8 +2922,8 @@ function ev(n,sc){
         }
         throw E('Use '+n.name+'(row, col) to pick one entry of a matrix',n.pos);
       }
-      if(n.args.length===1&&((sc&&sc.has(n.name))||STATE.vars.has(n.name)||has(CONSTS,n.name))){
-        return mul(lookup({name:n.name,pos:n.pos},sc),U(ev(n.args[0],sc)));
+      if((sc&&sc.has(n.name))||STATE.vars.has(n.name)||has(CONSTS,n.name)){
+        throw E(`'${n.name}' is a value, not a function. Multiplication must be written with *: ${n.name}*(…)`,n.pos);
       }
       throw E(`Unknown function '${n.name}'`,n.pos);
     }
@@ -3067,7 +3081,7 @@ function execStatement(sIn,base){
     const params=m[2].trim()?m[2].split(',').map(x=>x.trim()):[];
     const seen=new Set();
     params.forEach(p=>{
-      if(!/^[A-Za-z_][A-Za-z0-9_]*$/.test(p))throw E("Bad parameter name '"+p+"'",0);
+      if(!/^[A-Za-z][A-Za-z0-9_]*$/.test(p))throw E(`Bad parameter name '${p}': names must start with a letter and use only letters, digits and _${/^[\d.(]/.test(p)?` (to multiply, write ${name}*(${m[2].trim()}))`:''}`,0);
       if(seen.has(p))throw E("Duplicate parameter '"+p+"'",0);seen.add(p);validateParam(p,0);
     });
     POSOFF=base+(s.length-m[3].length);
@@ -3140,7 +3154,7 @@ function runCommand(t,items,ui){
       CFG.digits=d;info('Significant digits: <b>'+d+'</b>');ui.push({cmd:'sync'});return true;}
     case 'solve':{
       const rest=t.slice(5).trim();
-      if(!rest){items.push({kind:'err',msg:'Usage:  solve 2x+y=5; x-y=1   or   solve x,y: 2x+y=5; x-y=1'});return true;}
+      if(!rest){items.push({kind:'err',msg:'Usage:  solve 2*x+y=5; x-y=1   or   solve x,y: 2*x+y=5; x-y=1'});return true;}
       let unk=null,body=rest;
       const mm=/^([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)\s*:\s*([\s\S]+)$/.exec(rest);
       if(mm){unk=mm[1].split(',').map(s=>s.trim());body=mm[2];}
@@ -3182,7 +3196,7 @@ function execLine(line){
     let off=0;const eqs=[];
     for(const part of splitStmts(t)){
       const lead=part.length-part.trimStart().length,s=part.trim();
-      /* an '=' that isn't an assignment or function definition (2x = 4, x+y = 5) is an equation: collect it for the solver */
+      /* an '=' that isn't an assignment or function definition (2*x = 4, x+y = 5) is an equation: collect it for the solver */
       if(s&&s.replace(/=>/g,'').includes('=')&&!FUNDEF.test(s)&&!ASSIGN.test(s)){eqs.push(s);}
       else if(s) last=execStatement(s,off+lead);
       off+=part.length+1;
@@ -3248,9 +3262,10 @@ function linForm(n,unk){
         if(forms.some(f=>!lfConst(f)))throw bad(n.name+'() of an unknown is not linear');
         return {c:ev({t:'call',name:n.name,args:forms.map(f=>numNode(f.c)),pos:n.pos},null),k:K()};
       }
-      if(forms.length!==1)throw bad("Unknown function '"+n.name+"'");
-      if(unk.has(n.name)){if(!lfConst(forms[0]))throw bad('Not linear: a product of two unknowns');return {c:0,k:new Map([[n.name,forms[0].c]])};}
-      return lfScale(forms[0],U(lookup({name:n.name,pos:n.pos},null)));
+      const mv=STATE.vars.get(n.name);
+      if(mv instanceof Mat&&!unk.has(n.name)&&forms.every(lfConst))return {c:ev({t:'call',name:n.name,args:forms.map(f=>numNode(f.c)),pos:n.pos},null),k:K()};
+      if(unk.has(n.name)||STATE.vars.has(n.name)||has(CONSTS,n.name))throw bad(`'${n.name}' is not a function. Multiplication must be written with *: ${n.name}*(…)`);
+      throw bad("Unknown function '"+n.name+"'");
     }
   }
   throw bad('Unsupported expression in equation');
@@ -3282,7 +3297,7 @@ function collectIds(n,set){
 function solveEquations(lines,unkNames,store){
   POSOFF=0;DEPTH=0;
   const eqs=lines.map(s=>s.trim()).filter(Boolean);
-  if(!eqs.length)throw new CalcError('Enter at least one equation, e.g.  2x + y = 5');
+  if(!eqs.length)throw new CalcError('Enter at least one equation, e.g.  2*x + y = 5');
   const asts=eqs.map((s,i)=>{
     const p=s.split('=');
     if(p.length!==2||!p[0].trim()||!p[1].trim())throw new CalcError(`Equation ${i+1} ("${s}") needs exactly one '=' with something on both sides`);
@@ -3478,16 +3493,16 @@ function helpHtml(){
 <tr><td>units</td><td>trailing units are ignored: <code>10pF</code> <code>5MHz</code> <code>2.2kΩ</code> <code>3dB</code> <code>1mm</code></td></tr></table>
 <h3>VARIABLES &amp; FUNCTIONS</h3>
 <table><tr><td><code>x = 1</code></td><td>define. <code>x=1; y=2; x+y</code> runs left to right, prints the last result. <code>x += 1</code> works.</td></tr>
-<tr><td><code>2x</code> <code>3(4+1)</code></td><td>implicit multiplication. <code>2pi</code> = 2·π</td></tr>
+<tr><td><code>2*x</code> <code>3*(4+1)</code></td><td>multiplication is always written with <code>*</code>. <code>2x</code>, <code>2pi</code>, <code>3(4+1)</code> and <code>R1(2)</code> are errors with a hint.</td></tr>
 <tr><td><code>f_1(x) = x^2+1</code></td><td>your own functions. <code>vars</code>, <code>funcs</code>, <code>del x</code>, <code>delall</code> (variables only), <code>clear</code> (screen + variables)</td></tr>
 <tr><td>Export</td><td>the <b>&#10515; Export</b> button saves the last N calculations as a PNG picture (light or dark theme) or copies it to the clipboard, ready to paste into PowerPoint.</td></tr>
-<tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2x = 4</code> gives <code>x = 2</code>, <code>2x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
+<tr><td>equations</td><td>an <code>=</code> that isn't a plain assignment is solved: <code>2*x = 4</code> gives <code>x = 2</code>, <code>2*x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>
 <tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros as <code>p1</code>, <code>p2</code>, &hellip; and <code>z1</code>, <code>z2</code>, &hellip; (stored as variables), and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
-<tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine: <code>2a1</code> always means 2*a1. Names can't start with a digit. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
+<tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine (write <code>2*a1</code>). Names must start with a letter and use only letters, digits and <code>_</code>. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
 <tr><td><code>ans</code> <code>ans2</code></td><td>last two results</td></tr></table>
 <h3>COMPLEX</h3>
 <table><tr><td><code>3+4j</code></td><td><code>mag()</code> <code>phase()</code> or <code>ph()</code> (radians) <code>phase_deg()</code> <code>phase_rad()</code> <code>re()</code> <code>im()</code> <code>conj()</code> &nbsp; <code>5@(pi/6)</code> or <code>polar(5,pi/6)</code> (angle in radians; <code>5@(30 in rad)</code> for degrees)</td></tr>
@@ -3496,7 +3511,7 @@ function helpHtml(){
 <table><tr><td><code>A = matrix [1 2 3 ; 4 5 6]</code></td><td>spaces (or commas) separate columns, <code>;</code> separates rows. <code>matrix</code> is optional: <code>[1 2; 3 4]</code> works. Glue a minus to its number to start a new entry: <code>[1 -2]</code> has two entries, <code>[1 - 2]</code> has one.</td></tr>
 <tr><td>arithmetic</td><td><code>A+B</code> <code>A-B</code> <code>A*B</code> <code>2*A</code> <code>A/2</code> <code>A^2</code> <code>A^-1</code> <code>A/B</code> (= A*inv(B)) <code>A'</code> (transpose). Entries can be complex or use suffixes: <code>[1k 2m; 3+4j 5]</code></td></tr>
 <tr><td>functions</td><td><code>det inv trans trace rank eye zeros ones</code> &nbsp; entry: <code>A(2,1)</code> = row 2, column 1. Solve A&middot;x = b with <code>inv(A)*b</code></td></tr>
-<tr><td>quadratic</td><td><code>x^2 - 3x + 2 = 0</code> or <code>2x^2 = 8</code> gives <code>x1</code> and <code>x2</code> by the quadratic formula (complex roots too). <code>quad(1,-3,2)</code> returns <code>[x1 x2]</code></td></tr></table>
+<tr><td>quadratic</td><td><code>x^2 - 3*x + 2 = 0</code> or <code>2*x^2 = 8</code> gives <code>x1</code> and <code>x2</code> by the quadratic formula (complex roots too). <code>quad(1,-3,2)</code> returns <code>[x1 x2]</code></td></tr></table>
 <h3>DISPLAY ANY RESULT IN A CHOSEN UNIT: <code>expr to directive</code> &nbsp;(<code>in</code> and <code>=&gt;</code> work too)</h3>
 <table><tr><td>suffixes</td><td><code>5MHz / 60us to M</code> shows the result forced into mega (<code>83.333e-3 M</code>). The stored value and <code>ans</code> stay unchanged. Any suffix letter works: <code>a f p n u m k M G T P meg</code>.</td></tr>
 <tr><td>display mode</td><td><code>... to eng</code> &nbsp; <code>... to sci</code> &nbsp; <code>... to fix</code> &mdash; override just for this result</td></tr>
@@ -3505,7 +3520,7 @@ function helpHtml(){
 <tr><td>with assignment</td><td><code>x = 10M to k</code> stores x = 1e7, displays <code>10000 k</code></td></tr>
 <tr><td>on complex</td><td><code>(1+2j)*1k to k</code> rescales both real and imaginary parts</td></tr></table>
 <h3>SOLVE EQUATIONS (3, 4 or more unknowns, linear)</h3>
-<table><tr><td><code>solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3</code></td><td>unknowns are auto-detected and stored as variables (x=2, y=3, z=-1). Pin them down with <code>solve x,y: ...</code>. Engineering notation and <code>j</code> work in the coefficients. The <b>Solver</b> tab has a bigger editor and the coefficient matrix.</td></tr></table>
+<table><tr><td><code>solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3</code></td><td>unknowns are auto-detected and stored as variables (x=2, y=3, z=-1). Pin them down with <code>solve x,y: ...</code>. Engineering notation and <code>j</code> work in the coefficients. The <b>Solver</b> tab has a bigger editor and the coefficient matrix.</td></tr></table>
 <h3>BASES</h3>
 <table><tr><td><code>0xFF</code> <code>0b1010</code> <code>0o17</code></td><td>literals (underscores ok: <code>0b1010_1010</code>). <code>hex(n)</code> <code>bin(n)</code> <code>oct(n)</code> <code>dec(n)</code> <code>tobase(n,b)</code> convert; <code>twos(-5,8)</code> shows two's complement, <code>signed(0xFF,8)</code> reads it back. The <b>Base converter</b> tab edits dec/hex/bin/octal/base-N live with a clickable bit grid.</td></tr>
 <tr><td>Q &amp; erfc</td><td><code>qfunc(x)</code> <code>erfc(x)</code> <code>erf(x)</code> <code>qfactor(ber)</code> <code>rj2pp(rj)</code></td></tr></table>
@@ -3529,7 +3544,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','solve x,y,z: 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   if(!guideSeen)b.appendChild(mkEl('p','ginvite','<button class="tb pulse" data-guide>&#128214; New here? Take the 5-minute guide</button>'));
@@ -3909,8 +3924,8 @@ document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dat
 
 /* ---- solver tab ---- */
 const EXAMPLES={
-  '3':'2x + y - z = 8\n-3x - y + 2z = -11\n-2x + y + 2z = -3',
-  '4':'x + y + z + w = 10\n2x - y + z - w = -1\nx + 2y - z + w = 6\nx - y + 2z + 3w = 17',
+  '3':'2*x + y - z = 8\n-3*x - y + 2*z = -11\n-2*x + y + 2*z = -3',
+  '4':'x + y + z + w = 10\n2*x - y + z - w = -1\nx + 2*y - z + w = 6\nx - y + 2*z + 3*w = 17',
   'mesh':'(1k + 2k)*i1 - 2k*i2 = 5\n-2k*i1 + (2k + 3k)*i2 = 0'
 };
 function doSolve(){

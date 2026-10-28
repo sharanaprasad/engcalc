@@ -103,11 +103,11 @@ type('');
 const sinB=[...d.querySelectorAll('#fgroups .fb')].find(b=>b.textContent==='sin');
 sinB.dispatchEvent(new w.Event('mouseenter'));ok(d.getElementById('finfo').textContent.includes('sin(pi/6)'),'example in info card');
 // names
-run('a1=3');run('2a1');ok(log.lastElementChild.textContent.includes('6'),'2a1 = 6 when a1 defined');
-run('C1=5');run('2C1');ok(log.lastElementChild.textContent.includes('10'),'2C1 = 10');
+run('a1=3');run('2*a1');ok(log.lastElementChild.textContent.includes('6'),'2*a1 = 6 when a1 defined');
+run('C1=5');run('2*C1');ok(log.lastElementChild.textContent.includes('10'),'2*C1 = 10');
 run('p=3');ok(log.lastElementChild.textContent.includes('suffix'),'p rejected');
 // solve command
-run('solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3');
+run('solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3');
 const t1=log.lastElementChild.textContent;ok(/x.*2/.test(t1)&&/y.*3/.test(t1)&&/z.*-1/.test(t1),'solve command output: '+t1.replace(/\s+/g,' ').slice(0,80));
 run('x+y+z');ok(log.lastElementChild.textContent.includes('4'),'solved vars usable (x+y+z=4)');
 // solver tab

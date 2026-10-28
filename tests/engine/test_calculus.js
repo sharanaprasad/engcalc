@@ -41,7 +41,7 @@ t('diff(x^2)','2*x');
 t('diff(x^3, x, 2)','6*x');
 t('diff(x^2*sin(x))','2*x*sin(x) + x^2*cos(x)');
 t('diff(sin(x)/x)','(cos(x)*x - sin(x))/x^2');
-t('diff(exp(2x))','2*exp(2*x)');
+t('diff(exp(2*x))','2*exp(2*x)');
 t('diff(ln(x^2+1))','2*x/(x^2 + 1)');
 t('diff(atan(x))','1/(x^2 + 1)');
 t('diff(5)','0');
@@ -54,9 +54,9 @@ t('integ(1/(x^2+1))','atan(x) + C');
 t('integ(1/(x^2+4))','atan(x/2)/2 + C');
 t('integ(x*exp(x^2))','exp(x^2)/2 + C');
 t('integ(sin(x)*cos(x))','sin(x)^2/2 + C');
-t('integ(3x^2+2x+1)','x^3 + x^2 + x + C');
+t('integ(3*x^2+2*x+1)','x^3 + x^2 + x + C');
 t('integ(1/sqrt(1-x^2))','asin(x) + C');
-t('integ(exp(-2x))','-exp(-2*x)/2 + C');
+t('integ(exp(-2*x))','-exp(-2*x)/2 + C');
 // ---- variable handling
 t('diff(R1*x^2)',/found several variables \(R1, x\)/);
 t('diff(R1*x^2, x)','2*R1*x');
@@ -66,14 +66,14 @@ t('integ(R1*x, x)','R1*x^2/2 + C');
 t('integ(sin(x)/x)',/no closed form/);
 t('diff(x^2, x, 99)',/order must be/);
 // ---- numeric verification of derivatives
-['x^3','x^2*sin(x)','sin(x)/x','exp(2x)','exp(-x^2)','ln(x^2+1)','sqrt(x)','1/x','x^x','tan(x)','x*cos(x)^2','atan(x)','sinh(x)*cosh(x)','2^x','x^2.5','1/(1+x^2)','(x+1)^3','sin(x)*exp(-x)','x*ln(x)','sqrt(1+x^2)','log10(x)','log2(x)','cbrt(x)','(x^2+1)/(x-5)','abs(x-1)','exp(sin(x))','sin(cos(x))','x/(x^2+1)','pow(x,3)','log(x,2)'].forEach(e=>checkDiff(e,P));
+['x^3','x^2*sin(x)','sin(x)/x','exp(2*x)','exp(-x^2)','ln(x^2+1)','sqrt(x)','1/x','x^x','tan(x)','x*cos(x)^2','atan(x)','sinh(x)*cosh(x)','2^x','x^2.5','1/(1+x^2)','(x+1)^3','sin(x)*exp(-x)','x*ln(x)','sqrt(1+x^2)','log10(x)','log2(x)','cbrt(x)','(x^2+1)/(x-5)','abs(x-1)','exp(sin(x))','sin(cos(x))','x/(x^2+1)','pow(x,3)','log(x,2)'].forEach(e=>checkDiff(e,P));
 ['asin(x)','acos(x)','atanh(x)','sqrt(1-x^2)'].forEach(e=>checkDiff(e,PS));
 execLine('R1=2');execLine('R2=3');
 checkDiff('R1*t^3+R2*t',P,'t');
 // ---- numeric verification of antiderivatives
-['x^2','x^5','sqrt(x)','1/x^2','1/x','2x+3','(x+1)^2','(2x+1)^3','sin(x)','cos(3x+1)','exp(2x)','exp(-x)','e^x','e^(2x+1)','2^x','sinh(x)','cosh(2x)','tan(x)','x*exp(x)','x^2*exp(-x)','x^3*exp(2x)','x*sin(x)','x*cos(2x)','x^2*sin(x)','x^2*cos(3x)','x*sinh(x)','ln(x)','x*ln(x)','x^2*ln(x)','sin(x)^2','cos(2x)^2','1/cos(x)^2','1/(x^2+1)','1/(x^2+4)','1/(x^2+2x+5)','1/(x^2-1)','1/(x^2-5x+6)','x/(x^2+1)','(2x+3)/(x^2+4x+5)','x*exp(x^2)','x*cos(x^2)','sin(x)*cos(x)','cos(x)/sin(x)','1/(x*ln(x))','x/sqrt(x^2+1)','1/sqrt(x^2+4)','sqrt(2x+1)','ln(2x+3)','3*sin(2x)+x^2','exp(sin(x))*cos(x)','x^2*(x+1)','(x+1)*(x+2)','1/(2x+1)','1/(3x+2)^2'].forEach(e=>checkInteg(e,P));
+['x^2','x^5','sqrt(x)','1/x^2','1/x','2*x+3','(x+1)^2','(2*x+1)^3','sin(x)','cos(3*x+1)','exp(2*x)','exp(-x)','e^x','e^(2*x+1)','2^x','sinh(x)','cosh(2*x)','tan(x)','x*exp(x)','x^2*exp(-x)','x^3*exp(2*x)','x*sin(x)','x*cos(2*x)','x^2*sin(x)','x^2*cos(3*x)','x*sinh(x)','ln(x)','x*ln(x)','x^2*ln(x)','sin(x)^2','cos(2*x)^2','1/cos(x)^2','1/(x^2+1)','1/(x^2+4)','1/(x^2+2*x+5)','1/(x^2-1)','1/(x^2-5*x+6)','x/(x^2+1)','(2*x+3)/(x^2+4*x+5)','x*exp(x^2)','x*cos(x^2)','sin(x)*cos(x)','cos(x)/sin(x)','1/(x*ln(x))','x/sqrt(x^2+1)','1/sqrt(x^2+4)','sqrt(2*x+1)','ln(2*x+3)','3*sin(2*x)+x^2','exp(sin(x))*cos(x)','x^2*(x+1)','(x+1)*(x+2)','1/(2*x+1)','1/(3*x+2)^2'].forEach(e=>checkInteg(e,P));
 ['asin(x)','acos(x)','atan(x)','1/sqrt(1-x^2)'].forEach(e=>checkInteg(e,PS));
-checkInteg('1/sqrt(1-4x^2)',[0.1,0.2,0.3,0.4]);
+checkInteg('1/sqrt(1-4*x^2)',[0.1,0.2,0.3,0.4]);
 checkInteg('R1*t^2+R2',P,'t');
 // ---- definite integrals
 const near=(line,want,tol)=>{total++;const it=last(line);if(it.kind==='err'){fail++;console.log('FAIL',line,it.msg);return;}const v=U(it.v);if(!close(v,want,tol||1e-8)){fail++;console.log('FAIL',line,'=>',v,'expected',want);}};

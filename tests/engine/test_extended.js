@@ -19,13 +19,13 @@ function chk(line,exp,tol){total++;let got;try{got=num(line);}catch(e){fail++;co
   else if(!near(got,exp,tol)){fail++;console.log('FAIL',line,'=>',got,'expected',exp);} }
 
 // ---- variable naming rules the user asked about
-t('a1=3','3'); t('2a1','6'); t('a1*2','6'); t('2 a1','6'); t('10a1','30');
-t('C1=5','5'); t('2C1','10'); t('3C1+C1','20');
-t('k1=2','2'); t('4k1','8'); t('4k2',/Unknown name 'k2'/);   // no resistor notation: 4*k2
-t('m1=3','3'); t('3m1','9'); t('3m2',/Unknown name 'm2'/);
+t('a1=3','3'); t('2a1',/Write 2\*a1/); t('a1*2','6'); t('2 a1',/Missing operator/); t('10*a1','30');   // explicit-*
+t('C1=5','5'); t('2C1',/Write 2\*C1/); t('3*C1+C1','20');   // explicit-*
+t('k1=2','2'); t('4*k1','8'); t('4k2',/Write 4\*k2/);   // explicit-*
+t('m1=3','3'); t('3*m1','9'); t('3m2',/Write 3\*m2/);   // explicit-*
 t('p=3',/ERR/); t('del a1 C1 k1 m1','INFO');
-t('4k7',/Unknown name 'k7'/); t('2a1',/Unknown name 'a1'/);
-t('R1=1k; R2=2.2k; R1+R2','3.2k'); t('2R1','2k'); t('R1*2R2','4.4M');
+t('4k7',/Write 4\*k7/); t('2a1',/Write 2\*a1/);   // explicit-*
+t('R1=1k; R2=2.2k; R1+R2','3.2k'); t('2*R1','2k'); t('R1*2*R2','4.4M'); t('2R1',/Write 2\*R1/);   // explicit-*
 t('tau=5','5'); t('tau*2','10'); t('tau(1k,1n)','1µ'); t('del tau','INFO');
 t('V=5','5'); t('5V',/ERR.*ambiguous/); t('del V','INFO');
 // ---- phase / angle behaviour with toggle
@@ -47,18 +47,18 @@ t('twos(-5,8)',/0b1111_1011 = 0xFB/); t('twos(5,8)',/0b0000_0101 = 0x05/); t('tw
 t('signed(0xFF,8)','-1'); t('signed(0x80,8)','-128'); t('signed(0x7F,8)','127'); t('signed(0xFFFFFFFF,32)','-1'); t('signed(300,8)',/ERR/);
 t('hex(-255)','-0xFF'); t('0xFF & 0x0F','15'); t('0xF0 | 0x0F','255'); t('1<<10','1.024k'); t('~0','-1');
 // ---- solver
-t('solve 2x+y-z=8; -3x-y+2z=-11; -2x+y+2z=-3','x=2, y=3, z=-1');
+t('solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3','x=2, y=3, z=-1');
 t('x','2'); t('y+z','2');
-t('solve x+y+z+w=10; 2x-y+z-w=-1; x+2y-z+w=6; x-y+2z+3w=17','x=1, y=2, z=3, w=4');
+t('solve x+y+z+w=10; 2*x-y+z-w=-1; x+2*y-z+w=6; x-y+2*z+3*w=17','x=1, y=2, z=3, w=4');
 t('solve r1=1;r2=2','r1=1, r2=2');
-t('solve 2r1+3r2=8; r1-r2=-1','r1=1, r2=2');
-t('solve x,y: 3x+2y=12; x-y=1','x=2.8, y=1.8');
+t('solve 2*r1+3*r2=8; r1-r2=-1','r1=1, r2=2');
+t('solve x,y: 3*x+2*y=12; x-y=1','x=2.8, y=1.8');
 t('solve (1k+2k)*i1 - 2k*i2 = 5; -2k*i1 + (2k+3k)*i2 = 0',/i1=2\.27273m, i2=909\.091µ/);
 t('solve x+y=3; x+y=4',/ERR.*unique/);
-t('solve x+y=3; 2x+2y=6',/ERR.*unique/);
+t('solve x+y=3; 2*x+2*y=6',/ERR.*unique/);
 t('solve x*y=3; x+y=4',/ERR.*[Nn]ot linear/);
 t('solve x+y+z=3; x-y=0',/ERR.*equation\(s\)/);
-t('solve 2(x+y)=10; x-y=2','x=3.5, y=1.5');
+t('solve 2*(x+y)=10; x-y=2','x=3.5, y=1.5');
 t('solve x/2 + y/3 = 1; x - y = 0','x=1.2, y=1.2');
 t('solve x + 2j*y = 3; x - y = 0',/\+|j/);
 t('solve 1 = 2',/ERR/);
