@@ -15,7 +15,9 @@ const w=dom.window,d=w.document;
 let fail=0;
 const ok=(c,m)=>{if(!c){fail++;console.log('FAIL',m);}else console.log('ok  ',m);};
 const inp=d.getElementById('inp'),log=d.getElementById('log');
-const run=s=>{inp.value=s;inp.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));return log.lastElementChild.textContent.replace(/\s+/g,' ');};
+/* the screen text plus the "copy as text" title of typeset results, so checks can use the plain text form */
+const run=s=>{inp.value=s;inp.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));const e=log.lastElementChild;
+  return (e.textContent+' '+[...e.querySelectorAll('.res[title]')].map(x=>x.title).join(' ')).replace(/\s+/g,' ');};
 
 // every welcome example runs without an error
 const chipTexts=[...d.querySelectorAll('#log .banner .ex button')].map(b=>b.textContent);
@@ -27,7 +29,7 @@ ok(bad.length===0,'welcome examples all run ('+chipTexts.length+'): '+bad.join('
 let r=run('diff(x^2*sin(x))');
 ok(r.includes('2*x*sin(x) + x^2*cos(x)')&&r.includes('derivative with respect to x'),'diff shows the expression and a note: '+r);
 r=run('integ(x*exp(x))');
-ok(r.includes('x*exp(x) - exp(x) + C'),'integ shows + C: '+r);
+ok(r.includes('−ex+C')&&r.includes('as text: x*exp(x) - exp(x)'),'integ shows + C (the copied text leaves it out): '+r);
 r=run('integ(exp(-x^2), -inf, inf)');
 ok(r.includes('1.77245'),'Gaussian integral = sqrt(pi): '+r);
 ok(r.includes('numeric'),'numeric result is labelled');
@@ -51,6 +53,23 @@ ok(d.getElementById('finfo').textContent.includes('diff(expr'),'diff info card s
 
 r=run('LT(t*exp(-2*t))');
 ok(r.includes('1/(s + 2)^2'),'LT works in the console: '+r);
+// pretty math: symbolic results are typeset (a fraction grid with a power), click copies the text form
+{const e=log.lastElementChild,res=e.querySelector('.res');
+ ok(!!res.querySelector('.mx .mfr .mfd sup'),'LT result is typeset as a fraction with a power');
+ ok(res.title==='Click to copy as text: 1/(s + 2)^2','typeset result says what Click copies: '+res.title);}
+r=run('pretty off');
+ok(r.includes('Pretty math: OFF'),'pretty off: '+r);
+run('LT(t*exp(-2*t))');
+ok(!log.lastElementChild.querySelector('.mx')&&log.lastElementChild.textContent.includes('1/(s + 2)^2'),'pretty off shows plain text');
+r=run('pretty');
+ok(r.includes('OFF'),'pretty alone reports the setting: '+r);
+run('pretty on');
+run('LT(t*exp(-2*t))');
+ok(!!log.lastElementChild.querySelector('.mx'),'pretty on typesets again');
+r=run('pretty = 5');
+ok(r.includes('pretty')&&r.includes('5'),'"pretty = 5" is an ordinary assignment: '+r);
+run('del pretty');
+ok(!d.querySelector('#varlist .mx'),'the variables panel shows plain text');
 r=run('ILT(1/(s^2+3*s+2))');
 ok(r.includes('exp(-t) - exp(-2*t)'),'ILT works in the console: '+r);
 r=run('poles(1/(s^2+3*s+2))');

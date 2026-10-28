@@ -85,6 +85,60 @@ button{font-family:inherit;cursor:pointer}
 .n{color:var(--cyan);text-shadow:0 0 10px rgba(34,211,238,.35)}
 .u{color:var(--amber);text-shadow:0 0 10px rgba(251,191,36,.35)}
 .disp{color:var(--violet);text-shadow:0 0 10px rgba(167,139,250,.4)}
+/* typeset math (texHtml): fractions are equal-row grids centred on the text, brackets and roots are stretching SVGs */
+.mx{font-family:Cambria,'Cambria Math','STIX Two Text','STIX Two Math','Times New Roman',Times,'Noto Serif','DejaVu Serif',serif;font-weight:400;font-size:1.15em;line-height:1.3;font-style:normal;white-space:normal;word-break:normal;letter-spacing:0}
+.mx i{font-style:italic;padding-right:.03em}
+.mx .mrm,.mx .mop{font-style:normal}
+.mx .msf{font-family:'Segoe UI',Arial,Helvetica,sans-serif;font-size:.9em}
+.mx .mtt{font-family:var(--mono);font-size:.9em}
+.mx .mbin{margin:0 .22em}
+.mx .mrel{margin:0 .28em}
+.mx sup .mbin,.mx sub .mbin,.mx .mss .mbin,.mx .mss2 .mbin,.mx .mll .mbin,.mx .mil .mbin,.mx .msqi .mbin{margin:0 .06em}
+.mx sup .mrel,.mx sub .mrel,.mx .mss .mrel,.mx .mss2 .mrel,.mx .mll .mrel,.mx .mil .mrel{margin:0 .1em}
+.mx .mth{display:inline-block;width:.17em}
+.mx .msp{display:inline-block}
+.mx .mpr{margin-left:.04em}
+.mx sup,.mx sub{font-size:.72em;line-height:0}
+.mx sup{vertical-align:.6em}
+.mx sub{vertical-align:-.3em}
+.mx sup sup,.mx sup sub,.mx sub sub,.mx sub sup,.mx .mss sup,.mx .mss2 sup{font-size:.85em}
+.mx .mfr{display:inline-grid;grid-template-rows:1fr 1fr;vertical-align:middle;text-align:center;margin:0 .1em;line-height:1.2}
+.mx .mfr .mfr{font-size:.92em}
+.mx .mfn{align-self:end;padding:0 .18em .06em}
+.mx .mfd{align-self:start;padding:.06em .18em 0;border-top:1.3px solid currentColor}
+.mx .msc{display:inline-flex}
+.mx .mbase{align-self:baseline}
+.mx .mss{display:flex;flex-direction:column;justify-content:space-between;font-size:.72em;line-height:1.1;margin-left:.06em}
+.mx .mss2{display:inline-flex;flex-direction:column;font-size:.72em;line-height:1.05;vertical-align:.6em;margin-left:.04em}
+.mx .mlim{display:inline-grid;grid-template-rows:1fr auto 1fr;vertical-align:middle;text-align:center;line-height:1.1;margin:0 .08em}
+.mx .mll{font-size:.72em}
+.mx .mlt{align-self:end}
+.mx .mlb{align-self:start}
+.mx .mlbig .mbo{font-size:1.6em;line-height:1}
+.mx .mbo1{font-size:1.3em;vertical-align:-.1em}
+.mx .mint{display:inline-flex;align-items:center;vertical-align:middle;margin-right:.08em}
+.mx .mis{font-size:1.8em;line-height:1.15}
+.mx .mil{display:flex;flex-direction:column;justify-content:space-between;align-self:stretch;font-size:.72em;line-height:1.1;margin-left:-.05em}
+.mx .mlr{display:inline-flex}
+.mx .mlc{align-self:baseline;padding:0 .04em}
+.mx .mmat{vertical-align:middle}
+.mx .mmat .mlc{align-self:center}
+.mx .mdl,.mx .msqs{position:relative;flex:none;align-self:stretch}
+.mx .mdl{width:.36em;margin:.06em 0}
+.mx .msqs{width:.62em}
+.mx .mdl svg,.mx .msqs svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.mx .mdl path,.mx .msqs path{fill:none;stroke:currentColor;stroke-width:1.3px;stroke-linecap:round;stroke-linejoin:round}
+.mx .msq{display:inline-flex;margin:0 .05em}
+.mx .msqa{align-self:baseline;border-top:1.3px solid currentColor;padding:.12em .1em 0 .04em}
+.mx .msqi{font-size:.55em;align-self:flex-start;margin:.3em -.5em 0 .1em}
+.mx .mmt{border-collapse:collapse}
+.mx .mmt td{padding:.12em .5em;text-align:center}
+.mx .mal{display:inline-block;vertical-align:middle}
+.mx .mal table{border-collapse:collapse}
+.mx .mal td{padding:.15em 0}
+.mx .mal .mal0{text-align:right}
+.mx .mal .mar{text-align:left}
+.mx .mov{border-top:1.2px solid currentColor;padding-top:.05em}
 .vn{color:var(--green);font-weight:700}
 .fnn{color:var(--mag);font-weight:700}
 .err{color:var(--coral)}
@@ -877,7 +931,7 @@ const mk=(re,im)=>im===0?re:new Cx(re,im);
 const Re=v=>isC(v)?v.re:v, Im=v=>isC(v)?v.im:0;
 const real=(v,nm)=>{if(isC(v))throw new CalcError(nm+' needs a real number');return v;};
 
-const CFG={deg:false,mode:'eng',digits:6};
+const CFG={deg:false,mode:'eng',digits:6,pretty:true};
 const STATE={vars:new Map(),funcs:new Map(),solved:new Set(),ans:undefined,ans2:undefined};
 
 /* ---- suffix / unit decomposition: "pF","MHz","meg","mm","2.2kj" tails ---- */
@@ -3737,7 +3791,7 @@ def('Number / Bits','signed','signed(x, w)',"Read a w-bit pattern as a signed (t
 const exOf=f=>typeof f.ex==='function'?f.ex():f.ex;
 
 /* ---- name validation ---- */
-const COMMANDS=new Set(['guide','help','?','clear','cls','vars','funcs','consts','constants','mode','digits','deg','rad','del','delall','reset','solve']);
+const COMMANDS=new Set(['guide','help','?','clear','cls','vars','funcs','consts','constants','mode','digits','deg','rad','del','delall','reset','solve','pretty']);
 const isReserved=n=>has(FUNCS,n)||COMMANDS.has(n)||n==='ans'||n==='ans2'||n==='pi'||n==='e'||n==='j';
 function validateName(name,kind,pos){
   const what=kind==='func'?'Function':'Variable';
@@ -3874,7 +3928,12 @@ function cleanC(z){
   return z;
 }
 function fmtValue(v){
-  if(v instanceof Sym){const t=symPrint(v.ast);return {html:'<span class="disp">'+esc(t+(v.c?' + C':''))+'</span>',text:t,alt:v.note};}
+  if(v instanceof Sym){
+    const t=symPrint(v.ast),plain='<span class="disp">'+esc(t+(v.c?' + C':''))+'</span>';
+    /* pretty: typeset like a textbook (texHtml); the text form is still what gets copied */
+    let html=plain;if(CFG.pretty!==false){try{html='<span class="disp">'+texHtml(texVal(v).s)+'</span>';}catch(e){}}
+    return {html,plain,text:t,alt:v.note,pretty:html!==plain};
+  }
   if(v instanceof Mat){
     const cells=v.d.map(r=>r.map(x=>fmtValue(x)));
     let alt=matDims(v)+' matrix';
@@ -4061,6 +4120,13 @@ function runCommand(t,items,ui){
       const d=Number(parts[1]);
       if(argc!==1||!Number.isInteger(d)||d<3||d>15){items.push({kind:'err',msg:'Usage: digits N   (N from 3 to 15)'});return true;}
       CFG.digits=d;info('Significant digits: <b>'+d+'</b>');ui.push({cmd:'sync'});return true;}
+    case 'pretty':{
+      /* only "pretty", "pretty on", "pretty off": anything else (pretty = 5) is an ordinary line */
+      const a=(parts[1]||'').toLowerCase();
+      if(argc>1||(argc===1&&a!=='on'&&a!=='off'))return false;
+      if(argc===1){CFG.pretty=a==='on';ui.push({cmd:'sync'});}
+      info('Pretty math: <b>'+(CFG.pretty?'ON':'OFF')+'</b> &mdash; symbolic results are shown '+(CFG.pretty?'typeset (fractions, powers, roots); click one to copy it as text. <code>pretty off</code> shows plain text.':'as plain text. <code>pretty on</code> typesets them.'));
+      return true;}
     case 'solve':{
       const rest=t.slice(5).trim();
       if(!rest){items.push({kind:'err',msg:'Usage:  solve 2*x+y=5; x-y=1   or   solve x,y: 2*x+y=5; x-y=1'});return true;}
@@ -4777,6 +4843,204 @@ function texWrap(tex,w){
   if(w==='equation')return '\\begin{equation}\n'+tex+'\n\\end{equation}';
   return tex;
 }
+
+/* ============================ typeset ============================
+   Results shown like a textbook, offline: the LaTeX written above (a small, known subset) is turned into HTML + CSS.
+   Fractions are two-row grids with equal rows, so the bar always sits in the middle; brackets and the root sign are
+   SVGs that stretch to what they enclose. It is plain markup, so exported pictures look the same as the screen. */
+const TH_GREEK={alpha:'\u03b1',beta:'\u03b2',gamma:'\u03b3',delta:'\u03b4',epsilon:'\u03f5',varepsilon:'\u03b5',zeta:'\u03b6',eta:'\u03b7',theta:'\u03b8',vartheta:'\u03d1',
+  iota:'\u03b9',kappa:'\u03ba',lambda:'\u03bb',mu:'\u03bc',nu:'\u03bd',xi:'\u03be',pi:'\u03c0',rho:'\u03c1',sigma:'\u03c3',tau:'\u03c4',upsilon:'\u03c5',phi:'\u03d5',
+  varphi:'\u03c6',chi:'\u03c7',psi:'\u03c8',omega:'\u03c9',Gamma:'\u0393',Delta:'\u0394',Theta:'\u0398',Lambda:'\u039b',Xi:'\u039e',Pi:'\u03a0',Sigma:'\u03a3',
+  Upsilon:'\u03a5',Phi:'\u03a6',Psi:'\u03a8',Omega:'\u03a9'};
+/* symbol commands: [text, class]; the classes decide the spacing, as in TeX */
+const TH_SYM={infty:['\u221e','ord'],cdot:['\u22c5','bin'],times:['\u00d7','bin'],pm:['\u00b1','bin'],mp:['\u2213','bin'],to:['\u2192','rel'],rightarrow:['\u2192','rel'],
+  angle:['\u2220','bin'],parallel:['\u2225','bin'],circ:['\u2218','ord'],approx:['\u2248','rel'],sim:['\u223c','ord'],ll:['\u226a','rel'],gg:['\u226b','rel'],
+  le:['\u2264','rel'],leq:['\u2264','rel'],ge:['\u2265','rel'],geq:['\u2265','rel'],ne:['\u2260','rel'],neq:['\u2260','rel'],equiv:['\u2261','rel'],
+  partial:['\u2202','ord'],nabla:['\u2207','ord'],ldots:['\u2026','ord'],cdots:['\u22ef','ord'],dots:['\u2026','ord'],
+  lfloor:['\u230a','open'],rfloor:['\u230b','close'],lceil:['\u2308','open'],rceil:['\u2309','close'],
+  '{':['{','open'],'}':['}','close'],'&':['&amp;','ord'],'_':['_','ord'],'%':['%','ord'],'#':['#','ord'],'|':['\u2016','ord'],'$':['$','ord']};
+const TH_SPACE={',':'.17em',':':'.22em','>':'.22em',';':'.28em',' ':'.25em',quad:'1em',qquad:'2em','!':''};
+const TH_OPS=new Set(['sin','cos','tan','cot','sec','csc','sinh','cosh','tanh','coth','arcsin','arccos','arctan','ln','log','lg','exp','max','min','gcd','det','lim','arg','dim','ker']);
+const TH_DELIM={'(':'M8 1Q1 20 8 39',')':'M2 1Q9 20 2 39','[':'M8 1H3V39H8',']':'M2 1H7V39H2','|':'M5 1V39','\\|':'M3.5 1V39M6.5 1V39',
+  '{':'M8 1Q4 1 4 6V15Q4 20 1 20Q4 20 4 25V34Q4 39 8 39','}':'M2 1Q6 1 6 6V15Q6 20 9 20Q6 20 6 25V34Q6 39 2 39',
+  lfloor:'M3 1V39H8',rfloor:'M7 1V39H2',lceil:'M8 1H3V39',rceil:'M2 1H7V39'};
+const thSvg=(cls,d)=>'<span class="'+cls+'"><svg viewBox="0 0 10 40" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'" vector-effect="non-scaling-stroke"/></svg></span>';
+const thDelim=d=>has(TH_DELIM,d)?thSvg('mdl',TH_DELIM[d]):'';
+function thTok(s){
+  const out=[];
+  for(let i=0;i<s.length;){
+    const c=s[i];
+    if(c==='\\'){
+      const m=/^[A-Za-z]+/.exec(s.slice(i+1,i+40));
+      if(m){out.push({k:'cmd',v:m[0]});i+=1+m[0].length;}
+      else{if(i+1<s.length)out.push({k:'cmd',v:s[i+1]});i+=2;}
+    }
+    else if(/\s/.test(c))i++;
+    else{out.push({k:'ch',v:c});i++;}
+  }
+  return out;
+}
+/* LaTeX (the subset this calculator writes) -> HTML */
+function texHtml(tex){
+  const T=thTok(String(tex));let i=0;
+  const peek=()=>T[i],next=()=>T[i++];
+  const isCh=(t,v)=>!!t&&t.k==='ch'&&t.v===v,isCmd=(t,v)=>!!t&&t.k==='cmd'&&t.v===v;
+  const scr=st=>Object.assign({},st,{scr:true,top:false});
+  const inner=st=>Object.assign({},st,{top:false});
+  function grpText(){
+    if(!isCh(peek(),'{'))return '';
+    i++;let s='';
+    while(peek()&&!isCh(peek(),'}')){const t=next();s+=t.k==='cmd'?'\\'+t.v:t.v;}
+    i++;return s;
+  }
+  /* atoms up to '}' (group), ']' (bracket), \right (right), & \\ \end (cell) or the end */
+  function list(stop,st){
+    const atoms=[];
+    for(;;){
+      const t=peek();if(!t)break;
+      if(stop==='group'&&isCh(t,'}')){i++;break;}
+      if(stop==='bracket'&&isCh(t,']')){i++;break;}
+      if(stop==='right'&&isCmd(t,'right'))break;
+      if(stop==='cell'&&(isCh(t,'&')||isCmd(t,'\\')||isCmd(t,'end')))break;
+      const a=atom(st);if(!a)continue;
+      for(;;){
+        const s=peek();
+        if(isCh(s,'^')&&a.sup===undefined){i++;a.sup=arg(scr(st));}
+        else if(isCh(s,'_')&&a.sub===undefined){i++;a.sub=arg(scr(st));}
+        else break;
+      }
+      atoms.push(a);
+    }
+    return atoms;
+  }
+  function arg(st){
+    const t=peek();if(!t)return {h:'',tall:false};
+    if(isCh(t,'{')){i++;return render(list('group',st),st);}
+    const a=atom(st);return a?render([a],st):{h:'',tall:false};
+  }
+  function delimTok(){
+    const t=next();if(!t)return '.';
+    if(t.k==='ch')return t.v;
+    return t.v==='|'?'\\|':t.v;
+  }
+  function atom(st){
+    const t=next();
+    if(t.k==='ch'){
+      const c=t.v;
+      if(c==='{'){const r=render(list('group',inner(st)),inner(st));return {cls:'ord',h:r.h,tall:r.tall};}
+      if(/[0-9.]/.test(c)){let s=c;while(peek()&&peek().k==='ch'&&/[0-9.]/.test(peek().v))s+=next().v;return {cls:'ord',h:'<span class="mn">'+s+'</span>'};}
+      if(/[A-Za-z]/.test(c))return {cls:'ord',h:st.rm?c:'<i>'+c+'</i>',letter:true};
+      if(c==='+')return {cls:'bin',h:'+'};
+      if(c==='-')return {cls:'bin',h:'\u2212'};
+      if(c==='*')return {cls:'bin',h:'\u2217'};
+      if(c==='='||c==='<'||c==='>'||c===':')return {cls:'rel',h:esc(c)};
+      if(c===','||c===';')return {cls:'punct',h:c};
+      if(c==='('||c==='[')return {cls:'open',h:c};
+      if(c===')'||c===']'||c==='!')return {cls:'close',h:c};
+      if(c==="'"){let n=1;while(isCh(peek(),"'")){i++;n++;}return {cls:'ord',h:'<span class="mpr">'+'\u2032'.repeat(n)+'</span>'};}
+      if(c==='~')return {cls:'ord',h:'&nbsp;'};
+      if(c==='&'||c==='^'||c==='_'||c==='}')return null;
+      return {cls:'ord',h:esc(c)};
+    }
+    const v=t.v;
+    if(has(TH_GREEK,v))return {cls:'ord',h:/^[a-z]/.test(v)&&!st.rm?'<i>'+TH_GREEK[v]+'</i>':TH_GREEK[v]};
+    if(has(TH_SPACE,v))return {cls:'space',h:TH_SPACE[v]?'<span class="msp" style="width:'+TH_SPACE[v]+'"></span>':''};
+    if(v==='circ'&&st.scr)return {cls:'ord',h:'\u00b0'};
+    if(has(TH_SYM,v))return {cls:TH_SYM[v][1],h:TH_SYM[v][0]};
+    if(TH_OPS.has(v))return {cls:'op',h:'<span class="mop">'+v+'</span>',limits:v==='lim'||v==='max'||v==='min'};
+    switch(v){
+      case 'frac':case 'dfrac':case 'tfrac':{
+        const a=arg(inner(st)),b=arg(inner(st));
+        return {cls:'ord',h:'<span class="mfr"><span class="mfn">'+a.h+'</span><span class="mfd">'+b.h+'</span></span>',tall:true};
+      }
+      case 'sqrt':{
+        let idx='';if(isCh(peek(),'[')){i++;idx=render(list('bracket',scr(st)),scr(st)).h;}
+        const a=arg(inner(st));
+        return {cls:'ord',h:'<span class="msq">'+(idx?'<span class="msqi">'+idx+'</span>':'')+thSvg('msqs','M0.5 25L3 22L6.2 39L9.6 1H10')+'<span class="msqa">'+a.h+'</span></span>',tall:a.tall};
+      }
+      case 'left':{
+        const d=delimTok(),r=render(list('right',inner(st)),inner(st));
+        let d2='.';if(isCmd(peek(),'right')){i++;d2=delimTok();}
+        return {cls:'inner',h:'<span class="mlr">'+thDelim(d)+'<span class="mlc">'+r.h+'</span>'+thDelim(d2)+'</span>',tall:r.tall};
+      }
+      case 'begin':{
+        const env=grpText(),rows=[];let row=[];
+        for(;;){
+          row.push(render(list('cell',inner(st)),inner(st)));
+          const s=next();
+          if(!s)break;
+          if(isCh(s,'&'))continue;
+          if(isCmd(s,'\\')){rows.push(row);row=[];continue;}
+          if(isCmd(s,'end')){grpText();break;}
+        }
+        if(row.length>1||row[0].h)rows.push(row);
+        if(/^align/.test(env))return {cls:'ord',h:'<span class="mal"><table>'+rows.map(r=>'<tr>'+r.map((c,k)=>'<td class="'+(k%2?'mar':'mal0')+'">'+c.h+'</td>').join('')+'</tr>').join('')+'</table></span>',tall:true};
+        const d={bmatrix:['[',']'],pmatrix:['(',')'],vmatrix:['|','|'],Bmatrix:['{','}']}[env]||['.','.'];
+        return {cls:'ord',h:'<span class="mlr mmat">'+thDelim(d[0])+'<span class="mlc"><table class="mmt">'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c.h+'</td>').join('')+'</tr>').join('')+'</table></span>'+thDelim(d[1])+'</span>',tall:true};
+      }
+      case 'end':grpText();return null;
+      case 'right':delimTok();return null;
+      case 'mathrm':case 'text':case 'textrm':case 'mathup':{const r=arg(Object.assign(inner(st),{rm:true}));return {cls:'ord',h:'<span class="mrm">'+r.h+'</span>',word:r.h.replace(/<[^>]*>/g,'').length>1,tall:r.tall};}
+      case 'operatorname':{const r=arg(Object.assign(inner(st),{rm:true}));return {cls:'op',h:'<span class="mop">'+r.h+'</span>'};}
+      case 'mathsf':{const r=arg(Object.assign(inner(st),{rm:true}));return {cls:'ord',h:'<span class="msf">'+r.h+'</span>'};}
+      case 'mathtt':{const r=arg(Object.assign(inner(st),{rm:true}));return {cls:'ord',h:'<span class="mtt">'+r.h+'</span>'};}
+      case 'mathbf':case 'boldsymbol':{const r=arg(inner(st));return {cls:'ord',h:'<b>'+r.h+'</b>',tall:r.tall};}
+      case 'mathit':{const r=arg(inner(st));return {cls:'ord',h:r.h,tall:r.tall};}
+      case 'mathcal':{const s=grpText()||(peek()?next().v:'');const m={L:'\u2112',F:'\u2131',H:'\u210b',B:'\u212c',E:'\u2130',M:'\u2133',R:'\u211b',I:'\u2110'};
+        return {cls:'ord',h:[...s].map(ch=>m[ch]||esc(ch)).join('')};}
+      case 'overline':{const r=arg(inner(st));return {cls:'ord',h:'<span class="mov">'+r.h+'</span>',tall:r.tall};}
+      case 'mathbin':{const r=arg(inner(st));return {cls:'bin',h:r.h};}
+      case 'mathrel':{const r=arg(inner(st));return {cls:'rel',h:r.h};}
+      case 'bmod':case 'mod':return {cls:'bin',h:'<span class="mop">mod</span>'};
+      case 'int':case 'intop':return {cls:'op',h:'\u222b',intg:true};
+      case 'sum':return {cls:'op',h:'\u2211',limits:true,big:true};
+      case 'prod':return {cls:'op',h:'\u220f',limits:true,big:true};
+      case 'displaystyle':case 'textstyle':case 'limits':case 'nolimits':case 'left.':return null;
+    }
+    return {cls:'ord',h:'<span class="mrm">'+esc(v)+'</span>'};
+  }
+  const THIN='<span class="mth"></span>';
+  function thin(p,c,pa,a){
+    if(c==='op')return p==='ord'||p==='close'||p==='inner'||p==='op';
+    if(p==='op')return c==='ord'||c==='inner'||c==='op';
+    if(p==='inner')return c==='ord'||c==='inner';
+    if(c==='inner')return p==='ord'||p==='close';
+    if(p==='punct')return true;
+    return p==='ord'&&c==='ord'&&(pa.word||a.word);
+  }
+  function render(atoms,st){
+    let h='',tall=false,prev=null;
+    atoms.forEach((a,k)=>{
+      if(a.cls==='space'){h+=a.h;return;}
+      let cls=a.cls;
+      /* a leading or doubled sign is unary: no spacing */
+      if(cls==='bin'&&(!prev||['bin','rel','open','punct','op'].includes(prev.cls)||k===atoms.length-1))cls='ord';
+      let body=a.h,t=!!a.tall;
+      const sp=a.sup,sb=a.sub;
+      if(a.limits&&(sp||sb)){
+        body='<span class="mlim'+(a.big?' mlbig':'')+'"><span class="mll mlt">'+(sp?sp.h:'')+'</span><span class="mbo">'+a.h+'</span><span class="mll mlb">'+(sb?sb.h:'')+'</span></span>';t=true;
+      }else if(a.intg){
+        body='<span class="mint"><span class="mis">'+a.h+'</span>'+(sp||sb?'<span class="mil"><span>'+(sp?sp.h:'')+'</span><span>'+(sb?sb.h:'')+'</span></span>':'')+'</span>';t=true;
+      }else if(a.big){body='<span class="mbo1">'+a.h+'</span>';}
+      else if(sp||sb){
+        if(a.tall)body='<span class="msc"><span class="mbase">'+a.h+'</span><span class="mss"><span>'+(sp?sp.h:'')+'</span><span>'+(sb?sb.h:'')+'</span></span></span>';
+        else if(sp&&sb)body=a.h+'<span class="mss2"><span>'+sp.h+'</span><span>'+sb.h+'</span></span>';
+        else if(sp)body=a.h+'<sup>'+sp.h+'</sup>';
+        else body=a.h+'<sub>'+sb.h+'</sub>';
+        t=t||!!(sp&&sp.tall)||!!(sb&&sb.tall);
+      }
+      if(prev&&thin(prev.cls,cls,prev,a))h+=THIN;
+      if(cls==='bin')h+='<span class="mbin">'+body+'</span>'+(st.top?'<wbr>':'');
+      else if(cls==='rel')h+='<span class="mrel">'+body+'</span>'+(st.top?'<wbr>':'');
+      else h+=body;
+      tall=tall||t;
+      prev={cls,word:a.word};
+    });
+    return {h,tall};
+  }
+  const r=render(list(null,{top:true}),{top:true});
+  return '<span class="mx">'+r.h+'</span>';
+}
 const EQ_PREFIX=/^eq(?:\s+([A-Za-z][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z][A-Za-z0-9_]*)*))?\s*:\s*([\s\S]*)$/;
 /* split on top-level commas (not inside ( ) or [ ]) */
 function splitTopCommas(s){
@@ -4847,7 +5111,7 @@ function save(){try{localStorage.setItem(LS_KEY,JSON.stringify({cfg:CFG,state:se
 function load(){
   try{
     const raw=localStorage.getItem(LS_KEY);if(!raw)return;const o=JSON.parse(raw);
-    if(o.cfg){/* angles are always radians, so a saved angle unit from older versions is ignored */if(['eng','sci','fix'].includes(o.cfg.mode))CFG.mode=o.cfg.mode;const d=Number(o.cfg.digits);if(Number.isInteger(d)&&d>=3&&d<=15)CFG.digits=d;}
+    if(o.cfg){/* angles are always radians, so a saved angle unit from older versions is ignored */if(['eng','sci','fix'].includes(o.cfg.mode))CFG.mode=o.cfg.mode;const d=Number(o.cfg.digits);if(Number.isInteger(d)&&d>=3&&d<=15)CFG.digits=d;if(typeof o.cfg.pretty==='boolean')CFG.pretty=o.cfg.pretty;}
     if(o.state)loadState(o.state);
     if(Array.isArray(o.hist))hist=o.hist.filter(x=>typeof x==='string');
   }catch(e){}
@@ -4889,7 +5153,7 @@ function itemText(it){
 function valueRow(prefixHtml,v){
   const f=fmtValue(v),wrap=mkEl('div');
   const row=mkEl('div','out',prefixHtml);
-  const r=mkEl('span','res',f.html);r.title='Click to copy';r.onclick=()=>copyText(f.text);row.appendChild(r);
+  const r=mkEl('span','res',f.html);r.title=f.pretty?'Click to copy as text: '+f.text:'Click to copy';r.onclick=()=>copyText(f.text);row.appendChild(r);
   wrap.appendChild(row);
   if(f.alt)wrap.appendChild(mkEl('div','alt',esc(f.alt)));
   return wrap;
@@ -4909,9 +5173,10 @@ function loadKatex(){
   });
   return katexP;
 }
+/* online: KaTeX draws exactly what the LaTeX code says; offline: the built-in typesetter (texHtml) draws it */
 function texPreview(el,tex,explain){
-  loadKatex().then(k=>{el.innerHTML='';try{k.render(tex,el,{displayMode:true,throwOnError:false});}catch(e){el.textContent='';}})
-    .catch(()=>{el.innerHTML=explain?'<span class="alt">The preview needs an internet connection (it uses KaTeX). The LaTeX code above works anyway.</span>':'';});
+  const own=()=>{try{el.innerHTML=texHtml(tex)+(explain?'<div class="alt">Offline preview (built-in). Online, KaTeX draws it exactly as LaTeX will.</div>':'');}catch(e){el.innerHTML='';}};
+  loadKatex().then(k=>{el.innerHTML='';try{k.render(tex,el,{displayMode:true,throwOnError:false});}catch(e){own();}}).catch(own);
 }
 /* small "TeX" button under a symbolic result: copies the result as LaTeX */
 function texButton(box,v){
@@ -5080,7 +5345,7 @@ function runInput(){
 function wordBeforeCaret(){const m=/[A-Za-z_][A-Za-z0-9_]*$/.exec(inp.value.slice(0,inp.selectionStart));return m?m[0]:'';}
 function candidates(w){
   if(!w)return[];
-  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','matrix','help','guide','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall']);
+  const all=new Set([...Object.keys(FUNCS),...STATE.vars.keys(),...STATE.funcs.keys(),...Object.keys(CONSTS),'ans','matrix','help','guide','clear','vars','funcs','consts','mode','digits','deg','rad','del','delall','pretty']);
   return [...all].filter(n=>n.startsWith(w)&&n!==w||n===w).sort((a,b)=>a.length-b.length||a.localeCompare(b));
 }
 function complete(){
@@ -5149,8 +5414,8 @@ function refreshVars(){
     if(del){const d=mkEl('button','vdel','\u2715');d.title='Delete';d.onclick=()=>{execLine('del '+nm);refreshVars();save();};r.appendChild(d);}
     box.appendChild(r);return v;
   };
-  if(STATE.ans!==undefined){const f=fmtValue(STATE.ans);const v=addRow('ans',f.html,'ans','an',false);v.dataset.copy=f.text;}
-  [...STATE.vars.keys()].sort().forEach(k=>{const f=fmtValue(STATE.vars.get(k));const v=addRow(k,f.html,k,'',true);v.dataset.copy=f.text;});
+  if(STATE.ans!==undefined){const f=fmtValue(STATE.ans);const v=addRow('ans',f.plain||f.html,'ans','an',false);v.dataset.copy=f.text;}
+  [...STATE.vars.keys()].sort().forEach(k=>{const f=fmtValue(STATE.vars.get(k));const v=addRow(k,f.plain||f.html,k,'',true);v.dataset.copy=f.text;});
   [...STATE.funcs.keys()].sort().forEach(k=>{const f=STATE.funcs.get(k);addRow(k+'('+f.params.join(',')+')','','\u200b'.slice(1)+k+'(','fn',true);});
   if(!STATE.vars.size&&!STATE.funcs.size&&STATE.ans===undefined)box.appendChild(mkEl('div','empty','No variables yet.<br>Try <b>x = 1</b><br>or <b>f_1(x) = x^2 + 1</b>'));
 }

@@ -55,7 +55,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   ok(!doc.querySelector('parsererror'),'the SVG is well-formed XML');
   ok(svg.includes('foreignObject')&&svg.includes('--bg:#ffffff'),'light theme is applied by default');
   const plain=doc.documentElement.textContent.replace(/\s+/g,' ');
-ok(plain.includes('diff(x^3)')&&plain.includes('3*x^2'),'the last calculation (diff) is in the image');
+ok(plain.includes('diff(x^3)')&&plain.includes('3x2'),'the last calculation (diff) is in the image: '+plain.slice(-80));
+  ok(svg.includes('class="mx"'),'symbolic results are typeset in the image too');
   ok(svg.includes('mtx'),'matrix table markup is in the image');
   // only the last N
   d.getElementById('expN').value='2';d.getElementById('expN').dispatchEvent(new w.Event('input',{bubbles:true}));
