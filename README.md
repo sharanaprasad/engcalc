@@ -27,9 +27,12 @@ or a phone. No install, no network required.
   every root of a polynomial (`roots(...)`), numeric real roots of any
   equation (`cos(x) = x`, `solve(f = g, x, a, b)`), and nonlinear systems
   by Newton's method
+- **Pretty math**: symbolic results are typeset (fraction bars, powers,
+  roots, stretchy brackets) by a built-in, offline typesetter, also in exported
+  pictures; `pretty off` shows plain text
 - **LaTeX tab and latex()**: calculator syntax to LaTeX for reports and
-  PowerPoint (Insert > Equation > LaTeX), with a live preview (KaTeX, online
-  only); symbolic results have a TeX copy button
+  PowerPoint (Insert > Equation > LaTeX), with a live preview (KaTeX online,
+  the built-in typesetter offline); symbolic results have a TeX copy button
 - **Base converter tab**: live dec / hex / bin / oct / base-N with bit
   grid, two's complement
 - **115+ functions** including trig, hyperbolic, dB/dBm, RF (reflection
@@ -63,7 +66,8 @@ engcalc/
     │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
     │   ├── test_latex.js            110 cases — LaTeX conversion, latex() in the console
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
-    │   ├── test_algebra.js          112 cases — expand, factor, simplify, limit, series, sum
+    │   ├── test_algebra.js          119 cases — expand, factor, simplify, limit, series, sum
+    │   ├── test_typeset.js          87 cases + 4,400 fuzz — typeset math (LaTeX to HTML)
     │   ├── test_audit.js            191 edge cases — parser, formatting,
     │   │                            precedence, explicit *, bits, solver
     │   ├── test_regression.js       48 cases — bugs that have been fixed
@@ -76,8 +80,8 @@ engcalc/
         ├── test_ui_format.js        9 cases — "to / => directive" in the UI
         ├── test_ui_formulas.js      14 cases — Formulas tab and series explorer
         ├── test_ui_latex.js         22 cases — LaTeX tab, console latex(), TeX button
-        ├── test_ui_calculus.js      14 cases — diff / integ display, drawer, examples
-        ├── test_ui_export.js        22 cases — clear wipes variables; Export-as-image dialog
+        ├── test_ui_calculus.js      23 cases — diff / integ display, pretty math, drawer, examples
+        ├── test_ui_export.js        23 cases — clear wipes variables; Export-as-image dialog
         ├── test_ui_guide.js         33 cases — illustrated guide, live examples, navigation
         └── test_ui_plot.js          36 cases — Plot tab, markers, export, console previews
 ```
@@ -110,6 +114,7 @@ the engine's output, and what was expected.
 - The calculator stores state (variables, functions, history, settings)
   in the browser's `localStorage`, scoped to the page's origin. Everything
   works offline.
-- The HTML file is self-contained — no external scripts or stylesheets.
+- The HTML file is self-contained — no external scripts or stylesheets
+  (only the optional KaTeX preview in the LaTeX tab is fetched when online).
 - Precision is IEEE-754 double (same as Python's float). Big-integer
   base conversions use `BigInt` and are exact.

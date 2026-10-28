@@ -112,6 +112,14 @@ t('series(sqrt(1+x), x, 0, 3)','1 + x/2 - x^2/8 + x^3/16');
 t('series(tan(x), x, 0, 7)','x + x^3/3 + 2*x^5/15 + 17*x^7/315');
 t('series(1/(1-x), x, 0, 4)','1 + x + x^2 + x^3 + x^4');
 t('series(exp(x), x, 1, 3)','e + e*(x - 1) + e*(x - 1)^2/2 + e*(x - 1)^3/6');
+// 0/0 at the point: the two series are divided
+t('series(sin(x)/x, x, 0, 6)','1 - x^2/6 + x^4/120 - x^6/5040');
+t('series(x/(exp(x)-1), x, 0, 6)','1 - x/2 + x^2/12 - x^4/720 + x^6/30240');
+t('series(x/sin(x), x, 0, 6)','1 + x^2/6 + 7*x^4/360 + 31*x^6/15120');
+t('series((1-cos(x))/x^2, x, 0, 4)','1/2 - x^2/24 + x^4/720');
+t('series(sin(x-1)/(x-1), x, 1, 4)','1 - (x - 1)^2/6 + (x - 1)^4/120');
+t('series(sin(x)/x^2, x, 0, 3)',/ERR: series\(\): sin\(x\)\/x\^2 has a pole at x = 0/);
+t('series(1/x)',/ERR: series\(\): 1\/x has a pole at x = 0/);
 t('series(sin(x), x, pi/2, 4)','1 - (x - pi/2)^2/2 + (x - pi/2)^4/24');
 t('series(exp(a1*x), x, 0, 3)','1 + a1*x + a1^2*x^2/2 + a1^3*x^3/6');
 t('taylor(atan(x), x, 0, 7)','x - x^3/3 + x^5/5 - x^7/7');

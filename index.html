@@ -80,6 +80,9 @@ button{font-family:inherit;cursor:pointer}
 .res{cursor:copy;font-size:17px;font-weight:600;border-radius:6px;padding:0 4px;margin-left:-4px;transition:background .15s}
 .res:has(.mtx){display:block;min-width:0;max-width:100%;overflow-x:auto}
 .out:has(.mtx){flex-wrap:nowrap;min-width:0}
+.out:has(.mx){flex-wrap:nowrap;min-width:0}
+.res:has(.mx){min-width:0}
+.out:has(.mx) .tb{flex:none}
 .res:hover{background:rgba(34,211,238,.12)}
 .alt{padding-left:2ch;color:var(--dim);font-size:12px;margin-top:1px}
 .n{color:var(--cyan);text-shadow:0 0 10px rgba(34,211,238,.35)}
@@ -721,7 +724,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <section class="g-sec" id="g-calculus" style="--ac:var(--orange)">
         <div class="g-num">8</div>
         <h2>Calculus &amp; algebra</h2>
-        <p><b>diff</b> and <b>integ</b> work on formulas, not just numbers, and the answers come back as expressions you can copy and reuse.</p>
+        <p><b>diff</b> and <b>integ</b> work on formulas, not just numbers, and the answers come back as expressions you can copy and reuse. In the console they are typeset like a textbook (fractions, powers, roots); clicking one copies it as text you can type back in, and the <b>TeX</b> button copies LaTeX. <code>pretty off</code> shows plain text instead.</p>
         <div class="gx" data-ex="diff(x^2*sin(x))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="integ(x*exp(x))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="integ(x^2, 0, 3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
@@ -864,7 +867,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Algebra</h3><code>expand(f)</code> <code>factor(f)</code> <code>simplify(f)</code> <code>roots(p)</code></div>
           <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code> <code>dsolve(y' + y = u(t), y(0)=0)</code></div>
           <div class="g-card"><h3>Plot</h3><code>plot(f, x, a, b)</code> <code>bode(H, w1, w2)</code> <code>bode(H, f1, f2, hz)</code> <code>right(f)</code></div>
-          <div class="g-card"><h3>LaTeX</h3><code>latex(f)</code> <code>latex a = b</code> <code>TeX</code> button &middot; LaTeX tab</div>
+          <div class="g-card"><h3>LaTeX</h3><code>latex(f)</code> <code>latex a = b</code> <code>TeX</code> button &middot; LaTeX tab &middot; <code>pretty on|off</code></div>
           <div class="g-card"><h3>RF &amp; analog</h3><code>par(a,b)</code> <code>dBm(x)</code> <code>f0(L,C)</code> <code>vswr</code> <code>enob</code></div>
           <div class="g-card"><h3>Keys</h3><kbd>Enter</kbd> run &middot; <kbd>&uarr;</kbd> history &middot; <kbd>Tab</kbd> complete &middot; <kbd>Ctrl</kbd>+<kbd>K</kbd> functions &middot; <kbd>Ctrl</kbd>+<kbd>L</kbd> clear &middot; <kbd>F1</kbd> this guide</div>
         </div>
@@ -3313,6 +3316,38 @@ function limitCall(n,sc){
 }
 
 /* ---- Taylor series ---- */
+/* true when F cannot be evaluated at x = a (0/0, division by zero) */
+function seriesUndefinedAt(F,x,a){
+  try{DEPTH=0;const v=U(ev(symSubst(F,SID(x),SN(a)),null));
+    if(typeof v==='number')return !Number.isFinite(v);
+    return isC(v)&&!(Number.isFinite(v.re)&&Number.isFinite(v.im));}
+  catch(e){if(e instanceof CalcError)return true;throw e;}
+}
+/* Taylor coefficients of P/Q at a when Q(a) = 0: Q = x^m*(q0 + q1*x + ...), P must start at x^m too (else it is a pole) */
+function seriesQuotient(P,Q,x,a,N,txt){
+  const at=x+' = '+fmtValue(a).text;
+  const coefs=F=>{
+    const c=[];let d=F,fact=1;
+    return k=>{
+      while(c.length<=k){
+        const j=c.length;
+        if(j>0){d=symSimplify(symD(d,x));fact*=j;}
+        if(symPrint(d).length>40000)throw new CalcError('series(): the derivatives grow too large; try a lower order');
+        DEPTH=0;let v;
+        try{v=U(ev(symSubst(d,SID(x),SN(a)),null));}catch(e){if(e instanceof CalcError)v=NaN;else throw e;}
+        if(typeof v!=='number'||!Number.isFinite(v))throw new CalcError('series(): '+txt+' has no Taylor series at '+at+' (it or a derivative is undefined there)');
+        c.push(v/fact);
+      }
+      return c[k];
+    };
+  };
+  const q=coefs(Q),p=coefs(P);
+  let m=0;while(Math.abs(q(m))<1e-12){if(++m>8)throw new CalcError('series(): '+txt+' has no Taylor series at '+at);}
+  for(let k=0;k<m;k++)if(Math.abs(p(k))>1e-9)throw new CalcError('series(): '+txt+' has a pole at '+at+', so there is no Taylor series there');
+  const r=[];
+  for(let k=0;k<=N;k++){let s=p(k+m);for(let j=1;j<=k;j++)s-=q(j+m)*r[k-j];r.push(s/q(m));}
+  return r;
+}
 function seriesCall(n,sc,wantAst){
   const A=n.args;
   const F=symPrep(A[0]);
@@ -3325,12 +3360,16 @@ function seriesCall(n,sc,wantAst){
   const xa=a===0?SID(x):sSub(SID(x),aAst);
   const terms=[];
   let d=F,fact=1;
+  /* P/Q with Q = 0 at the point (sin(x)/x at 0): the derivatives are 0/0 there, so divide the two series instead */
+  const quot=F.t==='bin'&&F.op==='/'&&seriesUndefinedAt(F,x,a)?seriesQuotient(F.a,F.b,x,a,N,symPrint(A[0].t?A[0]:F)):null;
   for(let k=0;k<=N;k++){
-    if(k>0){d=symSimplify(symD(d,x));fact*=k;}
-    if(symPrint(d).length>40000)throw new CalcError('series(): the derivatives grow too large; try a lower order');
-    const at=symSimplify(symRules(symSimplify(symSubst(d,SID(x),SN(a)))));
+    if(k>0){fact*=k;if(!quot)d=symSimplify(symD(d,x));}
     const pw=k===0?null:SPOWN(xa,k);
     let val=null;
+    if(quot)val=quot[k]*fact;
+    else{
+    if(symPrint(d).length>40000)throw new CalcError('series(): the derivatives grow too large; try a lower order');
+    const at=symSimplify(symRules(symSimplify(symSubst(d,SID(x),SN(a)))));
     try{
       DEPTH=0;const v=U(ev(at,null));
       if(isC(v)){
@@ -3343,6 +3382,7 @@ function seriesCall(n,sc,wantAst){
       if(e instanceof CalcError&&/^series\(\)/.test(e.message))throw e;
       if(symUnknowns(at).length){let body=pw?SMUL(at,pw):at;if(fact>1)body=SDIVN(body,SN(fact));terms.push({neg:false,body});continue;}
       throw new CalcError('series(): '+symPrint(A[0].t?A[0]:F)+' has no Taylor series at '+x+' = '+fmtValue(a).text+' (it or a derivative is undefined there)');
+    }
     }
     if(!Number.isFinite(val))throw new CalcError('series(): no Taylor series at '+x+' = '+fmtValue(a).text+' (a derivative is infinite there)');
     if(Math.abs(val)<1e-12)continue;
@@ -5246,7 +5286,8 @@ function helpHtml(){
 <tr><td>algebra</td><td><code>expand((x+1)^3)</code>, <code>factor(x^3 - 6*x^2 + 11*x - 6)</code> = (x - 1)*(x - 2)*(x - 3), <code>factor((x^2-1)/(x^2+3*x+2))</code> cancels, <code>factor(360)</code> = 2^3*3^2*5, <code>simplify(sin(x)^2 + cos(x)^2)</code> = 1.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>
-<tr><td>LaTeX</td><td><code>latex((s+1)/(s^2+3*s+2))</code> gives <code>\\frac{s + 1}{s^{2} + 3s + 2}</code>; <code>latex x^2 - 3*x + 2 = 0</code> works for equations; <code>latex(diff(...))</code>, <code>integ</code>, <code>LT</code>, <code>ILT</code> add <code>= result</code>. Typed numbers keep their suffix (<code>2.2k</code> &rarr; <code>2.2\\,\\mathrm{k}</code>), names get subscripts (<code>R1</code> &rarr; <code>R_{1}</code>), Greek names become symbols (<code>omega</code> &rarr; &omega;). Symbolic results have a <b>TeX</b> button. The <b>LaTeX tab</b> converts several lines with a preview. Paste into PowerPoint via Insert &rarr; Equation &rarr; LaTeX.</td></tr>
+<tr><td>LaTeX</td><td><code>latex((s+1)/(s^2+3*s+2))</code> gives <code>\\frac{s + 1}{s^{2} + 3s + 2}</code>; <code>latex x^2 - 3*x + 2 = 0</code> works for equations; <code>latex(diff(...))</code>, <code>integ</code>, <code>LT</code>, <code>ILT</code> add <code>= result</code>. Typed numbers keep their suffix (<code>2.2k</code> &rarr; <code>2.2\\,\\mathrm{k}</code>), names get subscripts (<code>R1</code> &rarr; <code>R_{1}</code>), Greek names become symbols (<code>omega</code> &rarr; &omega;). Symbolic results have a <b>TeX</b> button. The <b>LaTeX tab</b> converts several lines with a preview (drawn by KaTeX online, by the built-in typesetter offline). Paste into PowerPoint via Insert &rarr; Equation &rarr; LaTeX.</td></tr>
+<tr><td>pretty math</td><td>symbolic results (<code>diff</code>, <code>integ</code>, <code>LT</code>, <code>series</code>, <code>dsolve</code>&hellip;) are typeset with real fraction bars, powers and roots, offline and in exported pictures. Click one to copy it as text; <b>TeX</b> copies LaTeX. <code>pretty off</code> switches to plain text, <code>pretty on</code> back (remembered).</td></tr>
 <tr><td>differential equations</td><td><code>dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)</code> solves a linear ODE with constant coefficients by Laplace transform (t &ge; 0). <code>y'</code> is dy/dt; any function name works (<code>v'</code>, <code>i''</code>); missing initial conditions are 0. The answer is stored as <code>y(t)</code>: <code>y(2)</code>, <code>plot(y(t), t, 0, 10)</code>.</td></tr>
 <tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros as <code>p1</code>, <code>p2</code>, &hellip; and <code>z1</code>, <code>z2</code>, &hellip; (stored as variables), and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
