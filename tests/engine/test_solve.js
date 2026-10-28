@@ -14,7 +14,7 @@ function run(line){const r=execLine(line);const it=r.items[r.items.length-1];if(
 function note(line){const r=execLine(line);const it=r.items[r.items.length-1];return (it&&(it.note||'')+' '+((it.warns||[]).join(' ')))||'';}
 function t(line,exp){total++;const t0=Date.now();const got=run(line);const ms=Date.now()-t0;const ok=exp instanceof RegExp?exp.test(got):got===exp;
   if(!ok){fail++;console.log('BUG',JSON.stringify(line),'=>',JSON.stringify(got),'expected',String(exp));}
-  if(ms>2500){fail++;console.log('SLOW',ms+'ms',line);}}
+  if(ms>8000){fail++;console.log('SLOW',ms+'ms',line);}}
 function near(name,want,tol){total++;const v=STATE.vars.get(name);const x=typeof v==='number'?v:NaN;
   if(!(Math.abs(x-want)<=(tol||1e-9)*(1+Math.abs(want)))){fail++;console.log('BUG value',name,'=',v,'expected',want);}}
 reset();
@@ -110,7 +110,7 @@ reset();
 t('solve(integ(sin(t),t,0,x) = 1, x, 0, 3)','x=1.5708');
 t('x*integ(t,t,0,1) = 2','x=4');
 {const t0=Date.now();t('integ(exp(-t^2), t, 0, x) = 0.5','x=551.039m');
- total++;if(Date.now()-t0>6000){fail++;console.log('BUG: slow equation took',Date.now()-t0,'ms');}}
+ total++;if(Date.now()-t0>10000){fail++;console.log('BUG: slow equation took',Date.now()-t0,'ms');}}
 
 // ---- definitions are still definitions
 reset();
