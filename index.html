@@ -551,7 +551,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <a href="#g-equations" data-n="6">Solving equations</a>
       <a href="#g-matrices" data-n="7">Matrices</a>
       <a href="#g-calculus" data-n="8">Calculus &amp; algebra</a>
-      <a href="#g-laplace" data-n="9">Laplace &amp; transfer functions</a>
+      <a href="#g-laplace" data-n="9">Laplace &amp; differential equations</a>
       <a href="#g-plot" data-n="10">Plots &amp; Bode</a>
       <a href="#g-tabs" data-n="11">Tabs &amp; panels</a>
       <a href="#g-share" data-n="12">Share your work</a>
@@ -702,7 +702,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
 
       <section class="g-sec" id="g-laplace" style="--ac:var(--mag)">
         <div class="g-num">9</div>
-        <h2>Laplace &amp; transfer functions</h2>
+        <h2>Laplace &amp; differential equations</h2>
         <p><b>LT</b> transforms a time function into <i>s</i>; <b>ILT</b> goes back. <b>poles</b> and <b>zeros</b> read off the roots and store them as <code>p1</code>, <code>p2</code>&hellip; and <code>z1</code>, <code>z2</code>&hellip; Use <b>u(t)</b> for the unit step and <b>delta(t)</b> for the impulse.</p>
         <div class="gx" data-ex="LT(exp(-2*t)*sin(3*t))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="ILT(1/(s^2+3*s+2))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
@@ -710,6 +710,15 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <p>Name a transfer function with parentheses and get its step response by dividing by <i>s</i>:</p>
         <div class="gx" data-ex="H(s) = 1/(s^2+s+1)&#10;poles(H(s))&#10;ILT(H(s)/s)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="g-tip">Repeated and complex poles, delays like <code>exp(-s*T)</code>, and impulse terms are all handled. Write <code>2*u(t)</code> rather than <code>2u(t)</code>, because <code>2u</code> means 2 micro.</div>
+        <p><b>Differential equations.</b> <code>dsolve</code> solves a linear equation with constant coefficients the way you would by hand: Laplace transform, solve for <i>Y(s)</i>, transform back. Write <code>y'</code> for dy/dt and <code>y''</code> for d&sup2;y/dt&sup2;, then the initial conditions:</p>
+        <div class="gx" data-ex="dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="dsolve(y' + 2*y = 0, y(0)=5)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="R1 = 1k; C1 = 1u&#10;dsolve(R1*C1*v' + v = 5*u(t), v(0)=0)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <ul class="g-list">
+          <li>Any name works for the unknown function (<code>v</code>, <code>i</code>, <code>x</code>&hellip;) and for time (<code>t</code> by default). Initial conditions you leave out are 0, and the answer says so.</li>
+          <li>The input on the right can be anything <code>LT</code> handles: steps <code>u(t-T)</code>, impulses <code>delta(t)</code>, <code>exp</code>, <code>sin</code>, <code>cos</code>, powers of <code>t</code>.</li>
+          <li>The answer is stored as a function, so <code>y(2)</code> evaluates it and <code>plot(y(t), t, 0, 10)</code> draws it.</li>
+        </ul>
       </section>
 
       <section class="g-sec" id="g-plot" style="--ac:var(--blue)">
@@ -799,7 +808,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Matrix</h3><code>[1 2; 3 4]</code> <code>det</code> <code>inv</code> <code>A'</code> <code>A(2,1)</code></div>
           <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code> <code>limit(f, x, a)</code> <code>series(f, x, a, n)</code> <code>sum(f, k, a, b)</code></div>
           <div class="g-card"><h3>Algebra</h3><code>expand(f)</code> <code>factor(f)</code> <code>simplify(f)</code> <code>roots(p)</code></div>
-          <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code></div>
+          <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code> <code>dsolve(y' + y = u(t), y(0)=0)</code></div>
           <div class="g-card"><h3>Plot</h3><code>plot(f, x, a, b)</code> <code>bode(H, w1, w2)</code> <code>bode(H, f1, f2, hz)</code> <code>right(f)</code></div>
           <div class="g-card"><h3>LaTeX</h3><code>latex(f)</code> <code>latex a = b</code> <code>TeX</code> button &middot; LaTeX tab</div>
           <div class="g-card"><h3>RF &amp; analog</h3><code>par(a,b)</code> <code>dBm(x)</code> <code>f0(L,C)</code> <code>vswr</code> <code>enob</code></div>
@@ -2027,6 +2036,32 @@ function plRootList(c){
   const key=z=>isC(z)?[1,z.re,-z.im]:[0,z,0];
   return list.sort((p,q)=>{const a=key(p),b=key(q);return a[0]-b[0]||a[1]-b[1]||a[2]-b[2];});
 }
+/* polynomial division, ascending coefficients: a = q*b + r */
+function plDivmod(a,b){
+  a=plTrim(a).slice();b=plTrim(b);
+  const db=b.length-1,lead=b[db];
+  if(a.length-1<db)return {q:[0],r:a};
+  const q=new Array(a.length-db).fill(0);
+  for(let i=a.length-1;i>=db;i--){const c=a[i]/lead;q[i-db]=c;for(let j=0;j<=db;j++)a[i-db+j]-=c*b[j];}
+  const r=a.slice(0,Math.max(db,1));
+  return {q,r};
+}
+/* greatest common divisor of two real polynomials (monic), [1] when they share no root */
+function plGcd(a,b){
+  a=plTrim(a);b=plTrim(b);
+  const monic=p=>{const l=p[p.length-1];return p.map(v=>v/l);};
+  if(a.length<b.length)[a,b]=[b,a];
+  if(b.length<2)return [1];
+  a=monic(a);b=monic(b);
+  for(let it=0;it<60&&b.length>1;it++){
+    const r=plDivmod(a,b).r;
+    const rm=Math.max(...r.map(Math.abs));
+    if(rm<=1e-9*Math.max(1,...a.map(Math.abs)))return b;
+    let rr=r.slice();while(rr.length>1&&Math.abs(rr[rr.length-1])<=1e-12*rm)rr.pop();
+    a=b;b=monic(rr);
+  }
+  return [1];
+}
 /* rational function in x with numeric coefficients: {N, D} polynomial arrays, or null */
 function symRat(n,x){
   if(!symHas(n,x)){
@@ -2044,8 +2079,13 @@ function symRat(n,x){
         return n.b.v<0?{N:D,D:N}:{N,D};
       }
       const a=symRat(n.a,x),b=symRat(n.b,x);if(!a||!b)return null;
-      if(n.op==='+')return {N:plAdd(plMul(a.N,b.D),plMul(b.N,a.D)),D:plMul(a.D,b.D)};
-      if(n.op==='-')return {N:plAdd(plMul(a.N,b.D),neg(plMul(b.N,a.D))),D:plMul(a.D,b.D)};
+      if(n.op==='+'||n.op==='-'){
+        /* least common denominator: 1/(s+1)^3 + 1/(s+1)^2 is over (s+1)^3, not (s+1)^5 (a fake repeated root) */
+        const g=plGcd(a.D,b.D);
+        const ka=g.length>1?plDivmod(b.D,g).q:b.D,kb=g.length>1?plDivmod(a.D,g).q:a.D;
+        const bn=plMul(b.N,kb);
+        return {N:plAdd(plMul(a.N,ka),n.op==='+'?bn:neg(bn)),D:plMul(a.D,ka)};
+      }
       if(n.op==='*')return {N:plMul(a.N,b.N),D:plMul(a.D,b.D)};
       if(n.op==='/'){if(plTrim(b.N).every(v=>v===0))return null;return {N:plMul(a.N,b.D),D:plMul(a.D,b.N)};}
     }
@@ -2813,6 +2853,7 @@ function rootsCall(n,sc){
   return m;
 }
 symDef('roots','roots(p, x)   or   roots([1 -6 11 -6])','Every root of a polynomial, real and complex, stored as x1, x2, ... The variable is optional when there is one; a row of coefficients (highest power first) works too','roots(x^3 - 6*x^2 + 11*x - 6)',1,2,rootsCall,true,'Algebra');
+def('Calculus','dsolve',"dsolve(y'' + a*y' + b*y = f(t), y(0)=..., y'(0)=...)","Solve a linear differential equation with constant coefficients by Laplace transform, for t >= 0. y' is dy/dt; missing initial conditions are 0. The answer is stored as the function y(t). Write it on its own line","dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)",1,12,()=>{throw new CalcError("Write dsolve(...) on its own line, e.g.  dsolve(y' + 2*y = 0, y(0)=5)");});
 def('Algebra','solve','solve(f = g, x, a, b)','Solve an equation. Linear and polynomial equations are exact (all roots); others are solved numerically, listing every real root between a and b (default -10 to 10). Several unknowns: solve x,y: eq1; eq2 (Newton’s method for nonlinear systems). Write it on its own line','solve(cos(x) = x)',1,4,()=>{throw new CalcError('Write solve(...) on its own line, e.g.  solve(cos(x) = x)');});
 /* ============ algebra & analysis: expand, factor, simplify, limit, series, sum ============ */
 const symIsNum=n=>n.t==='num'&&typeof n.v==='number';
@@ -3364,6 +3405,187 @@ function sumSeriesCall(n,sc){
   for(let i=a;i<=b;i++){const v=term(i);if(Number.isNaN(Re(v))||Number.isNaN(Im(v)))throw new CalcError('sum(): the term for '+k+' = '+i+' is undefined');s=add(s,v);}
   return cleanC(s);
 }
+/* ---- dsolve: linear ODEs with constant coefficients, solved by Laplace transform ---- */
+/* y, y', y'' ... : the derivative order of a node, or -1 */
+function odeOrder(n,y){let k=0;while(n.t==='tr'){k++;n=n.a;}return n.t==='id'&&n.name===y?k:-1;}
+function odeHasY(n,y){
+  switch(n.t){
+    case 'id':return n.name===y;
+    case 'tr':case 'un':case 'fact':case 'fmt':return odeHasY(n.a,y);
+    case 'bin':case 'polar':return odeHasY(n.a,y)||odeHasY(n.b,y);
+    case 'call':return n.name===y||n.args.some(a=>odeHasY(a,y));
+    case 'mat':return n.rows.some(r=>r.some(a=>odeHasY(a,y)));
+  }
+  return false;
+}
+function odeIds(n,set){
+  switch(n.t){
+    case 'id':set.add(n.name);break;
+    case 'tr':case 'un':case 'fact':case 'fmt':odeIds(n.a,set);break;
+    case 'bin':case 'polar':odeIds(n.a,set);odeIds(n.b,set);break;
+    case 'call':n.args.forEach(a=>odeIds(a,set));break;
+  }
+  return set;
+}
+function odeDerivNames(n,set){
+  if(n.t==='tr'){let m=n;while(m.t==='tr')m=m.a;if(m.t==='id')set.add(m.name);else odeDerivNames(m,set);return set;}
+  if(n.t==='un'||n.t==='fact'||n.t==='fmt')odeDerivNames(n.a,set);
+  else if(n.t==='bin'||n.t==='polar'){odeDerivNames(n.a,set);odeDerivNames(n.b,set);}
+  else if(n.t==='call')n.args.forEach(a=>odeDerivNames(a,set));
+  return set;
+}
+/* one side of the ODE -> {c: Map(order -> coefficient), f: the part without y} */
+function odeSplit(n,y,t){
+  const notLinear=()=>new CalcError('dsolve() handles linear equations: '+y+' and its derivatives can only be added, and multiplied or divided by constants');
+  const konst=m=>{
+    let v;try{DEPTH=0;v=U(ev(m,null));}catch(e){
+      if(odeIds(m,new Set()).has(t))throw new CalcError('dsolve() needs constant coefficients: a factor in front of '+y+' depends on '+t);
+      throw new CalcError('dsolve(): a coefficient is not a number ('+e.message+')');
+    }
+    if(typeof v!=='number'||!Number.isFinite(v))throw new CalcError('dsolve(): the coefficients must be real numbers');
+    return v;
+  };
+  const scale=(r,k)=>{const c=new Map();r.c.forEach((v,o)=>c.set(o,v*k));return {c,f:sMul(SN(k),r.f)};};
+  if(!odeHasY(n,y))return {c:new Map(),f:n};
+  const k=odeOrder(n,y);
+  if(k>=0)return {c:new Map([[k,1]]),f:SN(0)};
+  if(n.t==='call'&&n.name===y&&n.args.length===1&&n.args[0].t==='id'&&n.args[0].name===t)return {c:new Map([[0,1]]),f:SN(0)};
+  if(n.t==='un'&&n.op==='-')return scale(odeSplit(n.a,y,t),-1);
+  if(n.t==='bin'){
+    if(n.op==='+'||n.op==='-'){
+      const A=odeSplit(n.a,y,t),B=odeSplit(n.b,y,t),sg=n.op==='+'?1:-1,c=new Map(A.c);
+      B.c.forEach((v,o)=>c.set(o,(c.get(o)||0)+sg*v));
+      return {c,f:sg>0?sAdd(A.f,B.f):sSub(A.f,B.f)};
+    }
+    if(n.op==='*'){
+      if(!odeHasY(n.a,y))return scale(odeSplit(n.b,y,t),konst(n.a));
+      if(!odeHasY(n.b,y))return scale(odeSplit(n.a,y,t),konst(n.b));
+    }
+    if(n.op==='/'&&!odeHasY(n.b,y)){const d=konst(n.b);if(d===0)throw new CalcError('Division by zero');return scale(odeSplit(n.a,y,t),1/d);}
+  }
+  throw notLinear();
+}
+/* "dsolve(...)" as a whole console line -> its argument text, else null */
+function dsolveCallArgs(t){
+  const m=/^dsolve\s*\(([\s\S]*)\)\s*$/.exec(t);if(!m)return null;
+  let d=0;for(const ch of m[1]){if(ch==='(')d++;else if(ch===')'&&--d<0)return null;}
+  return d===0?m[1]:null;
+}
+function dsolveCall(inner){
+  POSOFF=0;DEPTH=0;
+  const parts=splitTopCommas(inner);
+  const usage="Usage:  dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)";
+  if(!parts[0])throw new CalcError(usage);
+  const eqp=parts[0].split('=');
+  if(eqp.length>2)throw new CalcError("The equation needs a single '='");
+  if(eqp.some(s=>!s.trim()))throw new CalcError("Something is missing on one side of '='");
+  let L,R;
+  try{L=parseExpr(eqp[0]);R=parseExpr(eqp.length===2?eqp[1]:'0');}catch(e){throw new CalcError('dsolve(): '+e.message);}
+  /* the unknown function: the name carrying the primes */
+  const dn=new Set([...odeDerivNames(L,new Set()),...odeDerivNames(R,new Set())]);
+  if(!dn.size)throw new CalcError("No derivative found. Write y' for dy/dt and y'' for d²y/dt², e.g.  "+usage.slice(8));
+  if(dn.size>1)throw new CalcError('dsolve() solves one equation in one unknown function (found '+[...dn].join(', ')+')');
+  const y=[...dn][0];
+  if(!/^[A-Za-z][A-Za-z0-9_]*$/.test(y))throw new CalcError('Bad function name '+y);
+  /* the independent variable: the remaining unknown name (default t) */
+  const ids=[...odeIds(L,new Set()),...odeIds(R,new Set())].filter(nm=>nm!==y&&!has(CONSTS,nm)&&(!STATE.vars.has(nm)||STATE.solved.has(nm))&&!['pi','e','j','inf'].includes(nm));
+  const cand=[...new Set(ids)];
+  /* names multiplying y or its derivatives are coefficients, never the time variable */
+  const coefIds=new Set();
+  const walk=n=>{
+    if(n.t==='bin'&&(n.op==='*'||n.op==='/')){
+      if(odeHasY(n.a,y)&&!odeHasY(n.b,y))odeIds(n.b,coefIds);
+      if(odeHasY(n.b,y)&&!odeHasY(n.a,y))odeIds(n.a,coefIds);
+    }
+    if(n.t==='bin'){walk(n.a);walk(n.b);}else if(n.t==='un')walk(n.a);
+  };
+  walk(L);walk(R);
+  let t='t';
+  if(cand.length===1&&cand[0]!=='t'&&coefIds.has(cand[0]))throw new CalcError(`dsolve(): '${cand[0]}' has no value. Give it one first, e.g.  ${cand[0]} = 2`);
+  if(cand.length===1)t=cand[0];
+  else if(cand.length>1){if(cand.includes('t'))t='t';else throw new CalcError('dsolve(): several unknown names ('+cand.join(', ')+'). Give other constants a value first, e.g. R1 = 1k');}
+  if(cand.length>1&&cand.some(nm=>nm!==t))throw new CalcError('dsolve(): unknown name(s) '+cand.filter(nm=>nm!==t).join(', ')+'. Give them a value first, e.g. '+cand.filter(nm=>nm!==t)[0]+' = 1');
+  const A=odeSplit(L,y,t),B=odeSplit(R,y,t);
+  const coef=new Map(A.c);B.c.forEach((v,o)=>coef.set(o,(coef.get(o)||0)-v));
+  const F=sSub(B.f,A.f);
+  let order=0;coef.forEach((v,o)=>{if(v!==0&&o>order)order=o;});
+  if(order<1)throw new CalcError('That is not a differential equation: the derivatives cancel out');
+  if(order>10)throw new CalcError('dsolve(): order 10 at most');
+  /* initial conditions y(0) = a, y'(0) = b ... (missing ones are 0) */
+  const ic=new Array(order).fill(null);
+  for(const p of parts.slice(1)){
+    const m=/^([A-Za-z][A-Za-z0-9_]*)\s*('*)\s*\(\s*([\s\S]+?)\s*\)\s*=\s*([\s\S]+)$/.exec(p);
+    if(!m||m[1]!==y)throw new CalcError("Initial conditions look like  "+y+"(0)=1  or  "+y+"'(0)=0  (got: "+p+')');
+    const k=m[2].length;
+    if(k>=order)throw new CalcError(`${y}${m[2]}(0) is not needed for an order-${order} equation (give ${y}(0)${order>1?' … '+y+"'".repeat(order-1)+'(0)':''})`);
+    let pt;try{pt=U(ev(parseExpr(m[3]),null));}catch(e){throw new CalcError('Initial condition point: '+e.message);}
+    if(pt!==0)throw new CalcError('Initial conditions must be at '+t+' = 0 (shift time so the start is 0)');
+    if(ic[k]!==null)throw new CalcError(y+m[2]+'(0) is given twice');
+    let v;try{v=U(ev(parseExpr(m[4]),null));}catch(e){throw new CalcError('Initial condition value: '+e.message);}
+    if(typeof v!=='number'||!Number.isFinite(v))throw new CalcError('Initial condition values must be real numbers');
+    ic[k]=v;
+  }
+  const assumed=ic.map((v,k)=>v===null?y+"'".repeat(k)+'(0)':null).filter(Boolean);
+  const y0=ic.map(v=>v===null?0:v);
+  /* Laplace: (sum a_k s^k) Y = L{F} + sum_k a_k sum_{i<k} s^(k-1-i) y^(i)(0) */
+  const sv=t==='s'||odeIds(F,new Set()).has('s')?'p':'s',S=SID(sv);
+  let LF=SN(0);
+  if(!(symIsNum(F)&&F.v===0)){
+    /* the time variable is never a stored function here (a previous dsolve may have stored x(s)): shield it while preparing */
+    const TT='\u0000t',prepped=symSubst(symPrep(symSubst(F,SID(t),SID(TT))),SID(TT),SID(t));
+    LF=symLT(prepped,t,sv);
+    if(!LF)throw new CalcError('dsolve(): no Laplace rule for the input '+symPrint(F)+'. Supported: constants, t^n, exp(a*t), sin/cos(w*t), u(t-T), delta(t-T) and sums / products of those');
+  }
+  const Apoly=sSum([...coef.entries()].filter(([,v])=>v!==0).map(([o,v])=>sMul(SN(v),sPow(S,SN(o)))));
+  const init=[];
+  coef.forEach((a,k)=>{for(let i=0;i<k;i++)if(a!==0&&y0[i]!==0)init.push(sMul(SN(a*y0[i]),sPow(S,SN(k-1-i))));});
+  const top=sSum([LF,...init]);
+  if(symIsNum(top)&&top.v===0)return {y,t,ast:SN(0),assumed,order};
+  const Y=sSum(symTerms(top,1,[]).map(([sg,term])=>sDiv(sg>0?term:sNeg(term),Apoly)));
+  const sol=symILT(Y,sv,t);
+  if(!sol)throw new CalcError('dsolve(): could not invert the transform '+symPrint(Y));
+  return {y,t,ast:sol,assumed,order,coef,F};
+}
+/* the console item: y(t) = ..., also stored as the function y(t) */
+/* 1 - exp(-t) rather than -exp(-t) + 1: positive constants, then other positive terms, then negative ones */
+function symPosFirst(n){
+  if(!symIsSum(n))return n;
+  const T=symTerms(n,1,[]);
+  if(T[0][0]>0||!T.some(([s])=>s>0))return n;
+  const rank=([s,t])=>s<0?2:symIsNum(t)?0:1;
+  const S=T.map((x,i)=>[x,i]).sort((a,b)=>rank(a[0])-rank(b[0])||a[1]-b[1]).map(x=>x[0]);
+  let out=S[0][1];
+  for(const [s,t] of S.slice(1))out={t:'bin',op:s>0?'+':'-',a:out,b:t,pos:0};
+  return out;
+}
+function dsolveItem(inner){
+  const r=dsolveCall(inner),warns=[];
+  r.ast=symPosFirst(r.ast);
+  const txt=symPrint(r.ast);
+  if(r.coef&&!odeResidualOK(r))warns.push('Check: the solution does not satisfy the equation exactly at every test point (it may involve steps or impulses there).');
+  let stored=false;
+  try{execStatement(r.y+'('+r.t+') = '+txt,0);stored=true;}catch(e){warns.push('Not stored as '+r.y+'('+r.t+'): '+e.message);}
+  const note='solution for '+r.t+' ≥ 0 (Laplace transform)'+(r.assumed.length?'; '+r.assumed.join(', ')+' = 0 assumed':'')+
+    (stored?'. Stored as '+r.y+'('+r.t+'): try '+r.y+'(1) or plot('+r.y+'('+r.t+'), '+r.t+', 0, 10)':'');
+  const v=new Sym(r.ast,false,note);
+  STATE.ans2=STATE.ans;STATE.ans=v;
+  return {kind:'val',label:r.y+'('+r.t+')',v,warns};
+}
+/* plug the solution back in at a few times: sum a_k y^(k)(t) - F(t) should be 0 */
+function odeResidualOK(r){
+  try{
+    let d=r.ast;const ders=[d];
+    for(let k=1;k<=r.order;k++){d=symD(d,r.t);ders.push(d);}
+    for(const tt of [0.37,1.13,2.71]){
+      const sc=new Map([[r.t,tt]]);
+      let lhs=0;r.coef.forEach((a,k)=>{if(a!==0){DEPTH=0;lhs+=a*Re(U(ev(ders[k],sc)));}});
+      DEPTH=0;const rhs=Re(U(ev(r.F,sc)));
+      if(!Number.isFinite(lhs)||!Number.isFinite(rhs))continue;
+      if(Math.abs(lhs-rhs)>1e-6*Math.max(1,Math.abs(rhs),Math.abs(lhs)))return false;
+    }
+  }catch(e){return true;}
+  return true;
+}
 symDef('expand','expand(expr)','Multiply out products and powers of sums: expand((x+1)^3) = x^3 + 3*x^2 + 3*x + 1','expand((x+1)^3)',1,1,
   (n,sc,wantAst)=>{const r=symOrder(symExpand(symPrep(n.args[0])));return wantAst?r:symResult(new Sym(r,false,'expanded'),sc);},false,'Algebra');
 symDef('factor','factor(expr)','Factor a polynomial (rational roots exactly, other roots as decimals or quadratics), cancel a rational function, take out common factors (x^2*y + x*y^2), or factor a whole number into primes','factor(x^3 - 6*x^2 + 11*x - 6)',1,1,
@@ -3884,6 +4106,8 @@ function execLine(line){
     if(!body){items.push({kind:'err',msg:'Usage:  eq: x = y   or   eq x,y: x^2 + y^2 = 1; x = y'});return {items,ui,text:t};}
     runCommand('solve '+(unk?unk+': ':'')+body,items,ui);return {items,ui,text:t};
   }
+  const dx=dsolveCallArgs(t);
+  if(dx!==null){try{items.push(dsolveItem(dx));}catch(e){items.push({kind:'err',msg:(e&&e.message)||String(e)});}return {items,ui,text:t};}
   const sx=solveCallArgs(t);
   if(sx!==null){try{const r=solveCall(sx);items.push({kind:'solve',rows:r.rows,warns:r.warns,note:r.note});}catch(e){items.push({kind:'err',msg:(e&&e.message)||String(e)});}return {items,ui,text:t};}
   const lx=latexLineArg(t);
@@ -4438,7 +4662,7 @@ function texNode(n,c){
       return {s:'\\sim '+(A.p<9?texP(A.s):A.s),p:3};
     }
     case 'fact':{const A=texNode(n.a,c);return {s:(A.p<9||A.neg?texP(A.s):A.s)+'!',p:9};}
-    case 'tr':{const A=texNode(n.a,c);return {s:(A.p<9?texP(A.s):A.s)+'^{\\mathsf{T}}',p:4};}
+    case 'tr':{const A=texNode(n.a,c);if(c.prime)return {s:A.s+"'",p:9};return {s:(A.p<9?texP(A.s):A.s)+'^{\\mathsf{T}}',p:4};}
     case 'polar':{const A=texNode(n.a,c),B=texNode(n.b,c);return {s:(A.p<2?texP(A.s):A.s)+' \\angle '+(B.p<3?texP(B.s):B.s),p:2};}
     case 'fmt':{
       const A=texNode(n.a,c);
@@ -4520,6 +4744,8 @@ function latexText(text,o){
   const rows=[];
   String(text).split('\n').forEach((ln,i)=>{
     let t=ln.trim();if(!t)return;
+    const ds=dsolveCallArgs(t);
+    if(ds!==null){rows.push({l:texODE(ds,o),tail:''});return;}
     const sa=solveCallArgs(t);if(sa!==null)t=splitTopCommas(sa)[0];
     const em=EQ_PREFIX.exec(t);if(em)t=em[2].trim();
     t=t.replace(/^solve\b(\s+[A-Za-z][A-Za-z0-9_]*(\s*,\s*[A-Za-z][A-Za-z0-9_]*)*\s*:)?/,'').trim();
@@ -4530,6 +4756,20 @@ function latexText(text,o){
   if(!rows.length)throw new CalcError('Nothing to convert');
   if(rows.length===1)return rows[0].l+(rows[0].tail?' '+rows[0].tail:'');
   return '\\begin{aligned}\n'+rows.map(r=>r.tail?r.l+' &'+r.tail:'& '+r.l).join(' \\\\\n')+'\n\\end{aligned}';
+}
+/* dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0) -> y'' + 3y' + 2y = u(t), \quad y(0) = 0, \quad y'(0) = 0 */
+function texODE(inner,o){
+  const parts=splitTopCommas(inner);
+  const side=s=>texNode(parseExpr(s),{src:s,mul:o.mul,digits:12,prime:true}).s;
+  const out=[];
+  const eq=parts[0].split('=');
+  out.push(side(eq[0])+' = '+(eq.length>1?side(eq[1]):'0'));
+  for(const p of parts.slice(1)){
+    const m=/^([A-Za-z][A-Za-z0-9_]*)\s*('*)\s*\(\s*([\s\S]+?)\s*\)\s*=\s*([\s\S]+)$/.exec(p);
+    if(!m)throw new CalcError('Initial conditions look like  y(0)=1  (got: '+p+')');
+    out.push(texName(m[1])+m[2]+'('+side(m[3])+') = '+side(m[4]));
+  }
+  return out.join(',\\quad ');
 }
 function texWrap(tex,w){
   if(w==='inline')return '$'+tex+'$';
@@ -4635,7 +4875,7 @@ function hl(s){
 function mkEl(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e;}
 function itemText(it){
   switch(it.kind){
-    case 'val':return '= '+fmtValue(it.v).text;
+    case 'val':return (it.label?it.label+' ':'')+'= '+fmtValue(it.v).text;
     case 'assign':return it.name+' = '+fmtValue(it.v).text;
     case 'def':return 'f '+it.name+'('+it.params.join(', ')+') = '+it.body;
     case 'err':return 'ERROR: '+it.msg;
@@ -4683,7 +4923,7 @@ function renderItem(it){
   const box=mkEl('div');
   if(it.warns)it.warns.forEach(w=>box.appendChild(mkEl('div','warn','\u26a0 '+esc(w))));
   switch(it.kind){
-    case 'val':box.appendChild(valueRow('<span class="eq">=</span>',it.v));if(it.v instanceof Sym)texButton(box,it.v);break;
+    case 'val':box.appendChild(valueRow((it.label?'<span class="vn">'+esc(it.label)+'</span>':'')+'<span class="eq">=</span>',it.v));if(it.v instanceof Sym)texButton(box,it.v);break;
     case 'assign':box.appendChild(valueRow('<span class="vn">'+esc(it.name)+'</span><span class="eq">\u2190</span>',it.v));if(it.v instanceof Sym)texButton(box,it.v);break;
     case 'tex':{
       const code=mkEl('div','texbox',esc(it.tex));code.title='Click to copy the LaTeX';code.onclick=()=>copyText(it.tex);box.appendChild(code);
@@ -4742,6 +4982,7 @@ function helpHtml(){
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>
 <tr><td>LaTeX</td><td><code>latex((s+1)/(s^2+3*s+2))</code> gives <code>\\frac{s + 1}{s^{2} + 3s + 2}</code>; <code>latex x^2 - 3*x + 2 = 0</code> works for equations; <code>latex(diff(...))</code>, <code>integ</code>, <code>LT</code>, <code>ILT</code> add <code>= result</code>. Typed numbers keep their suffix (<code>2.2k</code> &rarr; <code>2.2\\,\\mathrm{k}</code>), names get subscripts (<code>R1</code> &rarr; <code>R_{1}</code>), Greek names become symbols (<code>omega</code> &rarr; &omega;). Symbolic results have a <b>TeX</b> button. The <b>LaTeX tab</b> converts several lines with a preview. Paste into PowerPoint via Insert &rarr; Equation &rarr; LaTeX.</td></tr>
+<tr><td>differential equations</td><td><code>dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)</code> solves a linear ODE with constant coefficients by Laplace transform (t &ge; 0). <code>y'</code> is dy/dt; any function name works (<code>v'</code>, <code>i''</code>); missing initial conditions are 0. The answer is stored as <code>y(t)</code>: <code>y(2)</code>, <code>plot(y(t), t, 0, 10)</code>.</td></tr>
 <tr><td>Laplace</td><td><code>LT(f)</code> transforms f(t) to F(s): <code>LT(t*exp(-2*t)*sin(3*t))</code>. <code>ILT(F)</code> inverts a rational F(s) by partial fractions (repeated and complex poles, <code>exp(-s*T)</code> delays): <code>ILT(1/(s^2+3*s+2))</code> gives <code>exp(-t) - exp(-2*t)</code>. <code>poles(F)</code> and <code>zeros(F)</code> list the poles and zeros as <code>p1</code>, <code>p2</code>, &hellip; and <code>z1</code>, <code>z2</code>, &hellip; (stored as variables), and accept LT results: <code>poles(LT(exp(-t)*sin(2*t)))</code>. Step response: <code>ILT(H/s)</code>. <code>delta(t)</code> is the impulse and <code>u(t)</code> the unit step (<code>u(t-T)</code> delays it; write <code>2*u(t)</code>, since <code>2u</code> means 2 micro). Pass other names as <code>LT(f, t, s)</code>.</td></tr>
 <tr><td>trig units</td><td>sin, cos, tan, asin&hellip;, <code>phase()</code> and <code>@</code> always use <b>radians</b>. To get degrees out, convert the result: <code>asin(0.5) in deg</code> = 30&deg;. To feed degrees in, use <code>sin(30 in rad)</code> or the degree functions <code>sind cosd tand asind acosd atand atan2d</code> (<code>phase_deg</code> too). <code>mod(a,b)</code> takes the sign of b, <code>%</code> the sign of a; <code>log(x, base)</code> and <code>log10</code> work too.</td></tr>
 <tr><td>names</td><td>the single suffix letters <b>a f p n u m k M G T P</b> and <b>meg</b> can't be variable or function names, so <code>2p</code> is always pico. Names such as <code>a1</code>, <code>C1</code>, <code>k1</code>, <code>R_load</code> are fine (write <code>2*a1</code>). Names must start with a letter and use only letters, digits and <code>_</code>. A name like <code>V</code> or <code>pF</code> is allowed, but then <code>5V</code> / <code>10pF</code> is rejected as ambiguous until you <code>del</code> it. A variable may share a built-in function's name (e.g. <code>tau = 5</code>); <code>tau(...)</code> still calls the function.</td></tr>
@@ -4789,7 +5030,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','cos(x) = x','roots(x^3 - 6*x^2 + 11*x - 6)','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','limit(sin(x)/x, x, 0)','sum(1/k^2, k, 1, inf)','factor(x^3 - 6*x^2 + 11*x - 6)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','latex(diff(x^2*sin(x)))','solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','cos(x) = x','roots(x^3 - 6*x^2 + 11*x - 6)','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','limit(sin(x)/x, x, 0)','sum(1/k^2, k, 1, inf)','factor(x^3 - 6*x^2 + 11*x - 6)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','latex(diff(x^2*sin(x)))',"dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)",'solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   if(!guideSeen)b.appendChild(mkEl('p','ginvite','<button class="tb pulse" data-guide>&#128214; New here? Take the 5-minute guide</button>'));

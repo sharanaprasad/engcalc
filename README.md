@@ -19,6 +19,9 @@ or a phone. No install, no network required.
 - **Algebra and analysis**: `expand`, `factor` (polynomials, fractions, primes),
   `simplify`, `limit` (one- or two-sided, at infinity), `series` (Taylor),
   `sum` (finite, infinite, closed forms); exact constants such as pi^2/6 are recognised
+- **Differential equations**: `dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)`
+  solves linear ODEs with constant coefficients by Laplace transform; the
+  answer is stored as y(t)
 - **Equation solver**: linear systems of any size with engineering and
   complex coefficients (`solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3`),
   every root of a polynomial (`roots(...)`), numeric real roots of any
@@ -51,6 +54,7 @@ engcalc/
     ├── engine/                      Node tests of the calculation engine
     │   ├── test_core.js             176 cases — basic parsing, suffixes,
     │   │                            variables, complex, bases
+    │   ├── test_dsolve.js           48 cases — differential equations, each answer checked in the ODE
     │   ├── test_extended.js         1072 cases — identities on random
     │   │                            complex points, name rules, bases,
     │   │                            solver, unit parsing
