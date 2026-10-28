@@ -56,7 +56,7 @@ t('solve x,y: 3*x+2*y=12; x-y=1','x=2.8, y=1.8');
 t('solve (1k+2k)*i1 - 2k*i2 = 5; -2k*i1 + (2k+3k)*i2 = 0',/i1=2\.27273m, i2=909\.091µ/);
 t('solve x+y=3; x+y=4',/ERR.*unique/);
 t('solve x+y=3; 2*x+2*y=6',/ERR.*unique/);
-t('solve x*y=3; x+y=4',/ERR.*[Nn]ot linear/);
+t('solve x*y=3; x+y=4','x1=1, y1=3, x2=3, y2=1');   // nonlinear systems: Newton from many starts
 t('solve x+y+z=3; x-y=0',/ERR.*equation\(s\)/);
 t('solve 2*(x+y)=10; x-y=2','x=3.5, y=1.5');
 t('solve x/2 + y/3 = 1; x - y = 0','x=1.2, y=1.2');
@@ -66,7 +66,7 @@ t('solve',/ERR.*Usage/);
 t('solve x=1; y=',/ERR/);
 t('solve p+q=3; p-q=1',/ERR.*suffix/);
 t('solve sin(1)*x+y=2; x-y=0',/x=/);
-t('solve sin(x)+y=2; x-y=0',/ERR.*not linear/);
+t('solve sin(x)+y=2; x-y=0',/^x=1\.10606, y=1\.10606/);
 // ---- independent math identities (random complex points)
 function rnd(){return (Math.random()*2-1)*3;}
 for(let i=0;i<40;i++){

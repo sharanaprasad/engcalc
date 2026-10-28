@@ -106,6 +106,8 @@ L('integ(1/x, x, 1, e)','\\int_{1}^{e} \\frac{1}{x} \\, dx = 1');
 L('LT(exp(-2*t)*sin(3*t))','\\mathcal{L}\\left\\{e^{-2t} \\sin(3t)\\right\\} = \\frac{3}{(s + 2)^{2} + 9}');
 L('ILT(1/(s^2+3*s+2))','\\mathcal{L}^{-1}\\left\\{\\frac{1}{s^{2} + 3s + 2}\\right\\} = e^{-t} - e^{-2t}');
 L('diff(x^2*sin(x))','\\frac{d}{dx} \\left(x^{2} \\sin(x)\\right)',{res:false});
+L('cos(x) = x','\\cos(x) = x');   // a built-in on the left is an equation, not a definition
+L('solve(x*exp(x) = 2, x, 0, 5)','x e^{x} = 2');
 // ---- errors
 L('2x',/ERR: '2x': multiplication must be written with \*/);
 L('',/ERR: Nothing to convert/);

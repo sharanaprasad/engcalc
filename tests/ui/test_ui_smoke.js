@@ -123,7 +123,7 @@ ok(so.includes('2.27273m')&&so.includes('909.091µ'),'mesh example: '+so.slice(0
 d.getElementById('eqs').value='x+y=3\nx+y=4';d.getElementById('btnSolve').click();
 ok(d.getElementById('solout').textContent.includes('No unique solution'),'singular system reported');
 d.getElementById('eqs').value='x*y=3\nx+y=4';d.getElementById('btnSolve').click();
-ok(d.getElementById('solout').textContent.toLowerCase().includes('not linear'),'nonlinear reported');
+ok(/2 solutions found numerically/.test(d.getElementById('solout').textContent)&&d.getElementById('solout').textContent.includes('x1'),'nonlinear system solved numerically');
 // function button inserts into the equations box while on Solver tab
 d.getElementById('eqs').value='';d.getElementById('eqs').focus();
 [...d.querySelectorAll('#fgroups .fb')].find(b=>b.textContent==='sqrt').click();

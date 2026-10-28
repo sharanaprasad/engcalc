@@ -16,8 +16,11 @@ or a phone. No install, no network required.
 - **Complex numbers**: `3+4j`, `(1+2j)*(3-4j)`, `mag()`, `phase()`,
   `phase_deg()`, `phase_rad()`, polar form `5@30`
 - **Variables and user functions**: `x = 1; y = 2; x + y`, `f1(x) = x^2 + 1`
-- **Linear-system solver**: 3, 4 or more unknowns, with engineering and
-  complex coefficients (`solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3`)
+- **Equation solver**: linear systems of any size with engineering and
+  complex coefficients (`solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3`),
+  every root of a polynomial (`roots(...)`), numeric real roots of any
+  equation (`cos(x) = x`, `solve(f = g, x, a, b)`), and nonlinear systems
+  by Newton's method
 - **LaTeX tab and latex()**: calculator syntax to LaTeX for reports and
   PowerPoint (Insert > Equation > LaTeX), with a live preview (KaTeX, online
   only); symbolic results have a TeX copy button
@@ -51,11 +54,12 @@ engcalc/
     │   ├── test_calculus.js         156 cases — diff / integ, checked numerically
     │   ├── test_laplace.js          139 cases — LT / ILT / poles / zeros, checked numerically
     │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
-    │   ├── test_latex.js            107 cases — LaTeX conversion, latex() in the console
+    │   ├── test_latex.js            109 cases — LaTeX conversion, latex() in the console
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
     │   ├── test_audit.js            191 edge cases — parser, formatting,
     │   │                            precedence, explicit *, bits, solver
-    │   └── test_regression.js       48 cases — bugs that have been fixed
+    │   ├── test_regression.js       48 cases — bugs that have been fixed
+    │   └── test_solve.js            72 cases — roots, polynomial / numeric / nonlinear solving
     └── ui/                          jsdom-based DOM / UI tests
         ├── test_ui_smoke.js         77 cases — tabs, drawers, buttons,
         │                            keyboard shortcuts
