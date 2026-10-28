@@ -550,7 +550,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <a href="#g-complex" data-n="5">Complex numbers &amp; angles</a>
       <a href="#g-equations" data-n="6">Solving equations</a>
       <a href="#g-matrices" data-n="7">Matrices</a>
-      <a href="#g-calculus" data-n="8">Calculus</a>
+      <a href="#g-calculus" data-n="8">Calculus &amp; algebra</a>
       <a href="#g-laplace" data-n="9">Laplace &amp; transfer functions</a>
       <a href="#g-plot" data-n="10">Plots &amp; Bode</a>
       <a href="#g-tabs" data-n="11">Tabs &amp; panels</a>
@@ -666,7 +666,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
 
       <section class="g-sec" id="g-calculus" style="--ac:var(--orange)">
         <div class="g-num">8</div>
-        <h2>Calculus</h2>
+        <h2>Calculus &amp; algebra</h2>
         <p><b>diff</b> and <b>integ</b> work on formulas, not just numbers, and the answers come back as expressions you can copy and reuse.</p>
         <div class="gx" data-ex="diff(x^2*sin(x))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="integ(x*exp(x))"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
@@ -679,6 +679,25 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <li><code>diff(f, x, 2)</code> is the second derivative.</li>
         </ul>
         <div class="gx" data-ex="diff(R1*x^2, x)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <p><b>Limits, series and sums.</b> Exact constants such as &pi;, e and &radic;2 are recognised in the answers.</p>
+        <div class="gx" data-ex="limit(sin(x)/x, x, 0)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="limit((1+1/x)^x, x, inf)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="series(sin(x), x, 0, 7)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="sum(1/k^2, k, 1, inf)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="sum(k^2, k, 1, n)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <ul class="g-list">
+          <li><code>limit(f, x, a)</code>; <code>a</code> can be <code>inf</code>. Add <code>left</code> or <code>right</code> for a one-sided limit: <code>limit(1/x, x, 0, right)</code>. If the two sides differ or the expression oscillates, it says so.</li>
+          <li><code>series(f, x, a, n)</code> is the Taylor series about <code>a</code> up to power <code>n</code> (defaults 0 and 5).</li>
+          <li><code>sum(f, k, a, b)</code>: <code>b</code> can be a number, <code>inf</code>, or a name such as <code>n</code> for a closed form (polynomial and geometric terms).</li>
+        </ul>
+        <p><b>Algebra.</b></p>
+        <div class="gx" data-ex="expand((x+1)^3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="factor(x^3 - 6*x^2 + 11*x - 6)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="simplify(sin(x)^2 + cos(x)^2)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <ul class="g-list">
+          <li><code>factor</code> also cancels fractions (<code>factor((x^2-1)/(x^2+3*x+2))</code>), takes out common factors (<code>factor(x^2*y + x*y^2)</code>) and splits whole numbers into primes (<code>factor(360)</code>).</li>
+          <li><code>simplify</code> tries expanding, factoring, cancelling and identities, and keeps the shortest result that still gives the same values.</li>
+        </ul>
       </section>
 
       <section class="g-sec" id="g-laplace" style="--ac:var(--mag)">
@@ -778,7 +797,8 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Store</h3><code>R1 = 2.2k</code> <code>f1(x) = x^2</code> <code>del R1</code> <code>clear</code></div>
           <div class="g-card"><h3>Solve</h3><code>2*x = 4</code> <code>x+y=5; x-y=1</code> <code>x^2-3*x+2=0</code> <code>cos(x) = x</code> <code>eq: x = y</code> <code>solve(f = g, x, a, b)</code> <code>roots(p)</code></div>
           <div class="g-card"><h3>Matrix</h3><code>[1 2; 3 4]</code> <code>det</code> <code>inv</code> <code>A'</code> <code>A(2,1)</code></div>
-          <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code></div>
+          <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code> <code>limit(f, x, a)</code> <code>series(f, x, a, n)</code> <code>sum(f, k, a, b)</code></div>
+          <div class="g-card"><h3>Algebra</h3><code>expand(f)</code> <code>factor(f)</code> <code>simplify(f)</code> <code>roots(p)</code></div>
           <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code></div>
           <div class="g-card"><h3>Plot</h3><code>plot(f, x, a, b)</code> <code>bode(H, w1, w2)</code> <code>bode(H, f1, f2, hz)</code> <code>right(f)</code></div>
           <div class="g-card"><h3>LaTeX</h3><code>latex(f)</code> <code>latex a = b</code> <code>TeX</code> button &middot; LaTeX tab</div>
@@ -1337,7 +1357,8 @@ function sSum(items){
     if(n.t==='un'&&n.op==='-'){add(n.a,-sign);return;}
     const s=symSplit(n);
     if(!s.f.length){konst+=sign*s.c;kmax=Math.max(kmax,Math.abs(s.c));return;}
-    const key=symPrint(symBuild(1,s.f));
+    /* like terms regardless of factor order: x*y and y*x share a key */
+    const key=s.f.map(([b,e])=>symPrint(b)+'^'+(typeof e==='number'?e:symPrint(e))).sort().join('*');
     const g=groups.get(key);
     if(g){g.c+=sign*s.c;g.m=Math.max(g.m,Math.abs(s.c));}
     else{groups.set(key,{c:sign*s.c,f:s.f,m:Math.abs(s.c)});order.push(key);}
@@ -2793,6 +2814,570 @@ function rootsCall(n,sc){
 }
 symDef('roots','roots(p, x)   or   roots([1 -6 11 -6])','Every root of a polynomial, real and complex, stored as x1, x2, ... The variable is optional when there is one; a row of coefficients (highest power first) works too','roots(x^3 - 6*x^2 + 11*x - 6)',1,2,rootsCall,true,'Algebra');
 def('Algebra','solve','solve(f = g, x, a, b)','Solve an equation. Linear and polynomial equations are exact (all roots); others are solved numerically, listing every real root between a and b (default -10 to 10). Several unknowns: solve x,y: eq1; eq2 (Newton’s method for nonlinear systems). Write it on its own line','solve(cos(x) = x)',1,4,()=>{throw new CalcError('Write solve(...) on its own line, e.g.  solve(cos(x) = x)');});
+/* ============ algebra & analysis: expand, factor, simplify, limit, series, sum ============ */
+const symIsNum=n=>n.t==='num'&&typeof n.v==='number';
+const SMUL=(a,b)=>({t:'bin',op:'*',a,b,pos:0});
+const SDIVN=(a,b)=>({t:'bin',op:'/',a,b,pos:0});
+const SPOWN=(a,e)=>e===1?a:{t:'bin',op:'^',a,b:SN(e),pos:0};
+const SNEGN=a=>({t:'un',op:'-',a,pos:0});
+function igcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a;}
+/* free names that are unknowns (not stored values) */
+function symUnknowns(F){return [...symFree(F,new Set())].filter(nm=>!STATE.vars.has(nm)||STATE.solved.has(nm));}
+function symVarFor(F,fname,example){
+  const fr=symUnknowns(F);
+  if(fr.length===1)return fr[0];
+  if(!fr.length)return null;
+  throw new CalcError(fname+'() found several variables ('+fr.join(', ')+') — say which one, e.g.  '+example.replace('#',fr[0]));
+}
+function symRatApprox(x,maxQ,tol){
+  if(!Number.isFinite(x))return null;
+  for(let q=1;q<=maxQ;q++){const p=Math.round(x*q);if(Math.abs(x-p/q)<=tol*Math.max(1,Math.abs(x)))return [p,q];}
+  return null;
+}
+/* c * (p/q) as an AST: 3*pi/4, -pi/2, pi */
+function symRatTimes([p,q],c){
+  const P=Math.abs(p),body=c?(P===1?c:SMUL(SN(P),c)):SN(P);
+  const node=q===1?body:SDIVN(body,SN(q));
+  return p<0?SNEGN(node):node;
+}
+/* recognise a number as an exact constant: p/q, multiples of pi, pi^2, pi^4, e, sqrt(pi), ln 2, k*sqrt(m)/q, ln(p/q). tol: relative accuracy of v */
+function identifyConst(v,tol){
+  if(typeof v!=='number'||!Number.isFinite(v))return null;
+  tol=tol||1e-10;
+  if(Math.abs(v)<1e-13)return SN(0);
+  const maxQ=tol<=1e-10?1000:100;
+  let r;
+  if((r=symRatApprox(v,maxQ,tol)))return symRatTimes(r,null);
+  const PI=SID('pi');
+  const tries=[[Math.PI,PI],[Math.PI*Math.PI,SPOWN(PI,2)],[Math.pow(Math.PI,4),SPOWN(PI,4)],[Math.E,SID('e')],[Math.sqrt(Math.PI),SCALL('sqrt',PI)],[Math.LN2,SCALL('ln',SN(2))]];
+  for(const [c,ast] of tries)if((r=symRatApprox(v/c,100,tol))&&r[0]!==0)return symRatTimes(r,ast);
+  /* e^(p/q): e^2, e^-1, e^(1/2) */
+  if(v>0&&Math.abs(Math.log(v))<=10){const lr=symRatApprox(Math.log(v),12,tol);if(lr&&lr[0]!==0)return {t:'bin',op:'^',a:SID('e'),b:lr[1]===1?SN(lr[0]):SDIVN(SN(lr[0]),SN(lr[1])),pos:0};}
+  const sq=symRatApprox(v*v,1000,tol);
+  if(sq&&sq[0]>0){
+    const P=sq[0]*sq[1];let q=sq[1],m=P,s=1;
+    if(P<1e7){for(let f=2;f*f<=m;f++)while(m%(f*f)===0){m/=f*f;s*=f;}}
+    if(m>1&&P<1e7){const g=igcd(s,q);return symRatTimes([(v<0?-1:1)*s/g,q/g],SCALL('sqrt',SN(m)));}
+  }
+  if(Math.abs(v)<30){const ex=symRatApprox(Math.exp(v),100,tol);if(ex&&ex[0]>0&&!(ex[0]===1&&ex[1]===1)&&ex[0]<1e6)return SCALL('ln',ex[1]===1?SN(ex[0]):SDIVN(SN(ex[0]),SN(ex[1])));}
+  return null;
+}
+/* an exact (identified) value is shown symbolically with its decimal in the note; otherwise a number */
+function exactOrNumber(v,tol,note){
+  const id=tol?identifyConst(v,tol):null;
+  if(id&&!symIsNum(id))return new Sym(id,false,note+'  ≈ '+fmtValue(v).text);
+  if(id&&symIsNum(id))return id.v;
+  return note?new Disp(fmtValue(v).text,v,note):v;
+}
+
+/* ---- expand ---- */
+function symExpMul(a,b){
+  const ta=symTerms(a,1,[]),tb=symTerms(b,1,[]);
+  if(ta.length*tb.length>20000)throw new CalcError('The expansion is too large');
+  const out=[];
+  for(const [s1,x] of ta)for(const [s2,y] of tb){const p=sMul(x,y);out.push(s1*s2>0?p:sNeg(p));}
+  return sSum(out);
+}
+function symExpand(n){
+  switch(n.t){
+    case 'un':return n.op==='-'?sNeg(symExpand(n.a)):n;
+    case 'bin':{
+      if(n.op==='^'){
+        const a=symExpand(n.a);
+        if(symIsNum(n.b)&&Number.isInteger(n.b.v)&&n.b.v>=2&&symIsSum(a)){
+          if(n.b.v>40)throw new CalcError('The power is too large to expand');
+          let r=a;for(let i=1;i<n.b.v;i++)r=symExpMul(r,a);return r;
+        }
+        return sPow(a,symExpand(n.b));
+      }
+      const a=symExpand(n.a),b=symExpand(n.b);
+      switch(n.op){
+        case '+':return sAdd(a,b);
+        case '-':return sSub(a,b);
+        case '*':return symExpMul(a,b);
+        case '/':return symIsSum(a)?sSum(symTerms(a,1,[]).map(([s,t])=>sDiv(s>0?t:sNeg(t),b))):sDiv(a,b);
+      }
+      return {...n,a,b};
+    }
+    case 'call':return {...n,args:n.args.map(symExpand)};
+  }
+  return n;
+}
+/* highest total degree first: x^3 + 3*x^2 + 3*x + 1 */
+function symOrder(n){
+  if(!symIsSum(n))return n;
+  const deg=t=>{let d=0;for(const [b,e] of symSplit(t).f)if(b.t==='id'&&typeof e==='number')d+=e;return d;};
+  const ts=symTerms(n,1,[]).map(([s,t])=>({t:s>0?t:sNeg(t),d:deg(t),k:symPrint(t)}));
+  ts.sort((A,B)=>B.d-A.d||(A.k<B.k?-1:A.k>B.k?1:0));
+  return sSum(ts.map(x=>x.t));
+}
+
+/* ---- factor ---- */
+/* real polynomial (ascending coefficients) -> leading constant and factors [ast, multiplicity]:
+   rational roots as (q*x - p), complex pairs and irrational pairs with rational sum/product as quadratics */
+function polyFactorList(coef,x){
+  coef=plTrim(coef);
+  const deg=coef.length-1;let lead=coef[deg];
+  if(deg<1)return {lead:coef[0],factors:[]};
+  const X=SID(x),lin=[],rest=[];
+  for(const {z,m} of plRoots(coef)){
+    if(!isC(z)){const r=symRatApprox(z,60,1e-9);if(r){lin.push({p:r[0],q:r[1],m,v:r[0]/r[1]});continue;}}
+    rest.push({z,m});
+  }
+  lin.sort((A,B)=>(A.v===0?-1:B.v===0?1:A.v-B.v));
+  const factors=[];
+  for(const L of lin){
+    lead/=Math.pow(L.q,L.m);
+    factors.push([L.p===0?X:sSub(L.q===1?X:sMul(SN(L.q),X),SN(L.p)),L.m]);
+  }
+  /* x^2 - s*x + p, scaled to whole-number coefficients when s and p are fractions */
+  const quad=(s,p,m)=>{
+    const rs=symRatApprox(s,60,1e-9),rp=symRatApprox(p,60,1e-9);
+    let L=1;if(rs&&rp)L=rs[1]*rp[1]/igcd(rs[1],rp[1]);
+    lead/=Math.pow(L,m);
+    const r8=v=>symRatApprox(v,60,1e-9)?snapNum(v):Number(v.toPrecision(8));
+    factors.push([sSum([sMul(SN(L),sPow(X,SN(2))),sMul(SN(r8(-L*s)),X),SN(r8(L*p))]),m]);
+  };
+  rest.filter(R=>isC(R.z)&&R.z.im>0).forEach(R=>quad(2*R.z.re,R.z.re*R.z.re+R.z.im*R.z.im,R.m));
+  const reals=rest.filter(R=>!isC(R.z)),paired=new Set();
+  for(let i=0;i<reals.length;i++){
+    if(paired.has(i))continue;
+    for(let j=i+1;j<reals.length;j++){
+      if(paired.has(j)||reals[i].m!==reals[j].m)continue;
+      const s=reals[i].z+reals[j].z,p=reals[i].z*reals[j].z;
+      if(symRatApprox(s,60,1e-9)&&symRatApprox(p,60,1e-9)){quad(s,p,reals[i].m);paired.add(i);paired.add(j);break;}
+    }
+  }
+  reals.forEach((R,i)=>{if(!paired.has(i))factors.push([sSub(X,SN(Number(R.z.toPrecision(8)))),R.m]);});
+  return {lead,factors};
+}
+function factorProduct(lead,factors){
+  const chain=l=>l.reduce((acc,f)=>acc?SMUL(acc,f):f,null);
+  const fs=factors.map(([f,m])=>SPOWN(f,m));
+  lead=snapNum(lead);
+  if(!fs.length)return SN(lead);
+  if(lead===1)return chain(fs);
+  if(lead===-1)return SNEGN(chain(fs));
+  const r=symRatApprox(Math.abs(lead),60,1e-12);
+  if(r&&r[1]>1){const body=r[0]===1?chain(fs):chain([SN(r[0]),...fs]);const d=SDIVN(body,SN(r[1]));return lead<0?SNEGN(d):d;}
+  return chain([SN(lead),...fs]);
+}
+function primeFactorAst(v){
+  if(!Number.isInteger(v)||Math.abs(v)<2||Math.abs(v)>9007199254740991)return null;
+  let n=Math.abs(v);const f=[];
+  for(let p=2;p*p<=n;p+=(p===2?1:2)){let k=0;while(n%p===0){n/=p;k++;}if(k)f.push([p,k]);if(p>1e6)return null;}
+  if(n>1)f.push([n,1]);
+  if(f.length===1&&f[0][1]===1)return null;
+  const node=f.map(([p,k])=>SPOWN(SN(p),k)).reduce((a,b)=>a?SMUL(a,b):b,null);
+  return v<0?SNEGN(node):node;
+}
+/* returns a factored AST, or null when there is nothing to factor */
+function symFactor(F){
+  if(symIsNum(F))return primeFactorAst(F.v);
+  const fr=symUnknowns(F);
+  if(fr.length===1){
+    const x=fr[0],r=symRat(F,x);
+    if(r){
+      const N=plTrim(r.N),D=plTrim(r.D);
+      if(N.length>41||D.length>41)throw new CalcError('The polynomial degree is too high to factor (max 40)');
+      if(D.length===1){const pf=polyFactorList(N.map(v=>v/D[0]),x);return factorProduct(pf.lead,pf.factors);}
+      const nf=polyFactorList(N,x),df=polyFactorList(D,x);
+      for(const d of df.factors){
+        const k=nf.factors.find(f=>f[1]>0&&symEq(f[0],d[0]));
+        if(k){const c=Math.min(k[1],d[1]);k[1]-=c;d[1]-=c;}
+      }
+      const num=factorProduct(nf.lead/df.lead,nf.factors.filter(f=>f[1]>0));
+      const dl=df.factors.filter(f=>f[1]>0);
+      return dl.length?SDIVN(num,factorProduct(1,dl)):num;
+    }
+  }
+  if(symIsSum(F)){
+    /* a common factor of every term: x^2*y + x*y^2 = x*y*(x + y) */
+    const T=symTerms(F,1,[]).map(([s,t])=>{const sp=symSplit(t);return {c:s*sp.c,f:sp.f};});
+    let common=T[0].f.filter(([,e])=>typeof e==='number'&&e>0);
+    for(const t of T.slice(1))common=common.map(([b,e])=>{const m=t.f.find(([bb])=>symEq(bb,b));return m&&typeof m[1]==='number'&&m[1]>0?[b,Math.min(e,m[1])]:null;}).filter(Boolean);
+    let g=T.every(t=>Number.isInteger(t.c))?T.reduce((acc,t)=>igcd(acc,t.c),0):1;
+    if(!g)g=1;
+    if(T.every(t=>t.c<0))g=-g;
+    if(common.length||g!==1){
+      const inv=common.map(([b,e])=>[b,-e]);
+      const inner=sSum(T.map(t=>symBuild(t.c/g,symMerge({c:1,f:t.f},{c:1,f:inv}).f)));
+      const innerF=symFactor(inner)||inner;
+      const outer=symBuild(g,common);
+      return symIsNum(outer)&&outer.v===1?innerF:symIsNum(outer)&&outer.v===-1?SNEGN(innerF):SMUL(outer,innerF);
+    }
+  }
+  return null;
+}
+
+/* ---- simplify: try several rewrites, keep the shortest one that is numerically the same ---- */
+function symRules(n){
+  let m=n;
+  if(m.t==='bin')m={...m,a:symRules(m.a),b:symRules(m.b)};
+  else if(m.t==='un')m={...m,a:symRules(m.a)};
+  else if(m.t==='call')m={...m,args:m.args.map(symRules)};
+  if(m.t==='call'&&m.args.length===1){
+    const a=m.args[0],z=symIsNum(a)&&a.v===0;
+    if(m.name==='exp'&&a.t==='call'&&a.name==='ln'&&a.args.length===1)return a.args[0];
+    if(m.name==='ln'&&a.t==='call'&&a.name==='exp'&&a.args.length===1)return a.args[0];
+    if(m.name==='ln'&&a.t==='id'&&a.name==='e')return SN(1);
+    if(m.name==='ln'&&symIsNum(a)&&a.v===1)return SN(0);
+    if(z&&['sin','tan','sinh','tanh','asin','atan'].includes(m.name))return SN(0);
+    if(z&&['cos','cosh','exp'].includes(m.name))return SN(1);
+  }
+  if(m.t==='bin'&&m.op==='^'&&m.a.t==='call'&&m.a.name==='sqrt'&&m.a.args.length===1&&symIsNum(m.b)&&m.b.v===2)return m.a.args[0];
+  if(m.t==='bin'&&m.op==='^'&&m.a.t==='call'&&m.a.name==='exp'&&m.a.args.length===1)return SCALL('exp',sMul(m.a.args[0],m.b));
+  if(m.t==='bin'&&(m.op==='*'||m.op==='/')){
+    /* exp(a)*exp(b) = exp(a + b) */
+    const sp=symSplit(m),ex=sp.f.filter(([b,e])=>b.t==='call'&&b.name==='exp'&&b.args.length===1&&typeof e==='number');
+    if(ex.length>=2){
+      const arg=sSum(ex.map(([b,e])=>sMul(SN(e),b.args[0])));
+      return symBuild(sp.c,[...sp.f.filter(f=>!ex.includes(f)),[SCALL('exp',arg),1]]);
+    }
+  }
+  return m;
+}
+/* sin(u)^2 -> 1 - cos(u)^2 (or the other way), then expand: lets sin^2 + cos^2 collapse */
+function symTrigSwap(n,from,to){
+  if(n.t==='bin'){
+    if(n.op==='^'&&n.a.t==='call'&&n.a.name===from&&n.a.args.length===1&&symIsNum(n.b)&&Number.isInteger(n.b.v)&&n.b.v>=2){
+      const u=n.a.args[0],k=n.b.v,sq=sSub(SN(1),sPow(SCALL(to,u),SN(2)));
+      const p=sPow(sq,SN(Math.floor(k/2)));
+      return k%2?sMul(p,SCALL(from,u)):p;
+    }
+    return {...n,a:symTrigSwap(n.a,from,to),b:symTrigSwap(n.b,from,to)};
+  }
+  if(n.t==='un')return {...n,a:symTrigSwap(n.a,from,to)};
+  if(n.t==='call')return {...n,args:n.args.map(a=>symTrigSwap(a,from,to))};
+  return n;
+}
+/* same value at several test points (where both sides are defined) */
+function symSameValue(a,b,names){
+  const P=[0.7123,1.3317,2.2913,-0.6251,-1.7731,0.3389,3.1173];
+  let compared=0;
+  for(const t of P){
+    const sc=new Map(names.map((nm,i)=>[nm,t*(1+0.173*i)]));
+    let va,vb;
+    try{DEPTH=0;va=U(ev(a,sc));DEPTH=0;vb=U(ev(b,sc));}catch(e){continue;}
+    if(va instanceof Mat||vb instanceof Mat)return false;
+    const ma=cabs(va),mb=cabs(vb);
+    if(!Number.isFinite(ma)||!Number.isFinite(mb))continue;
+    if(cabs(sub(va,vb))>1e-7*Math.max(1,ma,mb))return false;
+    compared++;
+  }
+  return compared>=3;
+}
+function symSimplifyBest(F){
+  const names=[...symFree(F,new Set())].filter(nm=>!STATE.vars.has(nm)||STATE.solved.has(nm));
+  const base=symRules(symSimplify(F));
+  const tidy=c=>symOrder(symRules(symSimplify(c)));
+  const cands=[base];
+  const tryAdd=fn=>{try{const c=fn();if(c)cands.push(tidy(c));}catch(e){if(!(e instanceof CalcError))throw e;}};
+  tryAdd(()=>symExpand(base));
+  tryAdd(()=>symFactor(base));
+  tryAdd(()=>symExpand(symTrigSwap(base,'sin','cos')));
+  tryAdd(()=>symExpand(symTrigSwap(base,'cos','sin')));
+  tryAdd(()=>{const f=symFactor(base);return f&&f.t==='bin'&&f.op==='/'?SDIVN(symOrder(symExpand(f.a)),symOrder(symExpand(f.b))):null;});
+  let best=base,bestLen=symPrint(base).length;
+  for(const c of cands.slice(1)){
+    const L=symPrint(c).length;
+    if(L<bestLen&&(names.length?symSameValue(F,c,names):true)){best=c;bestLen=L;}
+  }
+  return best;
+}
+
+/* ---- limits ---- */
+/* polynomial extrapolation to h = 0 through the points (h[i], v[i]) */
+function nevilleAt0(h,v){
+  const p=v.slice(),n=p.length;
+  for(let k=1;k<n;k++)for(let i=0;i<n-k;i++)p[i]=(h[i]*p[i+1]-h[i+k]*p[i])/(h[i]-h[i+k]);
+  return p[0];
+}
+/* one-sided numeric limit of g(h) as h -> 0+: {v} (number or +-Infinity), or {osc:true} */
+function limitOneSided(g,h0){
+  /* oscillation (sin(1/x)): the spread of values over ever smaller intervals does not shrink */
+  const spread=j=>{const v=[];for(let i=0;i<=24;i++){const h=h0*Math.pow(10,-j-i/24);let y;try{y=g(h);}catch(e){y=NaN;}if(Number.isFinite(y))v.push(y);}
+    if(v.length<=10)return null;
+    const dd=v.slice(1).map((y,i)=>Math.sign(y-v[i])).filter(Boolean);
+    return {r:Math.max(...v)-Math.min(...v),m:Math.max(...v.map(Math.abs)),flips:dd.slice(1).filter((s,i)=>s!==dd[i]).length};};
+  const s2=spread(2),s5=spread(5);
+  if(s2&&s5&&s5.flips>=3&&s5.r>=0.5*s2.r&&s5.r>1e-3*Math.max(1,s5.m))return {osc:true};
+  const H=[],V=[];
+  for(let k=0;k<=36;k++){const h=h0*Math.pow(2,-k);let v;try{v=g(h);}catch(e){v=NaN;}if(!Number.isNaN(v)){H.push(h);V.push(v);}}
+  if(V.length<6)return null;
+  const tail=V.slice(-8);
+  if(tail.every(x=>x===Infinity))return {v:Infinity};
+  if(tail.every(x=>x===-Infinity))return {v:-Infinity};
+  const fin=V.map((v,i)=>[H[i],v]).filter(([,v])=>Number.isFinite(v));
+  if(fin.length<6)return null;
+  const ft=fin.slice(-8).map(p=>p[1]);
+  const grows=ft.every((x,i)=>!i||(Math.abs(x)>=Math.abs(ft[i-1])&&Math.sign(x)===Math.sign(ft[0])));
+  if(grows&&Math.abs(ft[ft.length-1])>1e7&&Math.abs(ft[ft.length-1])>100*Math.abs(ft[0]))return {v:Math.sign(ft[0])*Infinity};
+  /* slow divergence (ln x): growing in size while the steps do not shrink */
+  if(grows){const d=ft.slice(1).map((x,i)=>Math.abs(x-ft[i]));if(d.slice(1).every((x,i)=>x>=0.98*d[i]&&x>0))return {v:Math.sign(ft[0])*Infinity};}
+  let best=null,bestErr=Infinity,prev;
+  for(let k=5;k<fin.length;k++){
+    const w=fin.slice(k-5,k+1),e=nevilleAt0(w.map(p=>p[0]),w.map(p=>p[1]));
+    if(prev!==undefined&&Number.isFinite(e)){const err=Math.abs(e-prev);if(err<bestErr){bestErr=err;best=e;}}
+    prev=e;
+  }
+  /* slowly converging (non-polynomial) behaviour: fall back to the trend of the plain values */
+  const last=fin[fin.length-1][1];
+  if(best===null||bestErr>1e-4*Math.max(1,Math.abs(best))){
+    const spread=Math.max(...ft)-Math.min(...ft);
+    if(spread<=1e-6*Math.max(1,Math.abs(last)))return {v:last,err:spread};
+    /* power-law convergence (x^0.1 -> 0): Aitken's delta-squared on the halving sequence */
+    const fv=fin.map(p=>p[1]),A=[];
+    for(let i=Math.max(0,fv.length-16);i+2<fv.length;i++){const d=fv[i+2]-2*fv[i+1]+fv[i];if(d!==0)A.push(fv[i+2]-(fv[i+2]-fv[i+1])*(fv[i+2]-fv[i+1])/d);}
+    let ab=null,ae=Infinity;
+    for(let i=1;i<A.length;i++){const e=Math.abs(A[i]-A[i-1]);if(e<ae&&Number.isFinite(A[i])){ae=e;ab=A[i];}}
+    if(ab!==null&&ae<=1e-7*Math.max(1,Math.abs(ab)))return {v:ab,err:ae};
+    const signs=ft.slice(1).map((x,i)=>Math.sign(x-ft[i]));
+    const flips=signs.slice(1).filter((s,i)=>s&&signs[i]&&s!==signs[i]).length;
+    if(flips>=3)return {osc:true};
+    return {v:last,slow:true};
+  }
+  return {v:best,err:bestErr};
+}
+function symLimitPoint(nd,sc){
+  const inf=m=>m.t==='id'&&m.name==='inf'&&!STATE.vars.has('inf')&&!(sc&&sc.has('inf'));
+  if(inf(nd))return Infinity;
+  if(nd.t==='un'&&nd.op==='-'&&inf(nd.a))return -Infinity;
+  const v=U(ev(nd,sc));
+  if(typeof v!=='number'||Number.isNaN(v))throw new CalcError('The limit point must be a real number or inf');
+  return v;
+}
+/* {v, exact:true} when found by substitution / L'Hopital, or a numeric estimate */
+function symLimitValue(F,x,a,dir,depth){
+  const fAt=t=>{const m=new Map([[x,t]]);DEPTH=0;const v=U(ev(F,m));if(typeof v==='number')return v;if(isC(v)&&Math.abs(v.im)<=1e-12*Math.abs(v.re))return v.re;return NaN;};
+  if(Number.isFinite(a)){
+    let v0=NaN;try{v0=fAt(a);}catch(e){}
+    if(Number.isFinite(v0)){
+      /* continuous there: nearby values approach f(a) (steep ones like sqrt(x) at 0 included) */
+      const sc0=Math.max(1,Math.abs(a)),tolv=Math.max(1,Math.abs(v0));
+      const ok=(dir?[dir]:[-1,1]).every(s=>{
+        let w1,w2;try{w1=fAt(a+s*1e-6*sc0);w2=fAt(a+s*1e-9*sc0);}catch(e){return false;}
+        if(!Number.isFinite(w1)||!Number.isFinite(w2))return false;
+        const d1=Math.abs(w1-v0),d2=Math.abs(w2-v0);
+        return d2<=1e-4*tolv||(d2<0.5*d1&&d2<=1e-2*tolv);
+      });
+      if(ok)return {v:v0,exact:true};
+    }
+  }
+  /* L'Hopital for 0/0 and inf/inf quotients */
+  if(depth<6){
+    const sp=symSplit(F),num=sp.f.filter(([,e])=>typeof e==='number'&&e>0),den=sp.f.filter(([,e])=>typeof e==='number'&&e<0);
+    if(den.length&&num.length){
+      const N=symBuild(sp.c,num),D=symBuild(1,den.map(([b,e])=>[b,-e]));
+      let ln=null,ld=null;
+      try{ln=symLimitValue(N,x,a,dir,depth+1);ld=symLimitValue(D,x,a,dir,depth+1);}catch(e){ln=ld=null;}
+      const zero=r=>r&&!r.osc&&Number.isFinite(r.v)&&Math.abs(r.v)<1e-12,inf=r=>r&&!r.osc&&!Number.isFinite(r.v)&&!Number.isNaN(r.v);
+      if((zero(ln)&&zero(ld))||(inf(ln)&&inf(ld))){
+        try{const r=symLimitValue(symSimplify(sDiv(symD(N,x),symD(D,x))),x,a,dir,depth+1);if(r&&!r.osc&&!r.rough)return r;}catch(e){if(!(e instanceof CalcError))throw e;}
+      }
+    }
+  }
+  /* numeric: approach from each side and extrapolate */
+  if(!Number.isFinite(a)){const s=a>0?1:-1;return limitOneSided(h=>fAt(s/h),0.1)||{osc:true};}
+  const h0=0.05*Math.max(1,Math.abs(a));
+  const sides=dir?[dir]:[-1,1];
+  const R=sides.map(s=>limitOneSided(h=>fAt(a+s*h),h0));
+  if(R.some(r=>!r)){
+    if(R.length===2&&(R[0]||R[1]))throw new CalcError('The expression is not defined (or not real) to the '+(R[0]?'right':'left')+' of '+x+' = '+fmtValue(a).text+'. Try  limit(expr, '+x+', '+fmtValue(a).text+', '+(R[0]?'left':'right')+')');
+    throw new CalcError('limit(): the expression has no real values near '+x+' = '+fmtValue(a).text+' (limit() works with real-valued expressions)');
+  }
+  if(R.some(r=>r.osc))return {osc:true};
+  if(R.some(r=>r.slow))return R.find(r=>r.slow);
+  if(R.length===1)return R[0];
+  const [L,Rt]=R,same=(L.v===Rt.v)||(Number.isFinite(L.v)&&Number.isFinite(Rt.v)&&Math.abs(L.v-Rt.v)<=1e-6*Math.max(1,Math.abs(L.v)));
+  if(!same)return {split:[L.v,Rt.v]};
+  return Number.isFinite(L.v)?{v:(L.v+Rt.v)/2,err:Math.max(L.err||0,Rt.err||0),rough:L.rough||Rt.rough}:L;
+}
+function limitCall(n,sc){
+  const args=n.args.slice();let dir=0;
+  const last=args[args.length-1];
+  if(args.length>=3&&last.t==='id'&&(last.name==='left'||last.name==='right')){dir=last.name==='left'?-1:1;args.pop();}
+  if(args.length<2||args.length>3)throw new CalcError('Usage:  limit(sin(x)/x, x, 0)   limit(f, x, inf)   limit(1/x, x, 0, right)');
+  const F=symPrep(args[0]);
+  let x,pt;
+  if(args.length===3){x=symVarName(args[1]);pt=args[2];}else{pt=args[1];x=symVarFor(F,'limit','limit(expr, #, 0)')||'x';}
+  const a=symLimitPoint(pt,sc);
+  const where=x+' → '+(Number.isFinite(a)?fmtValue(a).text:(a>0?'∞':'-∞'))+(dir<0?' from the left':dir>0?' from the right':'');
+  /* other unknown symbols: substitute (assumes continuity) */
+  const others=symUnknowns(F).filter(nm=>nm!==x);
+  if(others.length){
+    if(!Number.isFinite(a))throw new CalcError('limit() at infinity needs an expression in '+x+' only (other names: '+others.join(', ')+')');
+    return new Sym(symOrder(symRules(symSimplify(symSubst(F,SID(x),SN(a))))),false,'limit as '+where+', by substitution (assumes the expression is continuous there)');
+  }
+  const r=symLimitValue(F,x,a,dir,0);
+  if(r.split)throw new CalcError('The limit does not exist: from the left it is '+fmtValue(r.split[0]).text+', from the right '+fmtValue(r.split[1]).text+'. Add left or right, e.g.  limit(expr, '+x+', '+fmtValue(a).text+', right)');
+  if(r.osc)throw new CalcError('The limit does not exist: the expression keeps oscillating as '+where);
+  if(r.slow)throw new CalcError('The limit could not be found reliably: the expression changes too slowly as '+where+' (close to the limit point it is about '+fmtValue(r.v).text+')');
+  if(!Number.isFinite(r.v))return r.v;
+  return exactOrNumber(r.v,r.exact?1e-10:1e-8,'limit as '+where+(r.exact?'':' (numeric)'));
+}
+
+/* ---- Taylor series ---- */
+function seriesCall(n,sc,wantAst){
+  const A=n.args;
+  const F=symPrep(A[0]);
+  const x=A[1]?symVarName(A[1]):(symVarFor(F,'series','series(expr, #, 0, 5)')||'x');
+  let a=0,N=5;
+  if(A[2]){a=U(ev(A[2],sc));if(typeof a!=='number'||!Number.isFinite(a))throw new CalcError('series(): the expansion point must be a real number');}
+  if(A[3]){N=U(ev(A[3],sc));if(!Number.isInteger(N)||N<1||N>20)throw new CalcError('series(): the order must be a whole number from 1 to 20');}
+  /* keep a recognisable point exact: x - pi/2 rather than x - 1.5708 */
+  const aId=identifyConst(a,1e-12),aAst=aId&&!symIsNum(aId)?aId:SN(a),aTxt=aId&&!symIsNum(aId)?symPrint(aId):fmtValue(a).text;
+  const xa=a===0?SID(x):sSub(SID(x),aAst);
+  const terms=[];
+  let d=F,fact=1;
+  for(let k=0;k<=N;k++){
+    if(k>0){d=symSimplify(symD(d,x));fact*=k;}
+    if(symPrint(d).length>40000)throw new CalcError('series(): the derivatives grow too large; try a lower order');
+    const at=symSimplify(symRules(symSimplify(symSubst(d,SID(x),SN(a)))));
+    const pw=k===0?null:SPOWN(xa,k);
+    let val=null;
+    try{
+      DEPTH=0;const v=U(ev(at,null));
+      if(isC(v)){
+        if(!Number.isFinite(v.re)||!Number.isFinite(v.im))throw new CalcError('series(): no Taylor series at '+x+' = '+aTxt+' (a derivative is infinite there)');
+        const c=div(v,fact);terms.push({neg:false,body:pw?SMUL(SN(cleanC(c)),pw):SN(cleanC(c))});continue;
+      }
+      if(typeof v==='number')val=v;
+    }
+    catch(e){
+      if(e instanceof CalcError&&/^series\(\)/.test(e.message))throw e;
+      if(symUnknowns(at).length){let body=pw?SMUL(at,pw):at;if(fact>1)body=SDIVN(body,SN(fact));terms.push({neg:false,body});continue;}
+      throw new CalcError('series(): '+symPrint(A[0].t?A[0]:F)+' has no Taylor series at '+x+' = '+fmtValue(a).text+' (it or a derivative is undefined there)');
+    }
+    if(!Number.isFinite(val))throw new CalcError('series(): no Taylor series at '+x+' = '+fmtValue(a).text+' (a derivative is infinite there)');
+    if(Math.abs(val)<1e-12)continue;
+    const rq=symRatApprox(val,1000,1e-10);
+    if(rq){
+      const g=igcd(rq[0],rq[1]*fact),p=Math.abs(rq[0])/g,q=rq[1]*fact/g;
+      let body=pw?(p===1?pw:SMUL(SN(p),pw)):SN(p);
+      if(q>1)body=SDIVN(body,SN(q));
+      terms.push({neg:rq[0]<0,body});continue;
+    }
+    const id=identifyConst(Math.abs(val),1e-10);
+    if(id&&!symIsNum(id)){let body=pw?SMUL(id,pw):id;if(fact>1)body=SDIVN(body,SN(fact));terms.push({neg:val<0,body});continue;}
+    const c=Math.abs(val)/fact;
+    terms.push({neg:val<0,body:pw?SMUL(SN(c),pw):SN(c)});
+  }
+  let ast=null;
+  for(const t of terms)ast=ast?{t:'bin',op:t.neg?'-':'+',a:ast,b:t.body,pos:0}:(t.neg?SNEGN(t.body):t.body);
+  if(!ast)ast=SN(0);
+  if(wantAst)return ast;
+  const at0=a===0?x:'('+symPrint(xa)+')';
+  return new Sym(ast,false,'Taylor series about '+x+' = '+aTxt+' up to '+at0+'^'+N+' (the rest is O('+at0+'^'+(N+1)+'))');
+}
+
+/* ---- sums: sum(expr, k, a, b) ---- */
+function sumClosedForm(F,k,a,nName){
+  const N=SID(nName),sp=symSplit(F);
+  /* geometric: c*r^k, r a number or an expression without k */
+  const g=sp.f.filter(([b,e])=>b.t==='bin'&&b.op==='^'&&!symHas(b.a,k)&&b.b.t==='id'&&b.b.name===k&&e===1);
+  if(g.length===1){
+    const R=g[0][0].a,c=symBuild(sp.c,sp.f.filter(f=>f!==g[0]));
+    if(!symHas(c,k)&&!(symIsNum(R)&&R.v===1)){
+      const top=sSub(sPow(R,sAdd(N,SN(1))),sPow(R,SN(a)));
+      const s=symIsNum(R)?sDiv(sMul(c,top),SN(R.v-1)):SDIVN(symIsNum(c)&&c.v===1?top:SMUL(c,top),sSub(R,SN(1)));
+      return new Sym(symIsNum(R)?symOrder(s):s,false,'geometric sum, '+k+' from '+a+' to '+nName+(symIsNum(R)?'':' ('+symPrint(R)+' ≠ 1)'));
+    }
+  }
+  const coef=symPoly(F,k);
+  if(!coef)throw new CalcError('sum() to a symbolic end ('+nName+') works for polynomial terms in '+k+' (like k^2) and geometric terms (like 2^k). Use numbers or inf for anything else.');
+  const d=plTrim(coef).length-1;
+  if(d>15)throw new CalcError('sum(): the polynomial degree is too high (max 15)');
+  /* the sum is a polynomial in n of degree d+1: fit it through d+2 exact values */
+  const p=t=>coef.reduce((s,c,i)=>s+c*Math.pow(t,i),0);
+  const pts=[],vals=[];let S=0;
+  for(let m=a;m<=a+d+1;m++){S+=p(m);pts.push(m);vals.push(S);}
+  const M=pts.map(m=>Array.from({length:d+2},(_,j)=>Math.pow(m,j)));
+  const c=gaussSolve(M,vals).map(v=>snapNum(Re(v)));
+  let poly=sSum(c.map((v,j)=>sMul(SN(v),sPow(N,SN(j)))));
+  poly=symOrder(poly);
+  let best=poly;
+  /* the factored form (n*(n + 1)/2) is the familiar one: use it unless it has decimals or is much longer */
+  try{const f=symFactor(poly);if(f&&!/\d\.\d/.test(symPrint(f))&&symPrint(f).length<=1.3*symPrint(poly).length)best=f;}catch(e){}
+  return new Sym(best,false,'sum of '+symPrint(F)+' for '+k+' from '+a+' to '+nName);
+}
+function sumInfinite(F,term,k,a){
+  const note='sum for '+k+' from '+a+' to ∞';
+  const tAbs=K=>{try{return cabs(term(K));}catch(e){return NaN;}};
+  const far=[tAbs(a+1000),tAbs(a+100000)];
+  if(far[1]===Infinity||!(far[1]<=far[0]*0.999||far[1]<1e-15))throw new CalcError('The series diverges: its terms do not go to 0');
+  const first=[];for(let i=0;i<40;i++){let v;try{v=term(a+i);}catch(e){v=NaN;}first.push(v);}
+  if(first.some(v=>isC(v)))throw new CalcError('sum() to inf needs real terms');
+  const sg=first.filter(v=>Number.isFinite(v)&&v!==0).map(Math.sign);
+  const alternating=sg.length>10&&sg.slice(1).every((s,i)=>s!==sg[i]);
+  if(alternating){
+    /* partial sums, then repeated averaging (Euler) */
+    let S=0;const P=[];
+    for(let i=0;i<1200;i++){S+=term(a+i);if(i>=1160)P.push(S);}
+    let q=P.slice();
+    for(let r=0;r<30&&q.length>1;r++)q=q.slice(1).map((v,i)=>(v+q[i])/2);
+    return exactOrNumber(q[0],1e-9,note+' (alternating; averaged partial sums)');
+  }
+  /* fast-shrinking terms (1/k!, 1/2^k): add them up until they stop mattering */
+  const t59=tAbs(a+59),t60=tAbs(a+60);
+  if(t59>0&&t60/t59<0.95||t60===0){
+    let S=0,c=0;
+    for(let i=a;i<a+100000;i++){const v=term(i);const y=v-c,t=S+y;c=(t-S)-y;S=t;if(i>a+60&&Math.abs(v)<=1e-18*Math.abs(S))break;}
+    return exactOrNumber(S,1e-10,note);
+  }
+  /* Euler-Maclaurin: first terms exactly, the tail as an integral plus corrections */
+  const N=a+1000;
+  let S=0,c=0;
+  for(let i=a;i<N;i++){const y=term(i)-c,t=S+y;c=(t-S)-y;S=t;}
+  let tail;
+  try{tail=numIntegrate(t=>{const v=term(t);return typeof v==='number'?v:NaN;},N,Infinity);}
+  catch(e){
+    if(/does not settle|diverge/i.test(e.message)){
+      /* a sign-changing (non-alternating) series: plain partial sums */
+      if(sg.some(s=>s<0)){let T=S;for(let i=N;i<N+200000;i++)T+=term(i);return exactOrNumber(T,0,note+' (approximate: the first 201000 terms)');}
+      throw new CalcError('The series diverges');
+    }
+    throw e;
+  }
+  let d1=0,d3=0;
+  try{const D1=symD(F,k),D3=symD(symD(D1,k),k);const at=nd=>{const m=new Map([[k,N]]);DEPTH=0;return U(ev(nd,m));};d1=at(D1);d3=at(D3);}catch(e){
+    const h=1e-3,f=t=>term(t);d1=(f(N+h)-f(N-h))/(2*h);}
+  if(typeof d1!=='number'||!Number.isFinite(d1))d1=0;
+  if(typeof d3!=='number'||!Number.isFinite(d3))d3=0;
+  const total=S+tail+term(N)/2-d1/12+d3/720;
+  if(!Number.isFinite(total))throw new CalcError('The series diverges');
+  return exactOrNumber(total,1e-9,note+' (numeric)');
+}
+function sumSeriesCall(n,sc){
+  const [fN,kN,aN,bN]=n.args,k=kN.name;
+  const F=symPrep(fN);
+  const isInf=nd=>nd.t==='id'&&nd.name==='inf'&&!STATE.vars.has('inf');
+  const whole=nd=>{const v=U(ev(nd,sc));if(typeof v!=='number'||!Number.isInteger(v))throw new CalcError('sum() limits must be whole numbers (or inf), e.g.  sum(1/k^2, k, 1, inf)');return v;};
+  const a=whole(aN);
+  const term=t=>{const m=new Map(sc||[]);m.set(k,t);DEPTH=0;const v=U(ev(F,m));if(typeof v!=='number'&&!isC(v))throw new CalcError('sum(): the terms must be numbers');return v;};
+  if(bN.t==='id'&&!isInf(bN)&&!STATE.vars.has(bN.name)&&!(sc&&sc.has(bN.name))&&!has(CONSTS,bN.name))return sumClosedForm(F,k,a,bN.name);
+  if(isInf(bN))return sumInfinite(F,term,k,a);
+  const b=whole(bN);
+  if(b<a)return 0;
+  if(b-a>1e7)throw new CalcError('sum(): too many terms ('+(b-a+1)+'); for an infinite sum use inf');
+  let s=0;
+  for(let i=a;i<=b;i++){const v=term(i);if(Number.isNaN(Re(v))||Number.isNaN(Im(v)))throw new CalcError('sum(): the term for '+k+' = '+i+' is undefined');s=add(s,v);}
+  return cleanC(s);
+}
+symDef('expand','expand(expr)','Multiply out products and powers of sums: expand((x+1)^3) = x^3 + 3*x^2 + 3*x + 1','expand((x+1)^3)',1,1,
+  (n,sc,wantAst)=>{const r=symOrder(symExpand(symPrep(n.args[0])));return wantAst?r:symResult(new Sym(r,false,'expanded'),sc);},false,'Algebra');
+symDef('factor','factor(expr)','Factor a polynomial (rational roots exactly, other roots as decimals or quadratics), cancel a rational function, take out common factors (x^2*y + x*y^2), or factor a whole number into primes','factor(x^3 - 6*x^2 + 11*x - 6)',1,1,
+  (n,sc,wantAst)=>{
+    const F=symSimplify(symPrep(n.args[0])),f=symFactor(F),r=f||F;
+    if(wantAst)return r;
+    const same=!f||symPrint(f)===symPrint(F);
+    return symResult(new Sym(r,false,same?'nothing to factor (no rational roots or common factors)':'factored'),sc);
+  },false,'Algebra');
+symDef('simplify','simplify(expr)','The shortest equivalent form found by expanding, factoring, cancelling and identities like sin^2 + cos^2 = 1 and exp(ln(x)) = x','simplify(sin(x)^2 + cos(x)^2)',1,1,
+  (n,sc,wantAst)=>{const r=symSimplifyBest(symPrep(n.args[0]));return wantAst?r:symResult(new Sym(r,false,'simplified'),sc);},false,'Algebra');
+symDef('limit','limit(f, x, a)   limit(f, x, a, left|right)','Limit of f as x approaches a (a can be inf or -inf). Exact by substitution or L’Hôpital when possible, otherwise numeric; exact constants like pi or e are recognised','limit(sin(x)/x, x, 0)',2,4,limitCall,true);
+symDef('series','series(f, x, a, n)','Taylor series of f about x = a up to (x-a)^n (default a = 0, n = 5)','series(exp(x), x, 0, 5)',1,4,seriesCall);
+symDef('taylor','taylor(f, x, a, n)','Same as series','taylor(sin(x), x, 0, 7)',1,4,seriesCall);
 symDef('poles','poles(F, s)','Poles of a rational F(s) as a matrix (repeated poles listed repeatedly, cancelled pole/zero pairs removed). Works on LT(...) results','poles(LT(exp(-t)*sin(2*t)))',1,2,symPZCall('poles'),true);
 {
   const zf=FUNCS.zeros;
@@ -2873,7 +3458,17 @@ def('Noise / ADC / SerDes','rj2pp','rj2pp(rj, ber)','Peak-to-peak from RMS rando
 
 /* Stats */
 const nums=(a,nm)=>a.map(x=>real(x,nm));
-def('Stats','sum','sum(a, b, ...)','Sum','sum(1, 2, 3)',1,V,(...a)=>a.reduce((s,x)=>add(s,x),0));
+def('Stats','sum','sum(a, b, ...)   or   sum(expr, k, a, b)','Sum of values, or of a series: sum(1/k^2, k, 1, inf) = pi^2/6, sum(k, k, 1, n) = n*(n + 1)/2. b can be a number, inf or a name','sum(1/k^2, k, 1, inf)',1,V,(...a)=>a.reduce((s,x)=>add(s,x),0));
+/* the list form sum(1, 2, 3) stays; sum(expr, k, a, b) with a plain name k sums a series */
+FUNCS.sum.sym=(n,sc)=>{
+  const A=n.args;
+  if(A.length===4&&A[1].t==='id'&&!(sc&&sc.has(A[1].name))&&!STATE.vars.has(A[1].name)){
+    try{return sumSeriesCall(n,sc);}catch(e){if(e instanceof CalcError&&e.pos===undefined)throw E(e.message,n.pos);throw e;}
+  }
+  const vals=A.map(x=>U(ev(x,sc)));
+  if(vals.some(v=>v instanceof Mat))throw E("sum() doesn't take a matrix",n.pos);
+  return FUNCS.sum.fn(...vals);
+};
 def('Stats','prod','prod(a, b, ...)','Product','prod(2, 3, 4)',1,V,(...a)=>a.reduce((s,x)=>mul(s,x),1));
 def('Stats','avg','avg(a, b, ...)','Arithmetic mean','avg(1, 2, 6)',1,V,(...a)=>div(a.reduce((s,x)=>add(s,x),0),a.length));
 def('Stats','median','median(a, b, ...)','Median','median(1, 9, 3)',1,V,(...a)=>{const s=nums(a,'median').sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;});
@@ -3692,7 +4287,7 @@ const TEX_FN={sin:'\\sin',cos:'\\cos',tan:'\\tan',cot:'\\cot',sec:'\\sec',csc:'\
   asin:'\\arcsin',acos:'\\arccos',atan:'\\arctan',ln:'\\ln',log:'\\log',max:'\\max',min:'\\min',gcd:'\\gcd'};
 const TEX_POWFN=new Set(['sin','cos','tan','cot','sec','csc','sinh','cosh','tanh','coth']);
 const TEX_NUMRE=/^(0[xXbBoO][0-9a-fA-F_]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)([A-Za-z\u00b5\u03bc\u03a9\u2126]*)/;
-const TEX_SYMFN=new Set(['diff','integ','integrate','LT','laplace','ILT','ilaplace']);
+const TEX_SYMFN=new Set(['diff','integ','integrate','LT','laplace','ILT','ilaplace','limit','sum','series','taylor','expand','factor','simplify']);
 let TEXSRC=null;   /* source text of the statement being evaluated, so latex() inside a line can recover typed numbers */
 
 const texTall=s=>/\\frac|\\int|\\sum|matrix|\\sqrt|\\left/.test(s);
@@ -3794,6 +4389,19 @@ function texCall(n,c){
     case 'im':if(one)return {s:'\\operatorname{Im}\\left\\{'+a(0).s+'\\right\\}',p:9};break;
     case 'phase':case 'ph':if(one)return {s:'\\angle '+(a(0).p<9?texP(a(0).s):a(0).s),p:9};break;
     case 'sind':case 'cosd':case 'tand':if(one){const x=a(0);return {s:TEX_FN[nm.slice(0,3)]+texP((x.p<9?texP(x.s):x.s)+'^{\\circ}'),p:9};}break;
+    case 'limit':{
+      const B=A.slice();let side='';
+      const last=B[B.length-1];
+      if(B.length>=3&&last.t==='id'&&(last.name==='left'||last.name==='right')){side=last.name==='left'?'^{-}':'^{+}';B.pop();}
+      if(B.length<2)break;
+      const v=B.length===3?texName(B[1].name||'x'):texName(texVarOf(B[0],null));
+      const pt=texNode(B[B.length-1],c).s,F=texNode(B[0],c);
+      return {s:'\\lim_{'+v+' \\to '+pt+side+'} '+(F.p<2?texP(F.s):F.s),p:2};
+    }
+    case 'sum':if(A.length===4&&A[1].t==='id'){
+      const F=a(0);
+      return {s:'\\sum_{'+texName(A[1].name)+'='+a(2).s+'}^{'+a(3).s+'} '+(F.p<2?texP(F.s):F.s),p:2};
+    }break;
     case 'LT':case 'laplace':return {s:'\\mathcal{L}\\left\\{'+a(0).s+'\\right\\}',p:9};
     case 'ILT':case 'ilaplace':return {s:'\\mathcal{L}^{-1}\\left\\{'+a(0).s+'\\right\\}',p:9};
     case 'diff':{
@@ -3880,7 +4488,7 @@ function texAst(ast,src,o,res){
       DEPTH=0;const v=ev(ast,null);
       if(v instanceof Sym)return {l,tail:'= '+texVal(v).s};
       const u=U(v);
-      if(typeof u==='number'||isC(u))return {l,tail:(typeof u==='number'&&Number.isInteger(u)?'= ':'\\approx ')+texVal(u).s};
+      if(typeof u==='number'||isC(u))return {l,tail:(typeof u==='number'&&(Number.isInteger(u)||!Number.isFinite(u))?'= ':'\\approx ')+texVal(u).s};
     }catch(e){}
   }
   return {l,tail:''};
@@ -4129,6 +4737,8 @@ function helpHtml(){
 <tr><td>Export</td><td>the <b>&#10515; Export</b> button saves the last N calculations as a PNG picture (light or dark theme) or copies it to the clipboard, ready to paste into PowerPoint.</td></tr>
 <tr><td>equations</td><td>a plain name on the left (<code>x = 5</code>, <code>x = y</code>) is always an assignment. Start a line with <code>eq:</code> to make every part of it an equation: <code>eq: x^2 + y^2 = 1; x = y</code> (<code>eq x,y: &hellip;</code> names the unknowns). Any other <code>=</code> is solved directly: <code>2*x = 4</code> gives <code>x = 2</code>, <code>2*x+1 = x+5</code> gives <code>x = 4</code>, <code>x+y=5; x-y=1</code> solves both. Same as <code>solve ...</code>.</td></tr>
 <tr><td>Formulas tab</td><td>series explorer (term, coefficient, partial sum and error for sin, cos, e&#738;, tan, ln(1+x)&hellip;) plus reference tables: Gaussian &amp; standard integrals, identities, sums, small-x approximations, engineering formulas. Click a formula to copy it.</td></tr>
+<tr><td>limits &amp; series</td><td><code>limit(sin(x)/x, x, 0)</code> = 1; <code>limit(f, x, inf)</code>; <code>limit(1/x, x, 0, right)</code> for one side. <code>series(exp(x), x, 0, 5)</code> is the Taylor series (point and order optional). <code>sum(1/k^2, k, 1, inf)</code> = pi^2/6, <code>sum(k, k, 1, n)</code> = n*(n + 1)/2, <code>sum(k^2, k, 1, 10)</code>. Exact constants (pi, e, sqrt(2), ln(2), fractions) are recognised; otherwise the answer is numeric and says so.</td></tr>
+<tr><td>algebra</td><td><code>expand((x+1)^3)</code>, <code>factor(x^3 - 6*x^2 + 11*x - 6)</code> = (x - 1)*(x - 2)*(x - 3), <code>factor((x^2-1)/(x^2+3*x+2))</code> cancels, <code>factor(360)</code> = 2^3*3^2*5, <code>simplify(sin(x)^2 + cos(x)^2)</code> = 1.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>
 <tr><td>LaTeX</td><td><code>latex((s+1)/(s^2+3*s+2))</code> gives <code>\\frac{s + 1}{s^{2} + 3s + 2}</code>; <code>latex x^2 - 3*x + 2 = 0</code> works for equations; <code>latex(diff(...))</code>, <code>integ</code>, <code>LT</code>, <code>ILT</code> add <code>= result</code>. Typed numbers keep their suffix (<code>2.2k</code> &rarr; <code>2.2\\,\\mathrm{k}</code>), names get subscripts (<code>R1</code> &rarr; <code>R_{1}</code>), Greek names become symbols (<code>omega</code> &rarr; &omega;). Symbolic results have a <b>TeX</b> button. The <b>LaTeX tab</b> converts several lines with a preview. Paste into PowerPoint via Insert &rarr; Equation &rarr; LaTeX.</td></tr>
@@ -4179,7 +4789,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','cos(x) = x','roots(x^3 - 6*x^2 + 11*x - 6)','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','latex(diff(x^2*sin(x)))','solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','cos(x) = x','roots(x^3 - 6*x^2 + 11*x - 6)','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','limit(sin(x)/x, x, 0)','sum(1/k^2, k, 1, inf)','factor(x^3 - 6*x^2 + 11*x - 6)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','latex(diff(x^2*sin(x)))','solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   if(!guideSeen)b.appendChild(mkEl('p','ginvite','<button class="tb pulse" data-guide>&#128214; New here? Take the 5-minute guide</button>'));

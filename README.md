@@ -16,6 +16,9 @@ or a phone. No install, no network required.
 - **Complex numbers**: `3+4j`, `(1+2j)*(3-4j)`, `mag()`, `phase()`,
   `phase_deg()`, `phase_rad()`, polar form `5@30`
 - **Variables and user functions**: `x = 1; y = 2; x + y`, `f1(x) = x^2 + 1`
+- **Algebra and analysis**: `expand`, `factor` (polynomials, fractions, primes),
+  `simplify`, `limit` (one- or two-sided, at infinity), `series` (Taylor),
+  `sum` (finite, infinite, closed forms); exact constants such as pi^2/6 are recognised
 - **Equation solver**: linear systems of any size with engineering and
   complex coefficients (`solve 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3`),
   every root of a polynomial (`roots(...)`), numeric real roots of any
@@ -56,6 +59,7 @@ engcalc/
     │   ├── test_plot.js             74 cases — plot sampling, ticks, Bode, markers, drawing
     │   ├── test_latex.js            110 cases — LaTeX conversion, latex() in the console
     │   ├── test_format.js           56 cases — the "to / in / => directive" feature
+    │   ├── test_algebra.js          112 cases — expand, factor, simplify, limit, series, sum
     │   ├── test_audit.js            191 edge cases — parser, formatting,
     │   │                            precedence, explicit *, bits, solver
     │   ├── test_regression.js       48 cases — bugs that have been fixed
