@@ -661,7 +661,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
       <a href="#g-matrices" data-n="7">Matrices</a>
       <a href="#g-calculus" data-n="8">Calculus &amp; algebra</a>
       <a href="#g-laplace" data-n="9">Laplace &amp; differential equations</a>
-      <a href="#g-plot" data-n="10">Plots &amp; Bode</a>
+      <a href="#g-plot" data-n="10">Plots, Bode &amp; 3D</a>
       <a href="#g-tabs" data-n="11">Tabs &amp; panels</a>
       <a href="#g-share" data-n="12">Share your work</a>
       <a href="#g-phone" data-n="13">On your phone</a>
@@ -832,7 +832,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
 
       <section class="g-sec" id="g-plot" style="--ac:var(--blue)">
         <div class="g-num">10</div>
-        <h2>Plots &amp; Bode</h2>
+        <h2>Plots, Bode &amp; 3D</h2>
         <p>Plot any function of one variable, with the variable name you choose. A preview appears right in the console, and the <b>Plot tab</b> lets you add markers and labels and export the result for a slide.</p>
         <div class="gx" data-ex="plot(sin(t), cos(t), t, 0, 2*pi)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="plot(1/sqrt(1+(f/1k)^2), f, 10, 1M, logx)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
@@ -850,7 +850,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="gx" data-ex="plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="plot3d(x^2+y^2, -2, 2, -2, 2, contour)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="curve3d(cos(t), sin(t), t/5, t, 0, 6*pi)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
-        <div class="g-note"><b>Surface styles:</b> add <code>wire</code> for a wireframe, or <code>contour</code> / <code>heat</code> for the top-down colour map, where moving the pointer over the map reads x, y and z. Without names, <code>plot3d(f, a, b, c, d)</code> uses the unknown names in alphabetical order (x before y). Colours run from red (low) through amber to green (high); the bar on the right shows the values. Add <code>blue</code> for a single-hue blue scale, or change <i>colours</i> in the Plot tab.</div>
+        <div class="g-note"><b>Surface styles:</b> add <code>wire</code> for a wireframe, or <code>contour</code> / <code>heat</code> for the top-down colour map, where moving the pointer over the map reads x, y and z. Without names, <code>plot3d(f, a, b, c, d)</code> uses the unknown names in alphabetical order (x before y). Colours run from red (low) through amber to green (high); the bar on the right shows the values. Where the result is complex (a square root of a negative number, say) the surface is left empty: wrap the expression in <code>mag(...)</code>, <code>re(...)</code> or <code>im(...)</code> to plot a part of it. Add <code>blue</code> for a single-hue blue scale, or change <i>colours</i> in the Plot tab.</div>
         <p>When it looks right, open <i>Export for slides</i>: choose Light or Dark and a size, then <b>Copy image</b> for PowerPoint, <b>Download PNG</b>, or <b>CSV data</b>. Each plot has its own axis names and units under <i>Axes &amp; labels</i>.</p>
       </section>
 
@@ -861,7 +861,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Console</h3><p>Where everything above happens. History scrolls up; each answer is clickable.</p></div>
           <div class="g-card"><h3>Solver</h3><p>A multi-line box for bigger linear systems, with examples and the coefficient matrix shown.</p><button class="g-link" data-tab="solver">Open Solver &#9656;</button></div>
           <div class="g-card"><h3>Base converter</h3><p>Type in decimal, hex, binary, octal or any base; click individual bits; see two&rsquo;s complement.</p><button class="g-link" data-tab="conv">Open converter &#9656;</button></div>
-          <div class="g-card"><h3>Plot</h3><p>Plots with log axes, two y axes, stacked Bode panels, markers you place yourself, and PNG / CSV export.</p><button class="g-link" data-tab="plot">Open Plot &#9656;</button></div>
+          <div class="g-card"><h3>Plot</h3><p>Plots with log axes, two y axes, stacked Bode panels, 3D surfaces, contour maps and space curves you can turn, markers you place yourself, and PNG / CSV export.</p><button class="g-link" data-tab="plot">Open Plot &#9656;</button></div>
           <div class="g-card"><h3>Formulas</h3><p>A series explorer (watch sin x build up term by term, with the error) plus reference tables: integrals, identities, Laplace pairs, small-x approximations and RF/analog formulas.</p><button class="g-link" data-tab="formulas">Open Formulas &#9656;</button></div>
           <div class="g-card"><h3>LaTeX</h3><p>Type calculator syntax, copy LaTeX for reports and PowerPoint, with a live preview. Several lines become an aligned block.</p><button class="g-link" data-tab="latex">Open LaTeX &#9656;</button></div>
           <div class="g-card"><h3>&#9883; Constants</h3><p>Boltzmann, Planck, electron charge, speed of light and more. Click one to insert it.</p><button class="g-link" data-act="consts">Open constants &#9656;</button></div>
@@ -5728,7 +5728,7 @@ function banner(){
   const b=mkEl('div','banner');
   b.innerHTML='<h1>⚡ EngCalc Console</h1><p>Engineering-notation calculator &mdash; type <b style="color:var(--amber)">10p</b>, <b style="color:var(--amber)">2.2k</b>, <b style="color:var(--amber)">5MHz</b>, <b style="color:var(--amber)">4.7k</b> directly. Complex numbers, variables, functions, constants. Everything runs offline in this page.</p><p>Try one (click to run):</p>';
   const ex=mkEl('div','ex');
-  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','cos(x) = x','roots(x^3 - 6*x^2 + 11*x - 6)','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','limit(sin(x)/x, x, 0)','sum(1/k^2, k, 1, inf)','factor(x^3 - 6*x^2 + 11*x - 6)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','latex(diff(x^2*sin(x)))',"dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)",'solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
+  ['10p * 2.5k','x = 1; y = 2; x + y','3+4j','phase(1+j)','par(1k, 2.2k)','f0(10n, 1p)','sin(pi/6)','dBm(1m)','5MHz/60us to M','255 to hex','twos(-5, 8)','[1 2; 3 4] * [5; 6]','x^2 - 3*x + 2 = 0','cos(x) = x','roots(x^3 - 6*x^2 + 11*x - 6)','diff(x^2*sin(x))','integ(x*exp(x))','integ(exp(-x^2), -inf, inf)','limit(sin(x)/x, x, 0)','sum(1/k^2, k, 1, inf)','factor(x^3 - 6*x^2 + 11*x - 6)','LT(exp(-2*t)*sin(3*t))','ILT(1/(s^2+3*s+2))','poles(1/(s^2+3*s+2))','bode(1/(1+s/1k), 10, 1M)','plot3d(sin(x)*cos(y), -3, 3, -3, 3)','latex(diff(x^2*sin(x)))',"dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)",'solve x,y,z: 2*x+y-z=8; -3*x-y+2*z=-11; -2*x+y+2*z=-3'].forEach(s=>{
     const bt=mkEl('button','',esc(s));bt.onclick=()=>{inp.value=s;runInput();};ex.appendChild(bt);});
   b.appendChild(ex);
   if(!guideSeen)b.appendChild(mkEl('p','ginvite','<button class="tb pulse" data-guide>&#128214; New here? Take the 5-minute guide</button>'));
