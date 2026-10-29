@@ -232,6 +232,34 @@ s=spec('curve3d(t, t, t, t, 0, 0)');
 t=null;try{plot3Sample(s);}catch(e){t=e.message;}
 ok(/two different numbers/.test(t||''),'a curve needs a real parameter range: '+t);
 
+
+// ---- colour scheme: red (low) to green (high) by default, blue on request
+function fillColors(sp,theme){
+  const d=plot3Sample(sp),ctx=mockCtx(),seen=new Set();let cur=null;
+  Object.defineProperty(ctx,"fillStyle",{get(){return cur;},set(v){cur=v;seen.add(v);}});
+  plot3Draw(ctx,1000,563,sp,d,PLOT_THEMES[theme||"light"],{});
+  return [...seen].map(c=>/^rgb\((\d+),(\d+),(\d+)\)$/.exec(c)).filter(Boolean).map(m=>[+m[1],+m[2],+m[3]]);
+}
+s=spec("plot3d(x*y, -1, 1, -1, 1)");
+ok(s.palette==="rg","the default colour scheme is red to green");
+for(const th of ["light","dark"]){
+  const cs=fillColors(s,th);
+  ok(cs.some(c=>c[0]>190&&c[1]<90&&c[2]<80),"red (low) is used on the "+th+" theme");
+  ok(cs.some(c=>c[1]>130&&c[0]<80&&c[2]<110),"green (high) is used on the "+th+" theme");
+  ok(!cs.some(c=>c[2]>c[0]+60&&c[2]>c[1]+30&&c[2]>180),"no blue ramp colours on the "+th+" theme");
+}
+s=spec("plot3d(x*y, -1, 1, -1, 1, blue)");
+ok(s.palette==="blue"&&s.style==="surface","blue flag selects the blue scale");
+ok(!fillColors(s,"light").some(c=>c[0]>190&&c[1]<90),"blue scale has no red");
+s=spec("plot3d(x*y, -1, 1, -1, 1, heat, blue)");
+ok(s.palette==="blue"&&s.style==="heat","style and colour flags combine in either order");
+s=spec("plot3d(x*y, -1, 1, -1, 1, redgreen)");
+ok(s.palette==="rg","redgreen flag is accepted");
+err("plot3d(x*y, -1, 1, -1, 1, blue, redgreen)",/one colour scheme/);
+ok(p3Color(PLOT_THEMES.light,0)==="rgb(158,197,244)","the theme ramps themselves are unchanged (blue)");
+s=spec("plot3d(x*y, -1, 1, -1, 1, contour)");
+ok(fillColors(s,"dark").some(c=>c[0]>190&&c[1]<90),"contour maps are red to green too");
+
 // ---- CSV
 s=spec('plot3d(x*y, x, 0, 1, y, 0, 2)');s.n=5;
 let csv=plot3CSV(s,plot3Sample(s)).trim().split('\n');

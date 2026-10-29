@@ -62,6 +62,13 @@ const ptr=(el,type,x,y,id)=>{const e=new w.MouseEvent(type,{clientX:x,clientY:y,
   ok(texts.includes('-500m')||texts.includes('-500m'),'z min / z max limit the z axis');
   $('p3ZA').value='';$('p3ZB').value='';
 
+  // ---- colour scheme
+  ok($("p3Pal").value==="rg"&&vis("p3PalL"),"the colours select defaults to red to green");
+  fills=0;$("p3Pal").value="blue";fire($("p3Pal"),"change");
+  ok(!$("p3Msg").classList.contains("bad")&&fills===400,"switching to blue redraws");
+  ok(JSON.parse(w.localStorage.getItem("engcalc.plot3")).palette==="blue","the colour choice is remembered");
+  $("p3Pal").value="rg";fire($("p3Pal"),"change");
+
   // ---- styles
   $('p3Style').value='wire';fire($('p3Style'),'change');
   ok(!$('p3Msg').classList.contains('bad')&&!$('p3Cv').classList.contains('flat')&&vis('p3View'),'wireframe style keeps the turn controls');

@@ -550,7 +550,8 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="pl-top">
             <details open><summary>3D surface or curve</summary><div class="pl-in">
               <div class="pl-row"><label>shape <select id="p3Mode"><option value="surface">surface z = f(x, y)</option><option value="curve">space curve x(t), y(t), z(t)</option></select></label>
-                <label id="p3StyleL">style <select id="p3Style"><option value="surface">surface</option><option value="wire">wireframe</option><option value="contour">contour (top view)</option><option value="heat">colour map (top view)</option></select></label></div>
+                <label id="p3StyleL">style <select id="p3Style"><option value="surface">surface</option><option value="wire">wireframe</option><option value="contour">contour (top view)</option><option value="heat">colour map (top view)</option></select></label>
+                <label id="p3PalL">colours <select id="p3Pal"><option value="rg">red → green</option><option value="blue">blue</option></select></label></div>
               <div id="p3Surf">
                 <div class="pl-row"><label class="pl-wide">z = <input class="pl-wide" id="p3E" placeholder="e.g. sin(x)*cos(y)" spellcheck="false" autocomplete="off"></label></div>
                 <div class="pl-row"><label>variable <input id="p3XV" size="3" value="x" spellcheck="false" autocomplete="off"></label><label>from <input id="p3XA" size="6" value="-3" spellcheck="false" autocomplete="off"></label><label>to <input id="p3XB" size="6" value="3" spellcheck="false" autocomplete="off"></label></div>
@@ -849,7 +850,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="gx" data-ex="plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="plot3d(x^2+y^2, -2, 2, -2, 2, contour)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="curve3d(cos(t), sin(t), t/5, t, 0, 6*pi)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
-        <div class="g-note"><b>Surface styles:</b> add <code>wire</code> for a wireframe, or <code>contour</code> / <code>heat</code> for the top-down colour map, where moving the pointer over the map reads x, y and z. Without names, <code>plot3d(f, a, b, c, d)</code> uses the unknown names in alphabetical order (x before y). Colour always goes from light (low) to dark (high); the bar on the right shows the values.</div>
+        <div class="g-note"><b>Surface styles:</b> add <code>wire</code> for a wireframe, or <code>contour</code> / <code>heat</code> for the top-down colour map, where moving the pointer over the map reads x, y and z. Without names, <code>plot3d(f, a, b, c, d)</code> uses the unknown names in alphabetical order (x before y). Colours run from red (low) through amber to green (high); the bar on the right shows the values. Add <code>blue</code> for a single-hue blue scale, or change <i>colours</i> in the Plot tab.</div>
         <p>When it looks right, open <i>Export for slides</i>: choose Light or Dark and a size, then <b>Copy image</b> for PowerPoint, <b>Download PNG</b>, or <b>CSV data</b>. Each plot has its own axis names and units under <i>Axes &amp; labels</i>.</p>
       </section>
 
@@ -2739,12 +2740,15 @@ function bodeFromCall(n,sc){
 class Plot3Spec{
   constructor(o){
     Object.assign(this,{mode:'surface',expr:'',exprs:['','',''],xvar:'x',yvar:'y',xmin:-1,xmax:1,ymin:-1,ymax:1,tvar:'t',tmin:0,tmax:1,
-      n:41,nt:400,style:'surface',zmin:null,zmax:null,title:'',xlabel:'',ylabel:'',zlabel:'',az:-55,el:28,zoom:1},o||{});
+      n:41,nt:400,style:'surface',palette:'rg',zmin:null,zmax:null,title:'',xlabel:'',ylabel:'',zlabel:'',az:-55,el:28,zoom:1},o||{});
   }
 }
 /* height ramp: one blue hue (light to dark on white, reversed on the dark surface so "more" is always the stronger mark) */
 PLOT_THEMES.light.ramp=['#9ec5f4','#6da7ec','#3987e5','#256abf','#184f95','#104281','#0d366b'];
 PLOT_THEMES.dark.ramp=['#184f95','#256abf','#3987e5','#6da7ec','#9ec5f4','#b7d3f6','#cde2fb'];
+/* red (low) through amber to green (high); amber in the middle keeps the two ends apart for most colour-vision types */
+const P3_RG=['#d73027','#f46d43','#fdae61','#f2c94c','#a6d96a','#66bd63','#1a9850'];
+const p3Pal=(T,spec)=>(spec&&spec.palette==='blue')?T:Object.assign({},T,{ramp:P3_RG});
 const p3Hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 function p3Rgb(T,t,k){        /* t in [0,1] along the ramp, k = brightness factor */
   const st=T.ramp||PLOT_THEMES.light.ramp,u=Math.max(0,Math.min(1,Number.isFinite(t)?t:0))*(st.length-1),i=Math.min(st.length-2,Math.floor(u)),f=u-i;
@@ -2849,7 +2853,7 @@ function plot3CSV(spec,data){
 
 /* draw the 3D plot (or the flat contour / heat view). Returns the geometry so the UI can map the pointer back to x, y. */
 function plot3Draw(ctx,W,H,spec,data,theme,opts){
-  const T=theme||PLOT_THEMES.dark,fs=Math.max(10,Math.round(Math.min(W/52,H/25)));
+  const T=p3Pal(theme||PLOT_THEMES.dark,spec),fs=Math.max(10,Math.round(Math.min(W/52,H/25)));
   const curve=data.mode==='curve',flat=!curve&&(spec.style==='contour'||spec.style==='heat');
   const [LX,LY,LZ]=data.lim,names=curve?['x','y','z']:[spec.xvar,spec.yvar,'z'];
   const lab=[spec.xlabel||names[0],spec.ylabel||names[1],spec.zlabel||(curve?'z':'')];
@@ -2994,11 +2998,14 @@ function plot3Draw(ctx,W,H,spec,data,theme,opts){
 
 /* ---- plot3d() and curve3d(): build a Plot3Spec from the unevaluated arguments ---- */
 const P3_STYLES=['surface','wire','contour','heat'];
+const P3_PALS=['blue','redgreen'];
 function plot3dFromCall(n,sc){
   const args=n.args.slice(),flags=[];
-  while(args.length&&args[args.length-1].t==='id'&&P3_STYLES.includes(args[args.length-1].name))flags.push(args.pop().name);
+  const pals=[];
+  while(args.length&&args[args.length-1].t==='id'&&(P3_STYLES.includes(args[args.length-1].name)||P3_PALS.includes(args[args.length-1].name))){const nm=args.pop().name;(P3_PALS.includes(nm)?pals:flags).push(nm);}
   if(flags.length>1)throw new CalcError('Pick one style: '+P3_STYLES.join(', '));
-  const style=flags[0]||'surface';
+  if(pals.length>1)throw new CalcError('Pick one colour scheme: '+P3_PALS.join(', '));
+  const style=flags[0]||'surface',palette=pals[0]==='blue'?'blue':'rg';
   const sig='plot3d(expr, x, a, b, y, c, d)  or  plot3d(expr, a, b, c, d)';
   let xv=null,yv=null,r;
   const isName=a=>a.t==='id'&&!STATE.funcs.has(a.name)&&!has(FUNCS,a.name);
@@ -3022,7 +3029,7 @@ function plot3dFromCall(n,sc){
   }
   if(xv===yv)throw new CalcError('The two variables need different names');
   const flat=style==='contour'||style==='heat';
-  return new Plot3Spec({mode:'surface',expr:symPrint(ast),xvar:xv,yvar:yv,xmin:Math.min(rv[0],rv[1]),xmax:Math.max(rv[0],rv[1]),ymin:Math.min(rv[2],rv[3]),ymax:Math.max(rv[2],rv[3]),style,n:flat?81:41});
+  return new Plot3Spec({mode:'surface',expr:symPrint(ast),xvar:xv,yvar:yv,xmin:Math.min(rv[0],rv[1]),xmax:Math.max(rv[0],rv[1]),ymin:Math.min(rv[2],rv[3]),ymax:Math.max(rv[2],rv[3]),style,palette,n:flat?81:41});
 }
 function curve3dFromCall(n,sc){
   const args=n.args.slice();
@@ -4077,7 +4084,7 @@ symDef('poles','poles(F, s)','Poles of a rational F(s) as a matrix (repeated pol
   };
 }
 symDef('plot','plot(expr1, expr2, var, a, b, logx)','Plot up to 3 expressions of one variable from a to b in the Plot tab (inline preview here). Name the variable, add logx / logy / stacked, wrap a trace in right(...) for the right y axis','plot(1/sqrt(1+(f/1k)^2), f, 10, 1M, logx)',3,9,(n,sc)=>plotFromCall(n,sc),true,'Plot');
-symDef('plot3d','plot3d(expr, x, a, b, y, c, d, style)','3D surface of an expression of two variables, drawn in the Plot tab (drag to rotate). Variables are optional (x, y). Style: surface, wire, contour or heat (the last two are top-down colour maps)','plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)',5,8,(n,sc)=>plot3dFromCall(n,sc),true,'Plot');
+symDef('plot3d','plot3d(expr, x, a, b, y, c, d, style)','3D surface of an expression of two variables, drawn in the Plot tab (drag to rotate). Variables are optional (x, y). Style: surface, wire, contour or heat (the last two are top-down colour maps). Colours run red (low) to green (high); add blue for a single-hue blue scale','plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)',5,8,(n,sc)=>plot3dFromCall(n,sc),true,'Plot');
 symDef('curve3d','curve3d(x(t), y(t), z(t), t, a, b)','3D space curve from three expressions of one variable, drawn in the Plot tab (drag to rotate)','curve3d(cos(t), sin(t), t/5, t, 0, 6*pi)',5,6,(n,sc)=>curve3dFromCall(n,sc),true,'Plot');
 symDef('bode','bode(H, w1, w2)   or   bode(H, f1, f2, hz)','Bode plot of a transfer function H(s): magnitude (dB) over phase (degrees) on a log axis. Frequencies are rad/s, or Hz when the last argument is hz','bode(1/(1+s/1k), 10, 1M)',3,4,(n,sc)=>bodeFromCall(n,sc),true,'Plot');
 def('Plot','right','right(expr)','Inside plot(): draws that trace against the right-hand y axis (identity elsewhere)','plot(sin(x), right(cos(x)*100), 0, 6.28)',1,1,x=>x);
@@ -6477,7 +6484,7 @@ function plSetMode(m){
 }
 function p3Read(){
   const old=P3S.spec,sp=new Plot3Spec({});
-  sp.mode=plId('p3Mode').value;sp.style=plId('p3Style').value;
+  sp.mode=plId('p3Mode').value;sp.style=plId('p3Style').value;sp.palette=plId('p3Pal').value;
   sp.title=plId('p3Title').value;sp.xlabel=plId('p3XL').value;sp.ylabel=plId('p3YL').value;sp.zlabel=plId('p3ZL').value;
   if(old){sp.az=old.az;sp.el=old.el;sp.zoom=old.zoom;}
   if(sp.mode==='curve'){
@@ -6496,8 +6503,8 @@ function p3Read(){
 }
 function p3Write(sp){
   const f=v=>(v===null||v===undefined||!Number.isFinite(v))?'':plotFmt(v,6);
-  plId('p3Mode').value=sp.mode;plId('p3Style').value=sp.style;
-  plId('p3Surf').classList.toggle('pl-off',sp.mode==='curve');plId('p3Cur').classList.toggle('pl-off',sp.mode!=='curve');plId('p3StyleL').classList.toggle('pl-off',sp.mode==='curve');
+  plId('p3Mode').value=sp.mode;plId('p3Style').value=sp.style;plId('p3Pal').value=sp.palette==='blue'?'blue':'rg';
+  plId('p3Surf').classList.toggle('pl-off',sp.mode==='curve');plId('p3Cur').classList.toggle('pl-off',sp.mode!=='curve');plId('p3StyleL').classList.toggle('pl-off',sp.mode==='curve');plId('p3PalL').classList.toggle('pl-off',sp.mode==='curve');
   plId('p3Title').value=sp.title||'';plId('p3XL').value=sp.xlabel||'';plId('p3YL').value=sp.ylabel||'';plId('p3ZL').value=sp.zlabel||'';
   plId('p3E').value=sp.expr||'';plId('p3XV').value=sp.xvar;plId('p3YV').value=sp.yvar;
   plId('p3XA').value=f(sp.xmin);plId('p3XB').value=f(sp.xmax);plId('p3YA').value=f(sp.ymin);plId('p3YB').value=f(sp.ymax);
@@ -6590,10 +6597,11 @@ function initPlot3(){
   });
   plId('p3Mode').addEventListener('change',()=>{
     const m=plId('p3Mode').value;
-    plId('p3Surf').classList.toggle('pl-off',m==='curve');plId('p3Cur').classList.toggle('pl-off',m!=='curve');plId('p3StyleL').classList.toggle('pl-off',m==='curve');
+    plId('p3Surf').classList.toggle('pl-off',m==='curve');plId('p3Cur').classList.toggle('pl-off',m!=='curve');plId('p3StyleL').classList.toggle('pl-off',m==='curve');plId('p3PalL').classList.toggle('pl-off',m==='curve');
     p3Run();
   });
   plId('p3Style').addEventListener('change',p3Run);
+  plId('p3Pal').addEventListener('change',p3Run);
   plId('p3Theme').addEventListener('change',p3Paint);
   plId('p3Clr').onclick=()=>{
     P3S.spec=new Plot3Spec({});P3S.data=null;p3Write(P3S.spec);plId('p3E').value='';plId('p3N').value=41;
