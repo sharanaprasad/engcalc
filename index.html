@@ -296,7 +296,18 @@ button{font-family:inherit;cursor:pointer}
 .pl-sw{width:11px;height:11px;border-radius:50%;display:inline-block}
 .pl-cv{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b1020}
 #plCv{display:block;width:100%;touch-action:pan-y;cursor:crosshair}
-#plMsg.bad{color:var(--coral)}
+#plMsg.bad,#p3Msg.bad{color:var(--coral)}
+.pl-off{display:none!important}
+.pl-mode{display:inline-flex;margin:2px 0 10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pl-mode button{background:rgba(4,7,18,.5);border:0;color:var(--dim);font:inherit;font-size:13px;font-weight:700;padding:7px 16px;cursor:pointer}
+.pl-mode button+button{border-left:1px solid var(--line)}
+.pl-mode button.on{background:var(--cyan);color:#04111a}
+#p3Cv{display:block;width:100%;touch-action:none;cursor:grab}
+#p3Cv.flat{touch-action:pan-y;cursor:crosshair}
+.p3-view{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:12px;color:var(--dim);margin:8px 0 2px}
+.p3-view label{display:inline-flex;gap:6px;align-items:center}
+.p3-view input[type=range]{width:110px}
+.pl-wide{flex:1 1 220px;min-width:0}
 .pl-mlist{margin:6px 0}
 .pl-mk{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:4px 8px;align-items:center;padding:4px 0;border-top:1px dashed var(--line);font-size:12px}
 .pl-mk input[type=text]{background:rgba(4,7,18,.75);border:1px solid var(--line);border-radius:7px;color:#fff;font-family:inherit;font-size:12px;padding:3px 6px;min-width:0}
@@ -485,8 +496,9 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div id="bitgrid"></div>
       </div></div>
       <div id="view-plot" class="view"><div class="vpad pl">
-        <div class="vtitle">Plot<span class="vsub">any variable &middot; log axes &middot; two y axes &middot; markers you place &middot; export for slides</span></div>
-        <div class="pl-grid">
+        <div class="vtitle">Plot<span class="vsub">any variable &middot; log axes &middot; two y axes &middot; 3D surfaces &middot; markers you place &middot; export for slides</span></div>
+        <div class="pl-mode"><button id="plMode2" class="on" type="button">2D plot</button><button id="plMode3" type="button">3D surface</button></div>
+        <div class="pl-grid" id="pl2">
           <div class="pl-top">
             <details open><summary>Functions &amp; range</summary><div class="pl-in">
               <div class="pl-row"><label>Variable <input id="plVar" size="4" value="x" spellcheck="false" autocomplete="off"></label>
@@ -531,6 +543,45 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
               <div class="pl-row"><label>theme <select id="plTheme"><option value="light">Light (white slides)</option><option value="dark">Dark</option></select></label>
                 <label>size <select id="plSize"><option value="800x450">800 &times; 450</option><option value="1000x563" selected>1000 &times; 563</option><option value="1280x720">1280 &times; 720</option><option value="1000x700">1000 &times; 700 (tall)</option></select></label></div>
               <div class="pl-row"><button class="tb pri" id="plPng">&#10515; Download PNG</button><button class="tb" id="plCopy">&#10697; Copy image</button><button class="tb" id="plCsv">&#10515; CSV data</button></div>
+            </div></details>
+          </div>
+        </div>
+        <div class="pl-grid pl-off" id="pl3">
+          <div class="pl-top">
+            <details open><summary>3D surface or curve</summary><div class="pl-in">
+              <div class="pl-row"><label>shape <select id="p3Mode"><option value="surface">surface z = f(x, y)</option><option value="curve">space curve x(t), y(t), z(t)</option></select></label>
+                <label id="p3StyleL">style <select id="p3Style"><option value="surface">surface</option><option value="wire">wireframe</option><option value="contour">contour (top view)</option><option value="heat">colour map (top view)</option></select></label></div>
+              <div id="p3Surf">
+                <div class="pl-row"><label class="pl-wide">z = <input class="pl-wide" id="p3E" placeholder="e.g. sin(x)*cos(y)" spellcheck="false" autocomplete="off"></label></div>
+                <div class="pl-row"><label>variable <input id="p3XV" size="3" value="x" spellcheck="false" autocomplete="off"></label><label>from <input id="p3XA" size="6" value="-3" spellcheck="false" autocomplete="off"></label><label>to <input id="p3XB" size="6" value="3" spellcheck="false" autocomplete="off"></label></div>
+                <div class="pl-row"><label>variable <input id="p3YV" size="3" value="y" spellcheck="false" autocomplete="off"></label><label>from <input id="p3YA" size="6" value="-3" spellcheck="false" autocomplete="off"></label><label>to <input id="p3YB" size="6" value="3" spellcheck="false" autocomplete="off"></label></div>
+                <div class="pl-row"><label>grid <input id="p3N" type="number" min="5" max="150" value="41"></label><label>z min <input id="p3ZA" size="5" placeholder="auto"></label><label>z max <input id="p3ZB" size="5" placeholder="auto"></label></div>
+              </div>
+              <div id="p3Cur" class="pl-off">
+                <div class="pl-row"><label class="pl-wide">x(t) = <input class="pl-wide" id="p3C0" placeholder="cos(t)" spellcheck="false" autocomplete="off"></label></div>
+                <div class="pl-row"><label class="pl-wide">y(t) = <input class="pl-wide" id="p3C1" placeholder="sin(t)" spellcheck="false" autocomplete="off"></label></div>
+                <div class="pl-row"><label class="pl-wide">z(t) = <input class="pl-wide" id="p3C2" placeholder="t/5" spellcheck="false" autocomplete="off"></label></div>
+                <div class="pl-row"><label>variable <input id="p3TV" size="3" value="t" spellcheck="false" autocomplete="off"></label><label>from <input id="p3TA" size="6" value="0" spellcheck="false" autocomplete="off"></label><label>to <input id="p3TB" size="6" value="6*pi" spellcheck="false" autocomplete="off"></label><label>points <input id="p3NT" type="number" min="10" max="5000" value="400"></label></div>
+              </div>
+              <div class="pl-row"><button class="tb pri" id="p3Go">&#9654; Plot</button><button class="tb" id="p3Clr">clear</button><span>examples:</span>
+                <button class="chip" data-p3ex="ripple">ripple</button><button class="chip" data-p3ex="saddle">saddle</button><button class="chip" data-p3ex="egg">egg box</button><button class="chip" data-p3ex="bump">gaussian (contour)</button><button class="chip" data-p3ex="helix">helix</button></div>
+              <div class="alt" style="padding-left:0">Any variable names. Your own functions work: <code>f1(x, y)</code>. A complex result is shown as its magnitude. Values outside z min / z max are clipped.</div>
+            </div></details>
+          </div>
+          <div class="pl-main">
+            <div class="pl-cv"><canvas id="p3Cv"></canvas></div>
+            <div class="p3-view" id="p3View"><label>turn <input type="range" id="p3Az" min="-180" max="180" step="1" value="-55"></label><label>tilt <input type="range" id="p3El" min="3" max="90" step="1" value="28"></label><label>zoom <input type="range" id="p3Zm" min="0.5" max="3" step="0.05" value="1"></label><button class="tb" id="p3Reset">reset view</button></div>
+            <div class="alt" id="p3Msg" style="padding-left:2px">Type an expression and press Plot.</div>
+          </div>
+          <div class="pl-side">
+            <details><summary>Title &amp; axis names</summary><div class="pl-in">
+              <div class="pl-row"><label>title <input id="p3Title" size="22" placeholder="optional"></label></div>
+              <div class="pl-row"><label>x name <input id="p3XL" size="8" placeholder="x"></label><label>y name <input id="p3YL" size="8" placeholder="y"></label><label>z name <input id="p3ZL" size="8" placeholder="z"></label></div>
+            </div></details>
+            <details><summary>Export for slides</summary><div class="pl-in">
+              <div class="pl-row"><label>theme <select id="p3Theme"><option value="light">Light (white slides)</option><option value="dark">Dark</option></select></label>
+                <label>size <select id="p3Size"><option value="800x450">800 &times; 450</option><option value="1000x563" selected>1000 &times; 563</option><option value="1280x720">1280 &times; 720</option><option value="1000x700">1000 &times; 700 (tall)</option></select></label></div>
+              <div class="pl-row"><button class="tb pri" id="p3Png">&#10515; Download PNG</button><button class="tb" id="p3Copy">&#10697; Copy image</button><button class="tb" id="p3Csv">&#10515; CSV data</button></div>
             </div></details>
           </div>
         </div>
@@ -794,6 +845,11 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
         <div class="gx" data-ex="bode(1/(1+s/(2*pi*1.59k)), 10, 1M, hz)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="gx" data-ex="H1(s) = 1/(s^2+0.4*s+1)&#10;bode(H1, 0.1, 10)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
         <div class="g-note"><b>Markers are yours to place.</b> In the <button class="g-link" data-tab="plot">Plot tab</button> open <i>Markers</i> and either press <b>&#128205; at cursor</b> after pointing at the curve (or tapping it on a phone), type an <b>x</b> value, or type a <b>y level</b> such as <code>-3</code> to drop a marker wherever the trace crosses it. Edit the label text (<code>\n</code> makes a new line) or remove any marker.</div>
+        <p><b>3D plots:</b> a surface <i>z = f(x, y)</i> or a space curve. Open it in the <i>Plot</i> tab to turn it with your finger or mouse (or the sliders), zoom, and export a PNG for slides.</p>
+        <div class="gx" data-ex="plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="plot3d(x^2+y^2, -2, 2, -2, 2, contour)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="gx" data-ex="curve3d(cos(t), sin(t), t/5, t, 0, 6*pi)"><code class="gin"></code><span class="gout"></span><button class="gtry">Try &#9656;</button></div>
+        <div class="g-note"><b>Surface styles:</b> add <code>wire</code> for a wireframe, or <code>contour</code> / <code>heat</code> for the top-down colour map, where moving the pointer over the map reads x, y and z. Without names, <code>plot3d(f, a, b, c, d)</code> uses the unknown names in alphabetical order (x before y). Colour always goes from light (low) to dark (high); the bar on the right shows the values.</div>
         <p>When it looks right, open <i>Export for slides</i>: choose Light or Dark and a size, then <b>Copy image</b> for PowerPoint, <b>Download PNG</b>, or <b>CSV data</b>. Each plot has its own axis names and units under <i>Axes &amp; labels</i>.</p>
       </section>
 
@@ -866,7 +922,7 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
           <div class="g-card"><h3>Calculus</h3><code>diff(f)</code> <code>integ(f)</code> <code>integ(f, a, b)</code> <code>limit(f, x, a)</code> <code>series(f, x, a, n)</code> <code>sum(f, k, a, b)</code></div>
           <div class="g-card"><h3>Algebra</h3><code>expand(f)</code> <code>factor(f)</code> <code>simplify(f)</code> <code>roots(p)</code></div>
           <div class="g-card"><h3>Laplace</h3><code>LT(f)</code> <code>ILT(F)</code> <code>poles(F)</code> <code>zeros(F)</code> <code>dsolve(y' + y = u(t), y(0)=0)</code></div>
-          <div class="g-card"><h3>Plot</h3><code>plot(f, x, a, b)</code> <code>bode(H, w1, w2)</code> <code>bode(H, f1, f2, hz)</code> <code>right(f)</code></div>
+          <div class="g-card"><h3>Plot</h3><code>plot(f, x, a, b)</code> <code>bode(H, w1, w2)</code> <code>bode(H, f1, f2, hz)</code> <code>right(f)</code> <code>plot3d(f, x, a, b, y, c, d)</code> <code>curve3d(x, y, z, t, a, b)</code></div>
           <div class="g-card"><h3>LaTeX</h3><code>latex(f)</code> <code>latex a = b</code> <code>TeX</code> button &middot; LaTeX tab &middot; <code>pretty on|off</code></div>
           <div class="g-card"><h3>RF &amp; analog</h3><code>par(a,b)</code> <code>dBm(x)</code> <code>f0(L,C)</code> <code>vswr</code> <code>enob</code></div>
           <div class="g-card"><h3>Keys</h3><kbd>Enter</kbd> run &middot; <kbd>&uarr;</kbd> history &middot; <kbd>Tab</kbd> complete &middot; <kbd>Ctrl</kbd>+<kbd>K</kbd> functions &middot; <kbd>Ctrl</kbd>+<kbd>L</kbd> clear &middot; <kbd>F1</kbd> this guide</div>
@@ -2678,6 +2734,313 @@ function bodeFromCall(n,sc){
     axes:{L:{scale:'lin',min:null,max:null,label:'Magnitude',unit:'dB'},R:{scale:'lin',min:null,max:null,label:'Phase',unit:'°'}}});
 }
 
+/* ---- 3D plots: plot3d(z(x,y), ...) surfaces / contours and curve3d(x(t), y(t), z(t), t, a, b) space curves.
+   Orthographic projection + painter's algorithm on a canvas-2D context: no WebGL, one offline file, testable with a mock context. ---- */
+class Plot3Spec{
+  constructor(o){
+    Object.assign(this,{mode:'surface',expr:'',exprs:['','',''],xvar:'x',yvar:'y',xmin:-1,xmax:1,ymin:-1,ymax:1,tvar:'t',tmin:0,tmax:1,
+      n:41,nt:400,style:'surface',zmin:null,zmax:null,title:'',xlabel:'',ylabel:'',zlabel:'',az:-55,el:28,zoom:1},o||{});
+  }
+}
+/* height ramp: one blue hue (light to dark on white, reversed on the dark surface so "more" is always the stronger mark) */
+PLOT_THEMES.light.ramp=['#9ec5f4','#6da7ec','#3987e5','#256abf','#184f95','#104281','#0d366b'];
+PLOT_THEMES.dark.ramp=['#184f95','#256abf','#3987e5','#6da7ec','#9ec5f4','#b7d3f6','#cde2fb'];
+const p3Hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+function p3Color(T,t,k){      /* t in [0,1] along the ramp, k = brightness factor */
+  const st=T.ramp||PLOT_THEMES.light.ramp,u=Math.max(0,Math.min(1,Number.isFinite(t)?t:0))*(st.length-1),i=Math.min(st.length-2,Math.floor(u)),f=u-i;
+  const a=p3Hex(st[i]),b=p3Hex(st[i+1]),f2=k===undefined?1:k;
+  return 'rgb('+[0,1,2].map(q=>Math.max(0,Math.min(255,Math.round((a[q]+(b[q]-a[q])*f)*f2)))).join(',')+')';
+}
+/* tidy axis limits that contain [lo, hi] */
+function p3Nice(lo,hi){
+  if(!(lo<=hi)){lo=0;hi=1;}
+  if(lo===hi){const p=Math.abs(lo)*0.1||1;lo-=p;hi+=p;}
+  const t=niceTicks(lo,hi,5),step=t.length>1?t[1]-t[0]:1;
+  lo=Math.floor(lo/step+1e-9)*step;hi=Math.ceil(hi/step-1e-9)*step;
+  return {lo,hi,ticks:niceTicks(lo,hi,5)};
+}
+function p3Limits(a,b,what){
+  if(!(Number.isFinite(a)&&Number.isFinite(b))||a===b)throw new CalcError(what+': give two different numbers');
+  return a<b?[a,b]:[b,a];
+}
+function plot3Sample(spec){
+  const t0=Date.now(),budget=()=>{if(Date.now()-t0>5000)throw new CalcError('This is taking too long: lower the grid size');};
+  const parse=(src,what)=>{
+    if(!String(src||'').trim())throw new CalcError(what);
+    try{return parseExpr(String(src));}catch(e){throw new CalcError(e.message);}
+  };
+  const toNum=(v,st)=>{
+    if(v instanceof Mat)throw new CalcError('A plotted expression must give a number, not a matrix');
+    if(typeof v!=='number'&&!isC(v))return NaN;
+    if(isC(v)&&v.im!==0)st.anyC=true;
+    return v;
+  };
+  const real=(v,st)=>{const re=isC(v)?v.re:v,im=isC(v)?v.im:0;if(!Number.isFinite(re)||!Number.isFinite(im))return NaN;return st.anyC?Math.hypot(re,im):re;};
+  if(spec.mode==='curve'){
+    const [t0v,t1v]=p3Limits(spec.tmin,spec.tmax,'The '+spec.tvar+' range');
+    const asts=[0,1,2].map(i=>parse(spec.exprs[i],'Type x(t), y(t) and z(t): three expressions'));
+    const n=Math.max(10,Math.min(5000,Math.round(spec.nt)||400)),st={anyC:false},raw=[[],[],[]];let firstErr=null;
+    for(let i=0;i<n;i++){
+      const t=t0v+(t1v-t0v)*i/(n-1);
+      for(let q=0;q<3;q++){
+        let v;
+        try{DEPTH=0;POSOFF=0;v=toNum(U(ev(asts[q],new Map([[spec.tvar,t]]))),st);}
+        catch(e){if(e instanceof CalcError){if(!firstErr)firstErr=e.message;v=NaN;}else throw e;}
+        raw[q].push(v);
+      }
+      if((i&255)===0)budget();
+    }
+    const c=raw.map(r=>r.map(v=>real(v,st)));
+    const rg=c.map(r=>{let lo=Infinity,hi=-Infinity;r.forEach(v=>{if(Number.isFinite(v)){if(v<lo)lo=v;if(v>hi)hi=v;}});return {lo,hi};});
+    if(rg.some(r=>!(r.lo<=r.hi)))throw new CalcError(firstErr||'The curve has no finite points on this range');
+    const lim=rg.map(r=>p3Nice(r.lo,r.hi));
+    return {mode:'curve',n,c,lim,ts:Array.from({length:n},(_,i)=>t0v+(t1v-t0v)*i/(n-1))};
+  }
+  if(spec.xvar===spec.yvar)throw new CalcError('The two variables need different names');
+  const n=Math.max(5,Math.min(150,Math.round(spec.n)||41));
+  const [x0,x1]=p3Limits(spec.xmin,spec.xmax,'The '+spec.xvar+' range'),[y0,y1]=p3Limits(spec.ymin,spec.ymax,'The '+spec.yvar+' range');
+  const ast=parse(spec.expr,'Type an expression of '+spec.xvar+' and '+spec.yvar+', e.g. sin('+spec.xvar+')*cos('+spec.yvar+')');
+  const xs=[],ys=[];
+  for(let i=0;i<n;i++){xs.push(x0+(x1-x0)*i/(n-1));ys.push(y0+(y1-y0)*i/(n-1));}
+  const st={anyC:false},raw=[];let firstErr=null;
+  for(let j=0;j<n;j++){
+    const row=[];
+    for(let i=0;i<n;i++){
+      let v;
+      try{DEPTH=0;POSOFF=0;v=toNum(U(ev(ast,new Map([[spec.xvar,xs[i]],[spec.yvar,ys[j]]]))),st);}
+      catch(e){if(e instanceof CalcError){if(!firstErr)firstErr=e.message;v=NaN;}else throw e;}
+      row.push(v);
+    }
+    raw.push(row);budget();
+  }
+  const z=raw.map(r=>r.map(v=>real(v,st)));
+  let lo=Infinity,hi=-Infinity;
+  z.forEach(r=>r.forEach(v=>{if(Number.isFinite(v)){if(v<lo)lo=v;if(v>hi)hi=v;}}));
+  if(!(lo<=hi))throw new CalcError(firstErr||'The expression gave no finite values on this range');
+  const uLo=plotNum(spec.zmin),uHi=plotNum(spec.zmax);
+  const zl=p3Nice(uLo===null?lo:uLo,uHi===null?hi:uHi);
+  if(uLo!==null||uHi!==null)for(const r of z)for(let i=0;i<r.length;i++){if(Number.isFinite(r[i])){if(r[i]<zl.lo)r[i]=zl.lo;else if(r[i]>zl.hi)r[i]=zl.hi;}}
+  return {mode:'surface',n,xs,ys,z,lim:[{lo:x0,hi:x1,ticks:niceTicks(x0,x1,5)},{lo:y0,hi:y1,ticks:niceTicks(y0,y1,5)},zl],complexMag:st.anyC};
+}
+/* z at (x, y) by bilinear interpolation of the grid (for the pointer readout in the flat views) */
+function plot3ZAt(data,x,y){
+  if(!data||data.mode!=='surface')return NaN;
+  const xs=data.xs,ys=data.ys,n=xs.length;
+  if(!(x>=xs[0]&&x<=xs[n-1]&&y>=ys[0]&&y<=ys[n-1]))return NaN;
+  const i=Math.min(n-2,Math.floor((x-xs[0])/(xs[n-1]-xs[0])*(n-1))),j=Math.min(n-2,Math.floor((y-ys[0])/(ys[n-1]-ys[0])*(n-1)));
+  const fx=(x-xs[i])/(xs[i+1]-xs[i]),fy=(y-ys[j])/(ys[j+1]-ys[j]),z=data.z;
+  const a=z[j][i],b=z[j][i+1],c=z[j+1][i],d=z[j+1][i+1];
+  return (a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy;
+}
+function plot3CSV(spec,data){
+  const q=v=>Number.isFinite(v)?String(v):'';
+  if(data.mode==='curve')return [spec.tvar+',x,y,z'].concat(data.ts.map((t,i)=>[t,q(data.c[0][i]),q(data.c[1][i]),q(data.c[2][i])].join(','))).join('\n')+'\n';
+  const rows=[spec.xvar+','+spec.yvar+',z'];
+  data.ys.forEach((y,j)=>data.xs.forEach((x,i)=>rows.push(x+','+y+','+q(data.z[j][i]))));
+  return rows.join('\n')+'\n';
+}
+
+/* draw the 3D plot (or the flat contour / heat view). Returns the geometry so the UI can map the pointer back to x, y. */
+function plot3Draw(ctx,W,H,spec,data,theme,opts){
+  const T=theme||PLOT_THEMES.dark,fs=Math.max(10,Math.round(Math.min(W/52,H/25)));
+  const curve=data.mode==='curve',flat=!curve&&(spec.style==='contour'||spec.style==='heat');
+  const [LX,LY,LZ]=data.lim,names=curve?['x','y','z']:[spec.xvar,spec.yvar,'z'];
+  const lab=[spec.xlabel||names[0],spec.ylabel||names[1],spec.zlabel||(curve?'z':'')];
+  ctx.save();
+  ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='alphabetic';
+  const top=fs*0.8+(spec.title?fs*1.9:0),bar=curve?0:fs*5.6;
+  const ml=flat?fs*5.4:fs*1,mr=bar+fs*0.8,mb=flat?fs*3.4:fs*1,mt=top;
+  const area={x:ml,y:mt,w:W-ml-mr,h:H-mt-mb};
+  if(spec.title){ctx.fillStyle=T.fg;ctx.font='700 '+Math.round(fs*1.2)+'px '+PLOT_FONT;ctx.textAlign='center';ctx.fillText(spec.title,W/2,fs*1.7);}
+  const ticksOf=L=>L.ticks.filter(v=>v>=L.lo-(L.hi-L.lo)*1e-9&&v<=L.hi+(L.hi-L.lo)*1e-9);
+  const lineW=Math.max(1,fs/12);
+  const colorBar=()=>{
+    const bx=W-mr+fs*0.9,bw=fs*0.9,by=area.y+area.h*0.08,bh=area.h*0.84,k=48;
+    for(let q=0;q<k;q++){ctx.fillStyle=p3Color(T,1-(q+0.5)/k);ctx.fillRect(bx,by+bh*q/k,bw,bh/k+0.6);}
+    ctx.strokeStyle=T.axis;ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+    ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.9)+'px '+PLOT_FONT;ctx.textAlign='left';
+    ticksOf(LZ).forEach(v=>{const y=by+bh*(1-(v-LZ.lo)/(LZ.hi-LZ.lo));ctx.strokeStyle=T.axis;ctx.beginPath();ctx.moveTo(bx+bw,y);ctx.lineTo(bx+bw+fs*0.3,y);ctx.stroke();ctx.fillText(plotFmt(v,3),bx+bw+fs*0.45,y+fs*0.32);});
+    ctx.fillStyle=T.fg;ctx.font='600 '+Math.round(fs*0.95)+'px '+PLOT_FONT;ctx.textAlign='left';
+    ctx.fillText(lab[2]||'z',bx,by-fs*0.5);
+  };
+  if(flat){
+    /* ---- top-down colour map, optionally with contour lines ---- */
+    const n=data.n,xs=data.xs,ys=data.ys,z=data.z,px=x=>area.x+(x-LX.lo)/(LX.hi-LX.lo)*area.w,py=y=>area.y+area.h-(y-LY.lo)/(LY.hi-LY.lo)*area.h;
+    const col=v=>p3Color(T,(v-LZ.lo)/(LZ.hi-LZ.lo));
+    for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){
+      const a=z[j][i],b=z[j][i+1],c=z[j+1][i+1],d=z[j+1][i];
+      if(![a,b,c,d].every(Number.isFinite))continue;
+      const x0=px(xs[i]),x1=px(xs[i+1]),y0=py(ys[j+1]),y1=py(ys[j]);
+      ctx.fillStyle=col((a+b+c+d)/4);ctx.fillRect(x0,y0,x1-x0+0.7,y1-y0+0.7);
+    }
+    if(spec.style==='contour'){
+      const levels=niceTicks(LZ.lo,LZ.hi,9).filter(v=>v>LZ.lo&&v<LZ.hi);
+      ctx.strokeStyle=T.fg;ctx.lineWidth=Math.max(1,lineW*0.9);ctx.globalAlpha=0.6;
+      levels.forEach(L=>{
+        ctx.beginPath();
+        for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){
+          const va=z[j][i],vb=z[j][i+1],vc=z[j+1][i+1],vd=z[j+1][i];
+          if(![va,vb,vc,vd].every(Number.isFinite))continue;
+          const idx=(va>=L?1:0)|(vb>=L?2:0)|(vc>=L?4:0)|(vd>=L?8:0);
+          if(idx===0||idx===15)continue;
+          const e=[
+            ()=>{const t=(L-va)/(vb-va);return [xs[i]+t*(xs[i+1]-xs[i]),ys[j]];},
+            ()=>{const t=(L-vb)/(vc-vb);return [xs[i+1],ys[j]+t*(ys[j+1]-ys[j])];},
+            ()=>{const t=(L-vd)/(vc-vd);return [xs[i]+t*(xs[i+1]-xs[i]),ys[j+1]];},
+            ()=>{const t=(L-va)/(vd-va);return [xs[i],ys[j]+t*(ys[j+1]-ys[j])];}];
+          const hiC=(va+vb+vc+vd)/4>=L;
+          const segs={1:[[3,0]],2:[[0,1]],3:[[3,1]],4:[[1,2]],5:hiC?[[0,1],[2,3]]:[[3,0],[1,2]],6:[[0,2]],7:[[3,2]],8:[[2,3]],9:[[0,2]],10:hiC?[[3,0],[1,2]]:[[0,1],[2,3]],11:[[1,2]],12:[[3,1]],13:[[0,1]],14:[[3,0]]}[idx];
+          segs.forEach(([p,q])=>{const A=e[p](),B=e[q]();ctx.moveTo(px(A[0]),py(A[1]));ctx.lineTo(px(B[0]),py(B[1]));});
+        }
+        ctx.stroke();
+      });
+      ctx.globalAlpha=1;
+    }
+    ctx.strokeStyle=T.axis;ctx.lineWidth=1;ctx.strokeRect(area.x,area.y,area.w,area.h);
+    ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.95)+'px '+PLOT_FONT;
+    ctx.textAlign='center';ticksOf(LX).forEach(v=>{const x=px(v);ctx.strokeStyle=T.axis;ctx.beginPath();ctx.moveTo(x,area.y+area.h);ctx.lineTo(x,area.y+area.h+fs*0.35);ctx.stroke();ctx.fillText(plotFmt(v,3),x,area.y+area.h+fs*1.4);});
+    ctx.textAlign='right';ticksOf(LY).forEach(v=>{const y=py(v);ctx.strokeStyle=T.axis;ctx.beginPath();ctx.moveTo(area.x-fs*0.35,y);ctx.lineTo(area.x,y);ctx.stroke();ctx.fillText(plotFmt(v,3),area.x-fs*0.5,y+fs*0.33);});
+    ctx.fillStyle=T.fg;ctx.font='600 '+Math.round(fs*1.0)+'px '+PLOT_FONT;ctx.textAlign='center';ctx.fillText(lab[0],area.x+area.w/2,H-fs*0.6);
+    ctx.textAlign='left';ctx.fillText(lab[1],fs*0.5,area.y-fs*0.15);
+    colorBar();
+    ctx.restore();
+    return {mode:'flat',rect:area,xAt:p=>LX.lo+(p-area.x)/area.w*(LX.hi-LX.lo),yAt:p=>LY.lo+(area.y+area.h-p)/area.h*(LY.hi-LY.lo)};
+  }
+  /* ---- 3D view ---- */
+  const az=(Number(spec.az)||0)*Math.PI/180,el=Math.max(3,Math.min(90,Number(spec.el)||0))*Math.PI/180;
+  const ca=Math.cos(az),sa=Math.sin(az),ce=Math.cos(el),se=Math.sin(el),ZH=0.8;
+  const zoom=Math.max(0.3,Math.min(4,Number(spec.zoom)||1)),sc=Math.min(area.w,area.h)/(2*1.5)*zoom,cx=area.x+area.w/2,cy=area.y+area.h/2+fs*0.3;
+  const nx=(v,L)=>(v-L.lo)/(L.hi-L.lo)*2-1,nz=v=>((v-LZ.lo)/(LZ.hi-LZ.lo)*2-1)*ZH;
+  const P=(X,Y,Z)=>{const x1=X*ca-Y*sa,y1=X*sa+Y*ca,v=Z*ce+y1*se,d=y1*ce-Z*se;return {x:cx+x1*sc,y:cy-v*sc,sx:x1,v,d};};
+  const line=(a,b)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();};
+  const tkv=[ticksOf(LX),ticksOf(LY),ticksOf(LZ)];
+  const tk=[tkv[0].map(v=>nx(v,LX)),tkv[1].map(v=>nx(v,LY)),tkv[2].map(nz)];
+  /* back faces: the floor and the walls that face away from the viewer */
+  const faceBack=(nX,nY)=>(nX*sa+nY*ca)*ce>0;
+  ctx.lineWidth=1;
+  ctx.strokeStyle=T.grid;
+  tk[0].forEach(X=>line(P(X,-1,-ZH),P(X,1,-ZH)));tk[1].forEach(Y=>line(P(-1,Y,-ZH),P(1,Y,-ZH)));
+  ctx.strokeStyle=T.axis;
+  [[-1,-1,1,-1],[1,-1,1,1],[1,1,-1,1],[-1,1,-1,-1]].forEach(e=>line(P(e[0],e[1],-ZH),P(e[2],e[3],-ZH)));
+  [[-1,0],[1,0],[0,-1],[0,1]].forEach(([fx,fy])=>{
+    if(!faceBack(fx,fy))return;
+    ctx.strokeStyle=T.grid2;
+    tk[2].forEach(Z=>{if(fx)line(P(fx,-1,Z),P(fx,1,Z));else line(P(-1,fy,Z),P(1,fy,Z));});
+    (fx?tk[1]:tk[0]).forEach(U2=>{if(fx)line(P(fx,U2,-ZH),P(fx,U2,ZH));else line(P(U2,fy,-ZH),P(U2,fy,ZH));});
+    ctx.strokeStyle=T.axis;
+    if(fx){line(P(fx,-1,-ZH),P(fx,-1,ZH));line(P(fx,1,-ZH),P(fx,1,ZH));line(P(fx,-1,ZH),P(fx,1,ZH));}
+    else{line(P(-1,fy,-ZH),P(-1,fy,ZH));line(P(1,fy,-ZH),P(1,fy,ZH));line(P(-1,fy,ZH),P(1,fy,ZH));}
+  });
+  /* the data */
+  if(!curve){
+    const n=data.n,z=data.z,xs=data.xs,ys=data.ys,V=[];
+    for(let j=0;j<n;j++){const row=[];for(let i=0;i<n;i++)row.push(Number.isFinite(z[j][i])?P(nx(xs[i],LX),nx(ys[j],LY),nz(z[j][i])):null);V.push(row);}
+    const quads=[];
+    for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){
+      const a=V[j][i],b=V[j][i+1],c=V[j+1][i+1],d=V[j+1][i];
+      if(!a||!b||!c||!d)continue;
+      const ux=c.sx-a.sx,uy=c.v-a.v,uz=c.d-a.d,vx=d.sx-b.sx,vy=d.v-b.v,vz=d.d-b.d;
+      const qx=uy*vz-uz*vy,qy=uz*vx-ux*vz,qz=ux*vy-uy*vx,ql=Math.hypot(qx,qy,qz)||1;
+      const lam=Math.abs((qx*-0.35+qy*0.55+qz*-0.75)/ql/Math.hypot(0.35,0.55,0.75));
+      quads.push({a,b,c,d,dep:(a.d+b.d+c.d+d.d)/4,t:((z[j][i]+z[j][i+1]+z[j+1][i+1]+z[j+1][i])/4-LZ.lo)/(LZ.hi-LZ.lo),k:0.8+0.2*lam});
+    }
+    quads.sort((p,q)=>q.dep-p.dep);
+    const wire=spec.style==='wire';
+    ctx.lineJoin='round';
+    quads.forEach(q=>{
+      ctx.beginPath();ctx.moveTo(q.a.x,q.a.y);ctx.lineTo(q.b.x,q.b.y);ctx.lineTo(q.c.x,q.c.y);ctx.lineTo(q.d.x,q.d.y);ctx.closePath();
+      if(wire){ctx.fillStyle=T.bg;ctx.fill();ctx.strokeStyle=p3Color(T,q.t);ctx.lineWidth=Math.max(1,lineW*0.9);ctx.stroke();}
+      else{const c=p3Color(T,q.t,q.k);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=0.6;ctx.stroke();}
+    });
+    if(!wire&&n<=61){   /* faint mesh so the shape reads even where the colour is flat */
+      ctx.strokeStyle=T.bg;ctx.globalAlpha=0.28;ctx.lineWidth=0.6;
+      quads.forEach(q=>{ctx.beginPath();ctx.moveTo(q.a.x,q.a.y);ctx.lineTo(q.b.x,q.b.y);ctx.lineTo(q.c.x,q.c.y);ctx.lineTo(q.d.x,q.d.y);ctx.closePath();ctx.stroke();});
+      ctx.globalAlpha=1;
+    }
+  }else{
+    const pts=data.c[0].map((_,i)=>{const x=data.c[0][i],y=data.c[1][i],zv=data.c[2][i];return [x,y,zv].every(Number.isFinite)?[nx(x,LX),nx(y,LY),nz(zv)]:null;});
+    const path=f=>{ctx.beginPath();let pen=false;pts.forEach(p=>{if(!p){pen=false;return;}const q=f(p);if(pen)ctx.lineTo(q.x,q.y);else{ctx.moveTo(q.x,q.y);pen=true;}});ctx.stroke();};
+    ctx.strokeStyle=T.dim;ctx.globalAlpha=0.45;ctx.lineWidth=Math.max(1,lineW);path(p=>P(p[0],p[1],-ZH));ctx.globalAlpha=1;   /* shadow on the floor */
+    ctx.strokeStyle=T.colors[0];ctx.lineWidth=Math.max(2,lineW*1.6);ctx.lineJoin='round';path(p=>P(p[0],p[1],p[2]));
+    const first=pts.find(Boolean),last=[...pts].reverse().find(Boolean);
+    if(first){const q=P(first[0],first[1],first[2]);ctx.fillStyle=T.colors[0];ctx.strokeStyle=T.bg;ctx.lineWidth=2;ctx.beginPath();ctx.arc(q.x,q.y,Math.max(3.5,fs*0.4),0,Math.PI*2);ctx.fill();ctx.stroke();}
+    if(last&&last!==first){const q=P(last[0],last[1],last[2]);ctx.fillStyle=T.bg;ctx.strokeStyle=T.colors[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(q.x,q.y,Math.max(3.5,fs*0.4),0,Math.PI*2);ctx.fill();ctx.stroke();}
+  }
+  /* front floor edges with tick labels, and the z axis on the leftmost corner */
+  const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(c=>({X:c[0],Y:c[1],p:P(c[0],c[1],-ZH)}));
+  const near=corners.reduce((m,c)=>c.p.d<m.p.d?c:m,corners[0]);
+  const ctr=P(0,0,-ZH),away=(p,k)=>{const dx=p.x-ctr.x,dy=p.y-ctr.y,l=Math.hypot(dx,dy)||1;return {x:p.x+dx/l*k,y:p.y+dy/l*k};};
+  ctx.strokeStyle=T.axis;ctx.lineWidth=1.4;
+  line(P(-1,near.Y,-ZH),P(1,near.Y,-ZH));line(P(near.X,-1,-ZH),P(near.X,1,-ZH));
+  ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.9)+'px '+PLOT_FONT;ctx.textAlign='center';
+  tkv[0].forEach((v,i)=>{const q=away(P(tk[0][i],near.Y,-ZH),fs*1.1);ctx.fillText(plotFmt(v,3),q.x,q.y+fs*0.3);});
+  tkv[1].forEach((v,i)=>{const q=away(P(near.X,tk[1][i],-ZH),fs*1.1);ctx.fillText(plotFmt(v,3),q.x,q.y+fs*0.3);});
+  ctx.fillStyle=T.fg;ctx.font='600 '+Math.round(fs*1.0)+'px '+PLOT_FONT;
+  {const q=away(P(0,near.Y,-ZH),fs*2.9);ctx.fillText(lab[0],q.x,q.y+fs*0.3);}
+  {const q=away(P(near.X,0,-ZH),fs*2.9);ctx.fillText(lab[1],q.x,q.y+fs*0.3);}
+  const zc=corners.reduce((m,c)=>c.p.sx<m.p.sx?c:m,corners[0]);
+  ctx.strokeStyle=T.axis;line(P(zc.X,zc.Y,-ZH),P(zc.X,zc.Y,ZH));
+  ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.9)+'px '+PLOT_FONT;ctx.textAlign='right';
+  tkv[2].forEach((v,i)=>{const q=P(zc.X,zc.Y,tk[2][i]);ctx.strokeStyle=T.axis;ctx.beginPath();ctx.moveTo(q.x-fs*0.3,q.y);ctx.lineTo(q.x,q.y);ctx.stroke();ctx.fillText(plotFmt(v,3),q.x-fs*0.45,q.y+fs*0.32);});
+  if(curve){const q=P(zc.X,zc.Y,ZH);ctx.fillStyle=T.fg;ctx.font='600 '+Math.round(fs*1.0)+'px '+PLOT_FONT;ctx.textAlign='center';ctx.fillText(lab[2]||'z',q.x,q.y-fs*0.9);}
+  if(!curve)colorBar();
+  ctx.restore();
+  return {mode:'3d'};
+}
+
+/* ---- plot3d() and curve3d(): build a Plot3Spec from the unevaluated arguments ---- */
+const P3_STYLES=['surface','wire','contour','heat'];
+function plot3dFromCall(n,sc){
+  const args=n.args.slice(),flags=[];
+  while(args.length&&args[args.length-1].t==='id'&&P3_STYLES.includes(args[args.length-1].name))flags.push(args.pop().name);
+  if(flags.length>1)throw new CalcError('Pick one style: '+P3_STYLES.join(', '));
+  const style=flags[0]||'surface';
+  const sig='plot3d(expr, x, a, b, y, c, d)  or  plot3d(expr, a, b, c, d)';
+  let xv=null,yv=null,r;
+  const isName=a=>a.t==='id'&&!STATE.funcs.has(a.name)&&!has(FUNCS,a.name);
+  if(args.length===7){
+    if(!isName(args[1])||!isName(args[4]))throw new CalcError('Name both variables:  '+sig);
+    xv=args[1].name;yv=args[4].name;r=[args[2],args[3],args[5],args[6]];
+  }else if(args.length===5)r=args.slice(1);
+  else throw new CalcError(sig+'  (give the expression, then each variable with its range; add surface, wire, contour or heat at the end)');
+  const rv=['The first range start','The first range end','The second range start','The second range end'].map((w,i)=>plotNumArg(r[i],sc,w));
+  const ast=args[0],free=new Set();plotIds(ast,free);
+  const f=[...free].sort();
+  if(!xv){
+    if(f.length>2)throw new CalcError('plot3d() found '+f.length+' unknown names ('+f.join(', ')+'); a surface has two variables, so name them:  '+sig);
+    if(f.length===2){xv=f[0];yv=f[1];}
+    else if(f.length===1){xv=(f[0]==='y'||f[0]==='x')?'x':f[0];yv='y';}
+    else{xv='x';yv='y';}
+  }else{
+    const extra=f.filter(v=>v!==xv&&v!==yv);
+    if(extra.length)throw new CalcError('plot3d() does not know '+extra.join(', ')+'; define it first, e.g.  '+extra[0]+' = 2');
+  }
+  if(xv===yv)throw new CalcError('The two variables need different names');
+  const flat=style==='contour'||style==='heat';
+  return new Plot3Spec({mode:'surface',expr:symPrint(ast),xvar:xv,yvar:yv,xmin:Math.min(rv[0],rv[1]),xmax:Math.max(rv[0],rv[1]),ymin:Math.min(rv[2],rv[3]),ymax:Math.max(rv[2],rv[3]),style,n:flat?81:41});
+}
+function curve3dFromCall(n,sc){
+  const args=n.args.slice();
+  const sig='curve3d(x(t), y(t), z(t), t, a, b)';
+  if(args.length!==5&&args.length!==6)throw new CalcError(sig+'  (three expressions, then the variable, which is optional, and its range)');
+  const b=plotNumArg(args.pop(),sc,'The range end'),a=plotNumArg(args.pop(),sc,'The range start');
+  let tv=null;
+  if(args.length===4){
+    if(!(args[3].t==='id'&&!STATE.funcs.has(args[3].name)&&!has(FUNCS,args[3].name)))throw new CalcError('The 4th argument must be the variable name, e.g. '+sig);
+    tv=args.pop().name;
+  }
+  const free=new Set();args.forEach(e=>plotIds(e,free));
+  if(!tv){
+    if(free.size>1)throw new CalcError('curve3d() found several unknown names ('+[...free].join(', ')+'); say which is the variable:  '+sig);
+    tv=free.size===1?[...free][0]:'t';
+  }else{
+    const extra=[...free].filter(v=>v!==tv);
+    if(extra.length)throw new CalcError('curve3d() does not know '+extra.join(', ')+'; define it first, e.g.  '+extra[0]+' = 2');
+  }
+  return new Plot3Spec({mode:'curve',exprs:args.map(e=>symPrint(e)),tvar:tv,tmin:Math.min(a,b),tmax:Math.max(a,b),el:25,az:-50});
+}
+
 /* ---- angle handling: everything is radians; sind/cosd/tand switch to degrees internally (exact multiples of 90) ---- */
 function sinA(x){
   if(CFG.deg){if(x%90===0){return [0,1,0,-1][((x/90)%4+4)%4];}x=x*Math.PI/180;}
@@ -3710,6 +4073,8 @@ symDef('poles','poles(F, s)','Poles of a rational F(s) as a matrix (repeated pol
   };
 }
 symDef('plot','plot(expr1, expr2, var, a, b, logx)','Plot up to 3 expressions of one variable from a to b in the Plot tab (inline preview here). Name the variable, add logx / logy / stacked, wrap a trace in right(...) for the right y axis','plot(1/sqrt(1+(f/1k)^2), f, 10, 1M, logx)',3,9,(n,sc)=>plotFromCall(n,sc),true,'Plot');
+symDef('plot3d','plot3d(expr, x, a, b, y, c, d, style)','3D surface of an expression of two variables, drawn in the Plot tab (drag to rotate). Variables are optional (x, y). Style: surface, wire, contour or heat (the last two are top-down colour maps)','plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)',5,8,(n,sc)=>plot3dFromCall(n,sc),true,'Plot');
+symDef('curve3d','curve3d(x(t), y(t), z(t), t, a, b)','3D space curve from three expressions of one variable, drawn in the Plot tab (drag to rotate)','curve3d(cos(t), sin(t), t/5, t, 0, 6*pi)',5,6,(n,sc)=>curve3dFromCall(n,sc),true,'Plot');
 symDef('bode','bode(H, w1, w2)   or   bode(H, f1, f2, hz)','Bode plot of a transfer function H(s): magnitude (dB) over phase (degrees) on a log axis. Frequencies are rad/s, or Hz when the last argument is hz','bode(1/(1+s/1k), 10, 1M)',3,4,(n,sc)=>bodeFromCall(n,sc),true,'Plot');
 def('Plot','right','right(expr)','Inside plot(): draws that trace against the right-hand y axis (identity elsewhere)','plot(sin(x), right(cos(x)*100), 0, 6.28)',1,1,x=>x);
 def('Plot','left','left(expr)','Inside plot(): draws that trace against the left-hand y axis (the default; identity elsewhere)','left(x)',1,1,x=>x);
@@ -4114,6 +4479,7 @@ function execStatement(sIn,base){
   TEXSRC=s;const ast=parseExpr(s);
   const raw=ev(ast,null);
   if(raw instanceof PlotSpec)return {kind:'plot',spec:raw};
+  if(raw instanceof Plot3Spec)return {kind:'plot3',spec:raw};
   if(raw instanceof TexOut)return {kind:'tex',tex:raw.tex};
   if(!fmt&&raw instanceof Mat&&raw.pz&&ast.t==='call'){
     const rows=raw.d[0].map((v,i)=>({name:raw.pz.names[i],v}));
@@ -5185,6 +5551,7 @@ function itemText(it){
     case 'err':return 'ERROR: '+it.msg;
     case 'vars':return it.list.map(x=>x.name+' = '+fmtValue(x.v).text).join('\n');
     case 'plot':return 'plot: '+it.spec.traces.filter(t=>t.expr).map(t=>t.expr).join('  |  ')+'   ('+it.spec.xvar+' from '+plotFmt(it.spec.xmin,4)+' to '+plotFmt(it.spec.xmax,4)+')';
+    case 'plot3':return '3D plot: '+p3Desc(it.spec);
     case 'solve':return (it.title||'solution')+': '+it.rows.map(x=>x.name+' = '+fmtValue(x.v).text).join(', ');
     case 'tex':return 'LaTeX: '+it.tex;
     default:return (it.html||'').replace(/<br>/g,'\n').replace(/<[^>]+>/g,'');
@@ -5252,6 +5619,19 @@ function renderItem(it){
       const bt=mkEl('button','tb','&#128200; Open in the Plot tab (markers, labels, export)');
       bt.onclick=()=>{plotLoadSpec(sp);showTab('plot');};box.appendChild(bt);
       break;}
+    case 'plot3':{
+      const sp=it.spec;
+      box.appendChild(mkEl('div','alt','3D plot &mdash; '+esc(p3Desc(sp))));
+      try{
+        const data=plot3Sample(sp),W=760,H=460,sc=2;
+        const c=document.createElement('canvas');c.width=W*sc;c.height=H*sc;
+        const ctx=c.getContext('2d');if(!ctx)throw new Error('preview not available in this browser');
+        ctx.scale(sc,sc);plot3Draw(ctx,W,H,sp,data,PLOT_THEMES.dark,{});
+        const im=document.createElement('img');im.className='plimg';im.alt='3D plot';im.src=c.toDataURL('image/png');box.appendChild(im);
+      }catch(e){box.appendChild(mkEl('div','out err','\u2716 '+esc(e.message)));}
+      const bt=mkEl('button','tb','&#128200; Open in the Plot tab (rotate, zoom, labels, export)');
+      bt.onclick=()=>{p3Load(sp);plSetMode('3d');showTab('plot');};box.appendChild(bt);
+      break;}
     case 'solve':{
       box.appendChild(mkEl('div','alt',(it.title?esc(it.title):'solution')+' &mdash; stored as variables:'));
       it.rows.forEach(x=>box.appendChild(valueRow('<span class="vn">'+esc(x.name)+'</span><span class="eq">=</span>',x.v)));
@@ -5286,6 +5666,7 @@ function helpHtml(){
 <tr><td>algebra</td><td><code>expand((x+1)^3)</code>, <code>factor(x^3 - 6*x^2 + 11*x - 6)</code> = (x - 1)*(x - 2)*(x - 3), <code>factor((x^2-1)/(x^2+3*x+2))</code> cancels, <code>factor(360)</code> = 2^3*3^2*5, <code>simplify(sin(x)^2 + cos(x)^2)</code> = 1.</td></tr>
 <tr><td>calculus</td><td><code>diff(x^2*sin(x))</code> gives the derivative as an expression you can reuse; <code>diff(expr, x)</code> names the variable (needed when there are several), <code>diff(expr, x, 2)</code> is the 2nd derivative. <code>integ(x*exp(x))</code> gives the antiderivative <code>+ C</code>; <code>integ(expr, x, a, b)</code> or <code>integ(expr, a, b)</code> gives a number: exact when a closed form exists, else numeric. Use <code>inf</code> for infinity: <code>integ(exp(-x^2), -inf, inf)</code> = &radic;&pi;. Your own functions work inside: <code>f(x)=x^3; diff(f(x))</code>. Inside a function, <code>g(x)=diff(f(x))</code> evaluates at the value you pass.</td></tr>
 <tr><td>plots</td><td><code>plot(sin(t), cos(t), t, 0, 2*pi)</code> draws up to 3 traces of one variable (name it; <code>right(expr)</code> uses a right y axis; add <code>logx</code>, <code>logy</code>, <code>stacked</code>). <code>bode(H, w1, w2)</code> gives magnitude and phase on a log axis in rad/s, <code>bode(H, f1, f2, hz)</code> in Hz. The <b>Plot tab</b> adds markers you place yourself, axis labels and units, and PNG / clipboard / CSV export.</td></tr>
+<tr><td>3D plots</td><td><code>plot3d(sin(x)*cos(y), x, -3, 3, y, -3, 3)</code> draws a surface (or <code>plot3d(x^2+y^2, -2, 2, -2, 2, contour)</code>; styles <code>surface wire contour heat</code>). <code>curve3d(cos(t), sin(t), t/5, t, 0, 6*pi)</code> draws a space curve. Open the result in the <b>Plot tab</b> (3D surface) to turn, zoom and export it.</td></tr>
 <tr><td>LaTeX</td><td><code>latex((s+1)/(s^2+3*s+2))</code> gives <code>\\frac{s + 1}{s^{2} + 3s + 2}</code>; <code>latex x^2 - 3*x + 2 = 0</code> works for equations; <code>latex(diff(...))</code>, <code>integ</code>, <code>LT</code>, <code>ILT</code> add <code>= result</code>. Typed numbers keep their suffix (<code>2.2k</code> &rarr; <code>2.2\\,\\mathrm{k}</code>), names get subscripts (<code>R1</code> &rarr; <code>R_{1}</code>), Greek names become symbols (<code>omega</code> &rarr; &omega;). Symbolic results have a <b>TeX</b> button. The <b>LaTeX tab</b> converts several lines with a preview (drawn by KaTeX online, by the built-in typesetter offline). Paste into PowerPoint via Insert &rarr; Equation &rarr; LaTeX.</td></tr>
 <tr><td>pretty math</td><td>symbolic results (<code>diff</code>, <code>integ</code>, <code>LT</code>, <code>series</code>, <code>dsolve</code>&hellip;) are typeset with real fraction bars, powers and roots, offline and in exported pictures. Click one to copy it as text; <b>TeX</b> copies LaTeX. <code>pretty off</code> switches to plain text, <code>pretty on</code> back (remembered).</td></tr>
 <tr><td>differential equations</td><td><code>dsolve(y'' + 3*y' + 2*y = u(t), y(0)=0, y'(0)=0)</code> solves a linear ODE with constant coefficients by Laplace transform (t &ge; 0). <code>y'</code> is dy/dt; any function name works (<code>v'</code>, <code>i''</code>); missing initial conditions are 0. The answer is stored as <code>y(t)</code>: <code>y(2)</code>, <code>plot(y(t), t, 0, 10)</code>.</td></tr>
@@ -5327,7 +5708,7 @@ function addEntry(text,res){
   const line=mkEl('div','inl','<span class="prm">\u203a</span><span class="src">'+hl(text)+'</span>');
   line.title='Click to reuse this input';line.onclick=()=>{setInput(text);};
   e.appendChild(line);
-  res.items.forEach(it=>{e.appendChild(renderItem(it));if(it.kind==='plot')plotLoadSpec(it.spec,true);});
+  res.items.forEach(it=>{e.appendChild(renderItem(it));if(it.kind==='plot')plotLoadSpec(it.spec,true);else if(it.kind==='plot3')p3Load(it.spec,true);});
   res.ui.forEach(u=>{if(u.cmd==='help')e.appendChild(mkEl('div','',helpHtml()));});
   logEl.appendChild(e);logEl.scrollTop=logEl.scrollHeight;
   sessionText.push('> '+text);res.items.forEach(it=>sessionText.push(itemText(it)));
@@ -5949,6 +6330,7 @@ function plRun(scroll){
   if(scroll===true&&window.innerWidth<900&&PLS.data){const cv=plId('plCv');if(cv.scrollIntoView)cv.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
 function plPaint(){
+  if(P3S.mode==='3d'){p3Paint();return;}
   const cv=plId('plCv');if(!cv)return;
   const w=Math.max(260,Math.floor(cv.parentElement.clientWidth)||620);
   const stacked=PLS.spec&&PLS.spec.layout==='stacked';
@@ -6075,6 +6457,204 @@ function initPlot(){
   };
 }
 
+/* ---- 3D plots in the Plot tab ---- */
+const P3S={spec:null,data:null,geom:null,w:600,h:420,timer:0,mode:'2d',drag:null,ptrs:new Map(),raf:0};
+function p3Desc(sp){
+  const r=(v)=>plotFmt(v,4);
+  return sp.mode==='curve'?'('+sp.exprs.join(', ')+')   ('+sp.tvar+' from '+r(sp.tmin)+' to '+r(sp.tmax)+')'
+    :sp.expr+'   ('+sp.xvar+' from '+r(sp.xmin)+' to '+r(sp.xmax)+', '+sp.yvar+' from '+r(sp.ymin)+' to '+r(sp.ymax)+(sp.style!=='surface'?', '+sp.style:'')+')';
+}
+function plSetMode(m){
+  P3S.mode=m==='3d'?'3d':'2d';
+  plId('plMode2').classList.toggle('on',P3S.mode==='2d');plId('plMode3').classList.toggle('on',P3S.mode==='3d');
+  plId('pl2').classList.toggle('pl-off',P3S.mode==='3d');plId('pl3').classList.toggle('pl-off',P3S.mode!=='3d');
+  if(P3S.mode==='3d'&&!P3S.spec)p3Load(P3_EXAMPLES.ripple());
+  if(curTab==='plot')plPaint();
+}
+function p3Read(){
+  const old=P3S.spec,sp=new Plot3Spec({});
+  sp.mode=plId('p3Mode').value;sp.style=plId('p3Style').value;
+  sp.title=plId('p3Title').value;sp.xlabel=plId('p3XL').value;sp.ylabel=plId('p3YL').value;sp.zlabel=plId('p3ZL').value;
+  if(old){sp.az=old.az;sp.el=old.el;sp.zoom=old.zoom;}
+  if(sp.mode==='curve'){
+    sp.exprs=[0,1,2].map(i=>plId('p3C'+i).value);sp.tvar=plId('p3TV').value.trim()||'t';
+    sp.tmin=plNum(plId('p3TA').value,'The range start');sp.tmax=plNum(plId('p3TB').value,'The range end');
+    sp.nt=Number(plId('p3NT').value)||400;
+  }else{
+    sp.expr=plId('p3E').value;
+    sp.xvar=plId('p3XV').value.trim()||'x';sp.yvar=plId('p3YV').value.trim()||'y';
+    sp.xmin=plNum(plId('p3XA').value,'The first range start');sp.xmax=plNum(plId('p3XB').value,'The first range end');
+    sp.ymin=plNum(plId('p3YA').value,'The second range start');sp.ymax=plNum(plId('p3YB').value,'The second range end');
+    sp.n=Number(plId('p3N').value)||41;
+    sp.zmin=plNum(plId('p3ZA').value,'z min');sp.zmax=plNum(plId('p3ZB').value,'z max');
+  }
+  return sp;
+}
+function p3Write(sp){
+  const f=v=>(v===null||v===undefined||!Number.isFinite(v))?'':plotFmt(v,6);
+  plId('p3Mode').value=sp.mode;plId('p3Style').value=sp.style;
+  plId('p3Surf').classList.toggle('pl-off',sp.mode==='curve');plId('p3Cur').classList.toggle('pl-off',sp.mode!=='curve');plId('p3StyleL').classList.toggle('pl-off',sp.mode==='curve');
+  plId('p3Title').value=sp.title||'';plId('p3XL').value=sp.xlabel||'';plId('p3YL').value=sp.ylabel||'';plId('p3ZL').value=sp.zlabel||'';
+  plId('p3E').value=sp.expr||'';plId('p3XV').value=sp.xvar;plId('p3YV').value=sp.yvar;
+  plId('p3XA').value=f(sp.xmin);plId('p3XB').value=f(sp.xmax);plId('p3YA').value=f(sp.ymin);plId('p3YB').value=f(sp.ymax);
+  plId('p3N').value=sp.n;plId('p3ZA').value=f(sp.zmin);plId('p3ZB').value=f(sp.zmax);
+  for(let i=0;i<3;i++)plId('p3C'+i).value=(sp.exprs&&sp.exprs[i])||'';
+  plId('p3TV').value=sp.tvar;plId('p3TA').value=f(sp.tmin);plId('p3TB').value=f(sp.tmax);plId('p3NT').value=sp.nt;
+  plId('p3Az').value=sp.az;plId('p3El').value=sp.el;plId('p3Zm').value=sp.zoom;
+  p3FlatClass();
+}
+function p3FlatClass(){
+  const sp=P3S.spec,flat=!!sp&&sp.mode==='surface'&&(sp.style==='contour'||sp.style==='heat');
+  plId('p3Cv').classList.toggle('flat',flat);plId('p3View').classList.toggle('pl-off',flat);
+}
+function p3Save(){try{localStorage.setItem('engcalc.plot3',JSON.stringify(P3S.spec));}catch(e){}}
+function p3Msg(t,bad){const m=plId('p3Msg');m.textContent=t;m.classList.toggle('bad',!!bad);}
+function p3Info(){
+  const sp=P3S.spec,d=P3S.data;
+  if(sp.mode==='curve')return d.n+' points \u00b7 drag to turn, scroll or pinch to zoom';
+  const flat=sp.style==='contour'||sp.style==='heat';
+  return d.n+' \u00d7 '+d.n+' grid \u00b7 '+(flat?'move the pointer over the map to read x, y and z':'drag to turn, scroll or pinch to zoom')+(d.complexMag?' \u00b7 complex values shown as magnitude':'');
+}
+function p3Run(scroll){
+  try{
+    const sp=p3Read();
+    P3S.spec=sp;P3S.data=plot3Sample(sp);
+    p3Msg(p3Info(),false);p3Save();
+  }catch(e){P3S.data=null;p3Msg(e.message,true);}
+  p3FlatClass();p3Paint();
+  if(scroll===true&&window.innerWidth<900&&P3S.data){const cv=plId('p3Cv');if(cv.scrollIntoView)cv.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+function p3Paint(){
+  const cv=plId('p3Cv');if(!cv)return;
+  const w=Math.max(260,Math.floor(cv.parentElement.clientWidth)||620);
+  const vh=window.innerHeight||800,h=Math.round(Math.min(w*0.72,Math.max(280,vh*0.66)));
+  const dpr=Math.min(3,window.devicePixelRatio||1);
+  P3S.w=w;P3S.h=h;
+  cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+  let ctx=null;try{ctx=cv.getContext('2d');}catch(e){}
+  if(!ctx)return;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const T=PLOT_THEMES[plId('p3Theme').value]||PLOT_THEMES.light;
+  if(!P3S.data||!P3S.spec){
+    ctx.fillStyle=T.bg;ctx.fillRect(0,0,w,h);ctx.fillStyle=T.dim;ctx.font='15px '+PLOT_FONT;ctx.textAlign='center';
+    ctx.fillText('Type an expression and press Plot',w/2,h/2);P3S.geom=null;return;
+  }
+  P3S.geom=plot3Draw(ctx,w,h,P3S.spec,P3S.data,T,{});
+}
+function p3Soon(){if(P3S.raf)return;const run=()=>{P3S.raf=0;p3Paint();};P3S.raf=(window.requestAnimationFrame||(f=>setTimeout(f,16)))(run);}
+function p3SyncSliders(){const sp=P3S.spec;if(!sp)return;plId('p3Az').value=sp.az;plId('p3El').value=sp.el;plId('p3Zm').value=sp.zoom;}
+function p3Load(spec,quiet){
+  P3S.spec=Object.assign(new Plot3Spec({}),JSON.parse(JSON.stringify(spec)));
+  p3Write(P3S.spec);
+  try{P3S.data=plot3Sample(P3S.spec);p3Msg((quiet?'Loaded from the console. ':'')+p3Info(),false);}
+  catch(e){P3S.data=null;p3Msg(e.message,true);}
+  p3Save();if(curTab==='plot'&&P3S.mode==='3d')p3Paint();
+}
+const P3_EXAMPLES={
+  ripple:()=>new Plot3Spec({expr:'cos(sqrt(x^2+y^2))*exp(-0.15*sqrt(x^2+y^2))',xmin:-10,xmax:10,ymin:-10,ymax:10,n:61,title:'Damped ripple'}),
+  saddle:()=>new Plot3Spec({expr:'x^2-y^2',xmin:-2,xmax:2,ymin:-2,ymax:2,title:'Saddle  z = x^2 - y^2'}),
+  egg:()=>new Plot3Spec({expr:'sin(x)*cos(y)',xmin:-3,xmax:3,ymin:-3,ymax:3,style:'wire',title:'sin(x) cos(y)'}),
+  bump:()=>new Plot3Spec({expr:'exp(-(x^2+y^2))+0.5*exp(-((x-1.5)^2+(y+1)^2))',xmin:-3,xmax:3,ymin:-3,ymax:3,n:81,style:'contour',title:'Two Gaussian bumps'}),
+  helix:()=>new Plot3Spec({mode:'curve',exprs:['cos(t)','sin(t)','t/5'],tmin:0,tmax:6*Math.PI,title:'Helix',zlabel:'z'})
+};
+function p3Blob(){
+  return new Promise((resolve,reject)=>{
+    if(!P3S.spec||!P3S.data){reject(new Error('Nothing to export yet \u2014 press Plot first.'));return;}
+    const [W,H]=plId('p3Size').value.split('x').map(Number),scale=2;
+    const c=document.createElement('canvas');c.width=W*scale;c.height=H*scale;
+    const ctx=c.getContext('2d');
+    if(!ctx){reject(new Error('This browser cannot draw the image'));return;}
+    ctx.scale(scale,scale);
+    plot3Draw(ctx,W,H,P3S.spec,P3S.data,PLOT_THEMES[plId('p3Theme').value]||PLOT_THEMES.light,{});
+    c.toBlob(b=>b?resolve(b):reject(new Error('Could not create the image')),'image/png');
+  });
+}
+function initPlot3(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem('engcalc.plot3')||'null');}catch(e){}
+  if(saved&&(saved.expr||saved.exprs)){
+    P3S.spec=Object.assign(new Plot3Spec({}),saved);p3Write(P3S.spec);
+    try{P3S.data=plot3Sample(P3S.spec);}catch(e){P3S.data=null;}
+  }
+  plId('plMode2').onclick=()=>plSetMode('2d');
+  plId('plMode3').onclick=()=>plSetMode('3d');
+  const debounce=()=>{clearTimeout(P3S.timer);P3S.timer=setTimeout(p3Run,400);};
+  plId('p3Go').onclick=()=>p3Run(true);
+  ['p3E','p3XV','p3XA','p3XB','p3YV','p3YA','p3YB','p3N','p3ZA','p3ZB','p3C0','p3C1','p3C2','p3TV','p3TA','p3TB','p3NT','p3Title','p3XL','p3YL','p3ZL'].forEach(id=>{
+    plId(id).addEventListener('input',debounce);
+    plId(id).addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(P3S.timer);p3Run(true);}});
+  });
+  plId('p3Mode').addEventListener('change',()=>{
+    const m=plId('p3Mode').value;
+    plId('p3Surf').classList.toggle('pl-off',m==='curve');plId('p3Cur').classList.toggle('pl-off',m!=='curve');plId('p3StyleL').classList.toggle('pl-off',m==='curve');
+    p3Run();
+  });
+  plId('p3Style').addEventListener('change',p3Run);
+  plId('p3Theme').addEventListener('change',p3Paint);
+  plId('p3Clr').onclick=()=>{
+    P3S.spec=new Plot3Spec({});P3S.data=null;p3Write(P3S.spec);plId('p3E').value='';plId('p3N').value=41;
+    p3Save();p3Msg('Cleared.',false);p3FlatClass();p3Paint();
+  };
+  document.querySelectorAll('[data-p3ex]').forEach(b=>b.onclick=()=>p3Load(P3_EXAMPLES[b.dataset.p3ex]()));
+  /* view sliders, wheel, drag and pinch */
+  const view=()=>{const sp=P3S.spec;if(!sp)return null;return sp;};
+  const slider=(id,key,lo,hi)=>plId(id).addEventListener('input',()=>{const sp=view();if(!sp)return;sp[key]=Math.max(lo,Math.min(hi,Number(plId(id).value)));p3Soon();});
+  slider('p3Az','az',-180,180);slider('p3El','el',3,90);slider('p3Zm','zoom',0.3,4);
+  ['p3Az','p3El','p3Zm'].forEach(id=>plId(id).addEventListener('change',p3Save));
+  plId('p3Reset').onclick=()=>{const sp=view();if(!sp)return;sp.az=sp.mode==='curve'?-50:-55;sp.el=sp.mode==='curve'?25:28;sp.zoom=1;p3SyncSliders();p3Save();p3Paint();};
+  const cv=plId('p3Cv'),flat=()=>plId('p3Cv').classList.contains('flat');
+  cv.addEventListener('pointerdown',e=>{
+    if(flat()){p3Readout(e);return;}
+    P3S.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    P3S.drag={x:e.clientX,y:e.clientY,dist:0};
+    try{cv.setPointerCapture(e.pointerId);}catch(err){}
+    cv.style.cursor='grabbing';
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(flat()){p3Readout(e);return;}
+    const sp=view();if(!sp||!P3S.ptrs.has(e.pointerId))return;
+    const prev=P3S.ptrs.get(e.pointerId);P3S.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(P3S.ptrs.size>=2){   /* two fingers: pinch to zoom */
+      const [a,b]=[...P3S.ptrs.values()],dist=Math.hypot(a.x-b.x,a.y-b.y);
+      if(P3S.drag.dist>0)sp.zoom=Math.max(0.3,Math.min(4,sp.zoom*dist/P3S.drag.dist));
+      P3S.drag.dist=dist;
+    }else{
+      sp.az=((sp.az+(e.clientX-prev.x)*0.5+540)%360)-180;
+      sp.el=Math.max(3,Math.min(90,sp.el+(e.clientY-prev.y)*0.5));
+      P3S.drag.dist=0;
+    }
+    p3SyncSliders();p3Soon();
+  });
+  const up=e=>{P3S.ptrs.delete(e.pointerId);if(!P3S.ptrs.size){P3S.drag=null;cv.style.cursor='';p3Save();}else P3S.drag.dist=0;};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  cv.addEventListener('wheel',e=>{
+    if(flat())return;
+    const sp=view();if(!sp)return;
+    e.preventDefault();sp.zoom=Math.max(0.3,Math.min(4,sp.zoom*Math.exp(-e.deltaY*0.0015)));p3SyncSliders();p3Soon();
+  },{passive:false});
+  cv.addEventListener('dblclick',()=>{if(!flat())plId('p3Reset').click();});
+  plId('p3Png').onclick=async()=>{try{const b=await p3Blob();download(b,'engcalc_plot3d_'+expStamp()+'.png');toast('Saved as PNG');}catch(e){toast(e.message);}};
+  plId('p3Copy').onclick=async()=>{
+    try{
+      const b=await p3Blob();
+      if(!(navigator.clipboard&&window.ClipboardItem))throw new Error('unsupported');
+      await navigator.clipboard.write([new ClipboardItem({'image/png':b})]);toast('Plot copied \u2014 paste it into PowerPoint (Ctrl+V)');
+    }catch(e){toast(e.message==='unsupported'?'Copy is not available here \u2014 use Download PNG':e.message);}
+  };
+  plId('p3Csv').onclick=()=>{
+    if(!P3S.spec||!P3S.data){toast('Press Plot first');return;}
+    download(new Blob([plot3CSV(P3S.spec,P3S.data)],{type:'text/csv'}),'engcalc_plot3d_'+expStamp()+'.csv');toast('Saved as CSV');
+  };
+}
+function p3Readout(e){
+  const cv=plId('p3Cv'),r=cv.getBoundingClientRect(),g=P3S.geom;
+  if(!g||g.mode!=='flat'||!r.width)return;
+  const px=(e.clientX-r.left)*(P3S.w/r.width),py=(e.clientY-r.top)*(P3S.h/r.height);
+  if(px<g.rect.x||px>g.rect.x+g.rect.w||py<g.rect.y||py>g.rect.y+g.rect.h)return;
+  const x=g.xAt(px),y=g.yAt(py),z=plot3ZAt(P3S.data,x,y),sp=P3S.spec;
+  p3Msg(sp.xvar+' = '+plotFmt(x,4)+',  '+sp.yvar+' = '+plotFmt(y,4)+',  z = '+(Number.isFinite(z)?plotFmt(z,4):'undefined here'),false);
+}
+
 /* ---- base converter tab ---- */
 let cval=255n;
 function toBaseStr(v,base,w){
@@ -6123,7 +6703,7 @@ function initConv(){
 }
 
 /* ---- init ---- */
-load();buildFuncs();buildConsts();refreshVars();syncBar();banner();initSolver();initConv();initFormulas();initPlot();
+load();buildFuncs();buildConsts();refreshVars();syncBar();banner();initSolver();initConv();initFormulas();initPlot();initPlot3();
 histPos=hist.length;inp.focus();
 window.__engcalc={runInput,execLine,showTab,doSolve,convRender};
 })();
