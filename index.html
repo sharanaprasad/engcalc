@@ -565,12 +565,12 @@ pre.mx{background:rgba(4,7,18,.6);border:1px solid var(--line);border-radius:8px
               </div>
               <div class="pl-row"><button class="tb pri" id="p3Go">&#9654; Plot</button><button class="tb" id="p3Clr">clear</button><span>examples:</span>
                 <button class="chip" data-p3ex="ripple">ripple</button><button class="chip" data-p3ex="saddle">saddle</button><button class="chip" data-p3ex="egg">egg box</button><button class="chip" data-p3ex="bump">gaussian (contour)</button><button class="chip" data-p3ex="helix">helix</button></div>
-              <div class="alt" style="padding-left:0">Any variable names. Your own functions work: <code>f1(x, y)</code>. A complex result is shown as its magnitude. Values outside z min / z max are clipped.</div>
+              <div class="alt" style="padding-left:0">Any variable names. Your own functions work: <code>f1(x, y)</code>. Where the result is complex (a square root of a negative number, say) the surface is left empty; wrap the expression in <code>mag(...)</code>, <code>re(...)</code> or <code>im(...)</code> to plot a part of it. Values outside z min / z max are clipped.</div>
             </div></details>
           </div>
           <div class="pl-main">
             <div class="pl-cv"><canvas id="p3Cv"></canvas></div>
-            <div class="p3-view" id="p3View"><label>turn <input type="range" id="p3Az" min="-180" max="180" step="1" value="-55"></label><label>tilt <input type="range" id="p3El" min="3" max="90" step="1" value="28"></label><label>zoom <input type="range" id="p3Zm" min="0.5" max="3" step="0.05" value="1"></label><button class="tb" id="p3Reset">reset view</button></div>
+            <div class="p3-view" id="p3View"><label>turn <input type="range" id="p3Az" min="-180" max="180" step="1" value="-55"></label><label>tilt <input type="range" id="p3El" min="3" max="90" step="1" value="28"></label><label>zoom <input type="range" id="p3Zm" min="0.3" max="4" step="0.05" value="1"></label><button class="tb" id="p3Reset">reset view</button></div>
             <div class="alt" id="p3Msg" style="padding-left:2px">Type an expression and press Plot.</div>
           </div>
           <div class="pl-side">
@@ -2746,11 +2746,12 @@ class Plot3Spec{
 PLOT_THEMES.light.ramp=['#9ec5f4','#6da7ec','#3987e5','#256abf','#184f95','#104281','#0d366b'];
 PLOT_THEMES.dark.ramp=['#184f95','#256abf','#3987e5','#6da7ec','#9ec5f4','#b7d3f6','#cde2fb'];
 const p3Hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
-function p3Color(T,t,k){      /* t in [0,1] along the ramp, k = brightness factor */
+function p3Rgb(T,t,k){        /* t in [0,1] along the ramp, k = brightness factor */
   const st=T.ramp||PLOT_THEMES.light.ramp,u=Math.max(0,Math.min(1,Number.isFinite(t)?t:0))*(st.length-1),i=Math.min(st.length-2,Math.floor(u)),f=u-i;
   const a=p3Hex(st[i]),b=p3Hex(st[i+1]),f2=k===undefined?1:k;
-  return 'rgb('+[0,1,2].map(q=>Math.max(0,Math.min(255,Math.round((a[q]+(b[q]-a[q])*f)*f2)))).join(',')+')';
+  return [0,1,2].map(q=>Math.max(0,Math.min(255,Math.round((a[q]+(b[q]-a[q])*f)*f2))));
 }
+const p3Color=(T,t,k)=>'rgb('+p3Rgb(T,t,k).join(',')+')';
 /* tidy axis limits that contain [lo, hi] */
 function p3Nice(lo,hi){
   if(!(lo<=hi)){lo=0;hi=1;}
@@ -2772,14 +2773,20 @@ function plot3Sample(spec){
   const toNum=(v,st)=>{
     if(v instanceof Mat)throw new CalcError('A plotted expression must give a number, not a matrix');
     if(typeof v!=='number'&&!isC(v))return NaN;
-    if(isC(v)&&v.im!==0)st.anyC=true;
     return v;
   };
-  const real=(v,st)=>{const re=isC(v)?v.re:v,im=isC(v)?v.im:0;if(!Number.isFinite(re)||!Number.isFinite(im))return NaN;return st.anyC?Math.hypot(re,im):re;};
+  /* a complex value (sqrt of a negative, ln of a negative...) is a hole, not a made-up height; mag(...) / re(...) / im(...) plot a part of it */
+  const real=(v,st)=>{
+    const re=isC(v)?v.re:v,im=isC(v)?v.im:0;
+    if(!Number.isFinite(re)||!Number.isFinite(im))return NaN;
+    if(Math.abs(im)>1e-12*Math.max(1,Math.abs(re))){st.cx++;return NaN;}
+    return re;
+  };
+  const noFinite=(firstErr,st,what)=>new CalcError(firstErr||(st.cx?'The '+what+' is complex everywhere on this range: wrap it in mag(...), re(...) or im(...) to plot a part of it':'The '+what+' gave no finite values on this range'));
   if(spec.mode==='curve'){
     const [t0v,t1v]=p3Limits(spec.tmin,spec.tmax,'The '+spec.tvar+' range');
     const asts=[0,1,2].map(i=>parse(spec.exprs[i],'Type x(t), y(t) and z(t): three expressions'));
-    const n=Math.max(10,Math.min(5000,Math.round(spec.nt)||400)),st={anyC:false},raw=[[],[],[]];let firstErr=null;
+    const n=Math.max(10,Math.min(5000,Math.round(spec.nt)||400)),st={cx:0},raw=[[],[],[]];let firstErr=null;
     for(let i=0;i<n;i++){
       const t=t0v+(t1v-t0v)*i/(n-1);
       for(let q=0;q<3;q++){
@@ -2792,9 +2799,9 @@ function plot3Sample(spec){
     }
     const c=raw.map(r=>r.map(v=>real(v,st)));
     const rg=c.map(r=>{let lo=Infinity,hi=-Infinity;r.forEach(v=>{if(Number.isFinite(v)){if(v<lo)lo=v;if(v>hi)hi=v;}});return {lo,hi};});
-    if(rg.some(r=>!(r.lo<=r.hi)))throw new CalcError(firstErr||'The curve has no finite points on this range');
+    if(rg.some(r=>!(r.lo<=r.hi)))throw noFinite(firstErr,st,'curve');
     const lim=rg.map(r=>p3Nice(r.lo,r.hi));
-    return {mode:'curve',n,c,lim,ts:Array.from({length:n},(_,i)=>t0v+(t1v-t0v)*i/(n-1))};
+    return {mode:'curve',n,c,lim,complexSkipped:st.cx,ts:Array.from({length:n},(_,i)=>t0v+(t1v-t0v)*i/(n-1))};
   }
   if(spec.xvar===spec.yvar)throw new CalcError('The two variables need different names');
   const n=Math.max(5,Math.min(150,Math.round(spec.n)||41));
@@ -2802,7 +2809,7 @@ function plot3Sample(spec){
   const ast=parse(spec.expr,'Type an expression of '+spec.xvar+' and '+spec.yvar+', e.g. sin('+spec.xvar+')*cos('+spec.yvar+')');
   const xs=[],ys=[];
   for(let i=0;i<n;i++){xs.push(x0+(x1-x0)*i/(n-1));ys.push(y0+(y1-y0)*i/(n-1));}
-  const st={anyC:false},raw=[];let firstErr=null;
+  const st={cx:0},raw=[];let firstErr=null;
   for(let j=0;j<n;j++){
     const row=[];
     for(let i=0;i<n;i++){
@@ -2816,11 +2823,11 @@ function plot3Sample(spec){
   const z=raw.map(r=>r.map(v=>real(v,st)));
   let lo=Infinity,hi=-Infinity;
   z.forEach(r=>r.forEach(v=>{if(Number.isFinite(v)){if(v<lo)lo=v;if(v>hi)hi=v;}}));
-  if(!(lo<=hi))throw new CalcError(firstErr||'The expression gave no finite values on this range');
+  if(!(lo<=hi))throw noFinite(firstErr,st,'expression');
   const uLo=plotNum(spec.zmin),uHi=plotNum(spec.zmax);
   const zl=p3Nice(uLo===null?lo:uLo,uHi===null?hi:uHi);
   if(uLo!==null||uHi!==null)for(const r of z)for(let i=0;i<r.length;i++){if(Number.isFinite(r[i])){if(r[i]<zl.lo)r[i]=zl.lo;else if(r[i]>zl.hi)r[i]=zl.hi;}}
-  return {mode:'surface',n,xs,ys,z,lim:[{lo:x0,hi:x1,ticks:niceTicks(x0,x1,5)},{lo:y0,hi:y1,ticks:niceTicks(y0,y1,5)},zl],complexMag:st.anyC};
+  return {mode:'surface',n,xs,ys,z,lim:[{lo:x0,hi:x1,ticks:niceTicks(x0,x1,5)},{lo:y0,hi:y1,ticks:niceTicks(y0,y1,5)},zl],complexSkipped:st.cx};
 }
 /* z at (x, y) by bilinear interpolation of the grid (for the pointer readout in the flat views) */
 function plot3ZAt(data,x,y){
@@ -2876,8 +2883,10 @@ function plot3Draw(ctx,W,H,spec,data,theme,opts){
     }
     if(spec.style==='contour'){
       const levels=niceTicks(LZ.lo,LZ.hi,9).filter(v=>v>LZ.lo&&v<LZ.hi);
-      ctx.strokeStyle=T.fg;ctx.lineWidth=Math.max(1,lineW*0.9);ctx.globalAlpha=0.6;
+      ctx.lineWidth=Math.max(1,lineW*0.9);
       levels.forEach(L=>{
+        const rgb=p3Rgb(T,(L-LZ.lo)/(LZ.hi-LZ.lo));   /* white lines on dark fill, dark lines on light fill */
+        ctx.strokeStyle=(0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2])>150?'rgba(11,16,32,.8)':'rgba(255,255,255,.85)';
         ctx.beginPath();
         for(let j=0;j<n-1;j++)for(let i=0;i<n-1;i++){
           const va=z[j][i],vb=z[j][i+1],vc=z[j+1][i+1],vd=z[j+1][i];
@@ -2895,7 +2904,6 @@ function plot3Draw(ctx,W,H,spec,data,theme,opts){
         }
         ctx.stroke();
       });
-      ctx.globalAlpha=1;
     }
     ctx.strokeStyle=T.axis;ctx.lineWidth=1;ctx.strokeRect(area.x,area.y,area.w,area.h);
     ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.95)+'px '+PLOT_FONT;
@@ -2946,18 +2954,13 @@ function plot3Draw(ctx,W,H,spec,data,theme,opts){
       quads.push({a,b,c,d,dep:(a.d+b.d+c.d+d.d)/4,t:((z[j][i]+z[j][i+1]+z[j+1][i+1]+z[j+1][i])/4-LZ.lo)/(LZ.hi-LZ.lo),k:0.8+0.2*lam});
     }
     quads.sort((p,q)=>q.dep-p.dep);
-    const wire=spec.style==='wire';
+    const wire=spec.style==='wire',edge=n<=61?0.74:0.9;
     ctx.lineJoin='round';
     quads.forEach(q=>{
       ctx.beginPath();ctx.moveTo(q.a.x,q.a.y);ctx.lineTo(q.b.x,q.b.y);ctx.lineTo(q.c.x,q.c.y);ctx.lineTo(q.d.x,q.d.y);ctx.closePath();
       if(wire){ctx.fillStyle=T.bg;ctx.fill();ctx.strokeStyle=p3Color(T,q.t);ctx.lineWidth=Math.max(1,lineW*0.9);ctx.stroke();}
-      else{const c=p3Color(T,q.t,q.k);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=0.6;ctx.stroke();}
+      else{ctx.fillStyle=p3Color(T,q.t,q.k);ctx.fill();ctx.strokeStyle=p3Color(T,q.t,q.k*edge);ctx.lineWidth=0.6;ctx.stroke();}   /* edge = the same blue, darker: reads as a mesh, never whitens thin quads */
     });
-    if(!wire&&n<=61){   /* faint mesh so the shape reads even where the colour is flat */
-      ctx.strokeStyle=T.bg;ctx.globalAlpha=0.28;ctx.lineWidth=0.6;
-      quads.forEach(q=>{ctx.beginPath();ctx.moveTo(q.a.x,q.a.y);ctx.lineTo(q.b.x,q.b.y);ctx.lineTo(q.c.x,q.c.y);ctx.lineTo(q.d.x,q.d.y);ctx.closePath();ctx.stroke();});
-      ctx.globalAlpha=1;
-    }
   }else{
     const pts=data.c[0].map((_,i)=>{const x=data.c[0][i],y=data.c[1][i],zv=data.c[2][i];return [x,y,zv].every(Number.isFinite)?[nx(x,LX),nx(y,LY),nz(zv)]:null;});
     const path=f=>{ctx.beginPath();let pen=false;pts.forEach(p=>{if(!p){pen=false;return;}const q=f(p);if(pen)ctx.lineTo(q.x,q.y);else{ctx.moveTo(q.x,q.y);pen=true;}});ctx.stroke();};
@@ -2975,14 +2978,14 @@ function plot3Draw(ctx,W,H,spec,data,theme,opts){
   line(P(-1,near.Y,-ZH),P(1,near.Y,-ZH));line(P(near.X,-1,-ZH),P(near.X,1,-ZH));
   ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.9)+'px '+PLOT_FONT;ctx.textAlign='center';
   tkv[0].forEach((v,i)=>{const q=away(P(tk[0][i],near.Y,-ZH),fs*1.1);ctx.fillText(plotFmt(v,3),q.x,q.y+fs*0.3);});
-  tkv[1].forEach((v,i)=>{const q=away(P(near.X,tk[1][i],-ZH),fs*1.1);ctx.fillText(plotFmt(v,3),q.x,q.y+fs*0.3);});
+  tkv[1].forEach((v,i)=>{if(tk[1][i]===near.Y)return;const q=away(P(near.X,tk[1][i],-ZH),fs*1.1);ctx.fillText(plotFmt(v,3),q.x,q.y+fs*0.3);});   /* that corner already has the x label */
   ctx.fillStyle=T.fg;ctx.font='600 '+Math.round(fs*1.0)+'px '+PLOT_FONT;
   {const q=away(P(0,near.Y,-ZH),fs*2.9);ctx.fillText(lab[0],q.x,q.y+fs*0.3);}
   {const q=away(P(near.X,0,-ZH),fs*2.9);ctx.fillText(lab[1],q.x,q.y+fs*0.3);}
   const zc=corners.reduce((m,c)=>c.p.sx<m.p.sx?c:m,corners[0]);
   ctx.strokeStyle=T.axis;line(P(zc.X,zc.Y,-ZH),P(zc.X,zc.Y,ZH));
   ctx.fillStyle=T.dim;ctx.font=Math.round(fs*0.9)+'px '+PLOT_FONT;ctx.textAlign='right';
-  tkv[2].forEach((v,i)=>{const q=P(zc.X,zc.Y,tk[2][i]);ctx.strokeStyle=T.axis;ctx.beginPath();ctx.moveTo(q.x-fs*0.3,q.y);ctx.lineTo(q.x,q.y);ctx.stroke();ctx.fillText(plotFmt(v,3),q.x-fs*0.45,q.y+fs*0.32);});
+  tkv[2].forEach((v,i)=>{if(tk[2][i]<=-ZH+1e-9&&(zc.X===near.X||zc.Y===near.Y))return;const q=P(zc.X,zc.Y,tk[2][i]);ctx.strokeStyle=T.axis;ctx.beginPath();ctx.moveTo(q.x-fs*0.3,q.y);ctx.lineTo(q.x,q.y);ctx.stroke();ctx.fillText(plotFmt(v,3),q.x-fs*0.45,q.y+fs*0.32);});
   if(curve){const q=P(zc.X,zc.Y,ZH);ctx.fillStyle=T.fg;ctx.font='600 '+Math.round(fs*1.0)+'px '+PLOT_FONT;ctx.textAlign='center';ctx.fillText(lab[2]||'z',q.x,q.y-fs*0.9);}
   if(!curve)colorBar();
   ctx.restore();
@@ -3002,6 +3005,7 @@ function plot3dFromCall(n,sc){
   if(args.length===7){
     if(!isName(args[1])||!isName(args[4]))throw new CalcError('Name both variables:  '+sig);
     xv=args[1].name;yv=args[4].name;r=[args[2],args[3],args[5],args[6]];
+    if(xv===yv)throw new CalcError('The two variables need different names');
   }else if(args.length===5)r=args.slice(1);
   else throw new CalcError(sig+'  (give the expression, then each variable with its range; add surface, wire, contour or heat at the end)');
   const rv=['The first range start','The first range end','The second range start','The second range end'].map((w,i)=>plotNumArg(r[i],sc,w));
@@ -6513,7 +6517,7 @@ function p3Info(){
   const sp=P3S.spec,d=P3S.data;
   if(sp.mode==='curve')return d.n+' points \u00b7 drag to turn, scroll or pinch to zoom';
   const flat=sp.style==='contour'||sp.style==='heat';
-  return d.n+' \u00d7 '+d.n+' grid \u00b7 '+(flat?'move the pointer over the map to read x, y and z':'drag to turn, scroll or pinch to zoom')+(d.complexMag?' \u00b7 complex values shown as magnitude':'');
+  return d.n+' \u00d7 '+d.n+' grid \u00b7 '+(flat?'move the pointer over the map to read x, y and z':'drag to turn, scroll or pinch to zoom')+(d.complexSkipped?' \u00b7 '+d.complexSkipped+' complex point'+(d.complexSkipped>1?'s':'')+' left empty (use mag(...) to show them)':'');
 }
 function p3Run(scroll){
   try{
@@ -6527,7 +6531,7 @@ function p3Run(scroll){
 function p3Paint(){
   const cv=plId('p3Cv');if(!cv)return;
   const w=Math.max(260,Math.floor(cv.parentElement.clientWidth)||620);
-  const vh=window.innerHeight||800,h=Math.round(Math.min(w*0.72,Math.max(280,vh*0.66)));
+  const vh=window.innerHeight||800,h=Math.round(Math.min(w*(w<520?0.95:0.72),Math.max(280,vh*0.66)));
   const dpr=Math.min(3,window.devicePixelRatio||1);
   P3S.w=w;P3S.h=h;
   cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
